@@ -1,0 +1,22 @@
+# 000 SliverWidgets Foundation Traceability
+
+| Requirement | Acceptance Criteria | Implementation | Tests | Docs | Package | Status |
+|---|---|---|---|---|---|---|
+| `SW-FR-001` | `AC-001`, `AC-002` | `src/SliverWidgets.Core/SliverPrimitives.cs` | Core tests | Architecture docs | `SliverWidgets.Core` | Done |
+| `SW-FR-002` | `AC-003` | `SliverConstraints` | Core tests | Architecture docs | `SliverWidgets.Core` | Done |
+| `SW-FR-003` | `AC-003` | `SliverGeometry` | Core tests | Architecture docs | `SliverWidgets.Core` | Done |
+| `SW-FR-004` | `AC-003` | `SliverViewportLayoutEngine` | Core tests | Getting started | `SliverWidgets.Core` | Done |
+| `SW-FR-005` | `AC-003`, `AC-004` | `SliverFixedExtentListLayout` | Core and parity tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-006` | `AC-003` | `SliverListLayout`, `SliverChildExtentCache`, `SliverVariableExtentListLayout` | Core tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-007` | `AC-003` | `SliverGridLayout`, Uno/WinUI grid virtualizing layouts | Core tests | Controls docs | Core, Uno, WinUI packages | Done |
+| `SW-FR-008` | `AC-003` | `SliverPersistentHeaderLayout`, `SliverAdvancedPersistentHeaderLayout` | Core tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-009` | `AC-003` | `SliverFillRemainingLayout` | Parity tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-010` | `AC-003` | `SliverPaddingLayout` | Core tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-011` | `AC-003` | `SliverVisibilityLayout` | Core tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-012` | `AC-005` | Framework adapter projects | Build validation | Adapter docs | Adapter packages | Done |
+| `SW-FR-013` | `AC-005`, `AC-006` | Uno/WinUI row and grid virtualizing layouts | Parity tests | Adapter docs | Uno/WinUI packages | Done |
+| `SW-FR-014` | `AC-005` | Avalonia panels and fixed/variable extent virtualizing panels | Build validation | Adapter docs | `SliverWidgets.Avalonia` | Done |
+| `SW-FR-015` | `AC-005` | MAUI layout manager and native-backed `SliverCollectionView` | Build validation | Adapter docs | `SliverWidgets.Maui` | Done |
+| `SW-FR-016` | `AC-003` | `SliverToBoxAdapterLayout` | Core tests | Controls docs | `SliverWidgets.Core` | Done |
+| `SW-FR-017` | `AC-009`, `AC-010` | Framework gallery samples | Sample builds | Samples docs | Not packaged | Done |
+| `SW-FR-018` | `AC-009`, `AC-010` | `samples/SliverWidgets.GalleryData` | Sample build | Samples docs | Not packaged | Done |

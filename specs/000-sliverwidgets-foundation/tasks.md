@@ -1,0 +1,26 @@
+# 000 SliverWidgets Foundation Tasks
+
+- [x] `T001` Define core sliver constraints and geometry. Requirements: `SW-FR-001`, `SW-FR-002`, `SW-FR-003`.
+- [x] `T002` Implement fixed-extent list layout. Requirements: `SW-FR-005`.
+- [x] `T003` Implement variable list, grid, persistent header, fill remaining, padding, and visibility. Requirements: `SW-FR-006` through `SW-FR-011`.
+- [x] `T004` Implement viewport composition. Requirements: `SW-FR-004`.
+- [x] `T005` Implement Avalonia adapters. Requirements: `SW-FR-012`, `SW-FR-014`.
+- [x] `T006` Implement MAUI layout adapter. Requirements: `SW-FR-012`, `SW-FR-015`.
+- [x] `T007` Implement Uno fixed-extent virtualizing layout. Requirements: `SW-FR-012`, `SW-FR-013`.
+- [x] `T008` Implement WinUI fixed-extent virtualizing layout. Requirements: `SW-FR-012`, `SW-FR-013`.
+- [x] `T009` Add core unit tests. Acceptance: `AC-003`.
+- [x] `T010` Add framework parity tests. Acceptance: `AC-004`.
+- [x] `T011` Add package metadata and default solution. Acceptance: `AC-001`, `AC-002`, `AC-007`.
+- [x] `T012` Add Lunet docs shell, samples, README, workflows, and agent instructions. Acceptance: `AC-008`.
+- [x] `T013` Implement Avalonia `VirtualizingPanel` + `ItemContainerGenerator`. Requirements: `SW-FR-014`.
+- [x] `T014` Implement WinUI/Uno grid virtualizing layouts. Requirements: `SW-FR-007`, `SW-FR-013`.
+- [x] `T015` Implement MAUI native-backed virtualization. Requirements: `SW-FR-015`.
+- [x] `T016` Implement floating/snap header animation service. Requirements: `SW-FR-008`.
+- [x] `T017` Implement core variable-extent cache/dead-reckoning and box adapter. Requirements: `SW-FR-006`, `SW-FR-016`.
+- [x] `T018` Implement Avalonia variable-extent virtualizing panel. Requirements: `SW-FR-014`.
+- [x] `T019` Add shared gallery data project for deterministic large sample feeds. Requirements: `SW-FR-018`.
+- [x] `T020` Implement Avalonia gallery app. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T021` Implement MAUI gallery app. Requirements: `SW-FR-015`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T022` Implement Uno gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T023` Implement WinUI gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T024` Add gallery docs and sample validation notes. Acceptance: `AC-009`, `AC-010`.
