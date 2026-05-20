@@ -193,4 +193,54 @@ public sealed class SliverLayoutTests
         Assert.Contains(result.Slots, slot => slot.SliverIndex == 0 && slot.IsPinned);
         Assert.Contains(result.Slots, slot => slot.SliverIndex == 1 && slot.ItemIndex == 0);
     }
+
+    [Fact]
+    public void ViewportOffsetsLaterSliversBelowPinnedObstructions()
+    {
+        var engine = new SliverViewportLayoutEngine();
+        var recordingSliver = new RecordingSliver();
+        var slivers = new ISliverLayout[]
+        {
+            new SliverPersistentHeaderLayout(new SliverPersistentHeaderOptions(40d, 100d, Pinned: true)),
+            new SliverPersistentHeaderLayout(new SliverPersistentHeaderOptions(30d, 80d, Pinned: true)),
+            recordingSliver
+        };
+
+        var result = engine.Layout(slivers, new SliverViewport(200d, 300d), scrollOffset: 190d);
+
+        var firstHeader = result.Slots.Single(slot => slot.SliverIndex == 0);
+        var secondHeader = result.Slots.Single(slot => slot.SliverIndex == 1);
+        var followingSlot = result.Slots.Single(slot => slot.SliverIndex == 2);
+
+        Assert.Equal(0d, firstHeader.MainAxisOffset);
+        Assert.Equal(40d, secondHeader.MainAxisOffset);
+        Assert.Equal(70d, recordingSliver.LastConstraints.Overlap);
+        Assert.Equal(130d, recordingSliver.LastConstraints.RemainingPaintExtent);
+        Assert.Equal(70d, followingSlot.MainAxisOffset);
+    }
+
+    private sealed class RecordingSliver : ISliverLayout
+    {
+        public SliverConstraints LastConstraints { get; private set; }
+
+        public SliverLayoutResult Layout(in SliverConstraints constraints)
+        {
+            LastConstraints = constraints;
+            var paintExtent = Math.Min(25d, constraints.RemainingPaintExtent);
+            return new SliverLayoutResult(
+                new SliverGeometry
+                {
+                    ScrollExtent = 100d,
+                    PaintExtent = paintExtent,
+                    LayoutExtent = paintExtent,
+                    MaxPaintExtent = 100d,
+                    HitTestExtent = paintExtent,
+                    Visible = paintExtent > SliverMath.Epsilon,
+                    CrossAxisExtent = constraints.CrossAxisExtent
+                },
+                paintExtent > SliverMath.Epsilon
+                    ? new[] { new SliverLayoutSlot(0, 0d, 0d, 25d, constraints.CrossAxisExtent) }
+                    : Array.Empty<SliverLayoutSlot>());
+        }
+    }
 }

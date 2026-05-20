@@ -34,17 +34,22 @@ public sealed class SliverViewportLayoutEngine
         var slots = new List<SliverViewportSlot>();
         var geometries = new List<SliverGeometry>(slivers.Count);
         var precedingScrollExtent = 0d;
+        var activeScrollObstructionExtent = 0d;
 
         for (var sliverIndex = 0; sliverIndex < slivers.Count; sliverIndex++)
         {
             var localScrollOffset = Math.Max(0d, scrollOffset - precedingScrollExtent);
-            var sliverLeadingViewportOffset = Math.Max(0d, precedingScrollExtent - scrollOffset);
+            var naturalLeadingViewportOffset = Math.Max(0d, precedingScrollExtent - scrollOffset);
+            var sliverLeadingViewportOffset = Math.Max(activeScrollObstructionExtent, naturalLeadingViewportOffset);
+            var remainingPaintExtent = Math.Max(
+                0d,
+                viewport.MainAxisExtent - Math.Min(viewport.MainAxisExtent, sliverLeadingViewportOffset));
             var constraints = new SliverConstraints(
                 viewport.Axis,
                 localScrollOffset,
                 precedingScrollExtent,
-                0d,
-                Math.Max(0d, viewport.MainAxisExtent - Math.Min(viewport.MainAxisExtent, sliverLeadingViewportOffset)),
+                activeScrollObstructionExtent,
+                remainingPaintExtent,
                 viewport.CrossAxisExtent,
                 viewport.MainAxisExtent,
                 -cacheExtent,
@@ -69,6 +74,7 @@ public sealed class SliverViewportLayoutEngine
             }
 
             precedingScrollExtent += result.Geometry.ScrollExtent;
+            activeScrollObstructionExtent += result.Geometry.MaxScrollObstructionExtent;
         }
 
         var maxScrollOffset = Math.Max(0d, precedingScrollExtent - viewport.MainAxisExtent);
