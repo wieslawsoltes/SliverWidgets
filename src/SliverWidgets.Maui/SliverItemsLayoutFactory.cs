@@ -5,14 +5,23 @@ namespace SliverWidgets.Maui;
 
 public static class SliverItemsLayoutFactory
 {
-    public static LinearItemsLayout CreateFixedExtentList(SliverAxis axis, double spacing)
+    public static SliverFixedExtentLinearItemsLayout CreateFixedExtentList(
+        SliverAxis axis,
+        double itemExtent,
+        double spacing)
     {
+        ValidateFiniteNonNegative(itemExtent, nameof(itemExtent));
         ValidateFiniteNonNegative(spacing, nameof(spacing));
 
-        return new LinearItemsLayout(ToItemsLayoutOrientation(axis))
+        return new SliverFixedExtentLinearItemsLayout(ToItemsLayoutOrientation(axis), itemExtent)
         {
             ItemSpacing = spacing
         };
+    }
+
+    public static LinearItemsLayout CreateFixedExtentList(SliverAxis axis, double spacing)
+    {
+        return CreateFixedExtentList(axis, 0d, spacing);
     }
 
     public static GridItemsLayout CreateFixedExtentGrid(
@@ -54,4 +63,16 @@ public static class SliverItemsLayoutFactory
             throw new ArgumentOutOfRangeException(name, value, "Value must be finite and non-negative.");
         }
     }
+}
+
+public sealed class SliverFixedExtentLinearItemsLayout : LinearItemsLayout
+{
+    public SliverFixedExtentLinearItemsLayout(ItemsLayoutOrientation orientation, double itemExtent)
+        : base(orientation)
+    {
+        SliverItemsLayoutFactory.ValidateFiniteNonNegative(itemExtent, nameof(itemExtent));
+        ItemExtent = itemExtent;
+    }
+
+    public double ItemExtent { get; }
 }

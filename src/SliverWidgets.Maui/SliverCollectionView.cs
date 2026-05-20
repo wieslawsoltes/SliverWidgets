@@ -11,6 +11,10 @@ public enum SliverCollectionLayoutMode
 
 public class SliverCollectionView : CollectionView
 {
+    private DataTemplate? _fixedExtentItemTemplate;
+    private bool _applyingItemTemplate;
+    private DataTemplate? _userItemTemplate;
+
     public static readonly BindableProperty AxisProperty =
         BindableProperty.Create(
             nameof(Axis),
@@ -144,7 +148,7 @@ public class SliverCollectionView : CollectionView
         return LayoutMode switch
         {
             SliverCollectionLayoutMode.FixedExtentList =>
-                SliverItemsLayoutFactory.CreateFixedExtentList(Axis, Spacing),
+                SliverItemsLayoutFactory.CreateFixedExtentList(Axis, ItemExtent, Spacing),
             SliverCollectionLayoutMode.FixedExtentGrid =>
                 SliverItemsLayoutFactory.CreateFixedExtentGrid(Axis, CrossAxisCount, MainAxisSpacing, CrossAxisSpacing),
             _ => throw new ArgumentOutOfRangeException(nameof(LayoutMode), LayoutMode, null)
@@ -161,7 +165,19 @@ public class SliverCollectionView : CollectionView
     {
         ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem;
         ItemsLayout = CreateItemsLayout();
+        ApplyFixedExtentItemTemplate();
         InvalidateMeasure();
+    }
+
+    protected override void OnPropertyChanged(string? propertyName = null)
+    {
+        base.OnPropertyChanged(propertyName);
+
+        if (propertyName == nameof(ItemTemplate) && !_applyingItemTemplate)
+        {
+            _userItemTemplate = ItemTemplate;
+            ApplyFixedExtentItemTemplate();
+        }
     }
 
     private static void OnNativeLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
@@ -176,9 +192,78 @@ public class SliverCollectionView : CollectionView
     {
         if (bindable is SliverCollectionView collectionView)
         {
-            collectionView.ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem;
-            collectionView.InvalidateMeasure();
+            collectionView.ApplyNativeVirtualizationSettings();
         }
+    }
+
+    private void ApplyFixedExtentItemTemplate()
+    {
+        if (_applyingItemTemplate)
+        {
+            return;
+        }
+
+        if (LayoutMode != SliverCollectionLayoutMode.FixedExtentList)
+        {
+            if (_fixedExtentItemTemplate is not null && ReferenceEquals(ItemTemplate, _fixedExtentItemTemplate))
+            {
+                SetNativeItemTemplate(_userItemTemplate);
+            }
+
+            return;
+        }
+
+        var userTemplate = _userItemTemplate;
+        if (userTemplate is null && !ReferenceEquals(ItemTemplate, _fixedExtentItemTemplate))
+        {
+            userTemplate = ItemTemplate;
+            _userItemTemplate = userTemplate;
+        }
+
+        if (userTemplate is null)
+        {
+            return;
+        }
+
+        _fixedExtentItemTemplate = CreateFixedExtentItemTemplate(userTemplate);
+        SetNativeItemTemplate(_fixedExtentItemTemplate);
+    }
+
+    private void SetNativeItemTemplate(DataTemplate? template)
+    {
+        _applyingItemTemplate = true;
+        try
+        {
+            ItemTemplate = template;
+        }
+        finally
+        {
+            _applyingItemTemplate = false;
+        }
+    }
+
+    private DataTemplate CreateFixedExtentItemTemplate(DataTemplate userTemplate)
+    {
+        return new DataTemplate(() =>
+        {
+            var content = userTemplate.CreateContent();
+            if (content is not View view)
+            {
+                throw new InvalidOperationException("SliverCollectionView item templates must create a View.");
+            }
+
+            var wrapper = new ContentView
+            {
+                Content = view,
+                HorizontalOptions = LayoutOptions.Fill,
+                VerticalOptions = LayoutOptions.Fill
+            };
+            var extentProperty = Axis == SliverAxis.Vertical
+                ? HeightRequestProperty
+                : WidthRequestProperty;
+            wrapper.SetBinding(extentProperty, new Binding(nameof(ItemExtent)) { Source = this });
+            return wrapper;
+        });
     }
 
     private static bool IsFiniteNonNegative(double value)
