@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/AvaloniaGallery/AvaloniaGallery.csproj" />
+    <Project Path="samples/SliverWidgets.GalleryData/SliverWidgets.GalleryData.csproj" />
+    <Project Path="samples/UnoGallery/SliverWidgets.UnoGallery.csproj" />
+    <Project Path="samples/UnoGalleryApp/SliverWidgets.UnoGalleryApp/SliverWidgets.UnoGalleryApp.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,23 @@
+name: docs
+
+on:
+  push:
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yml"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Lunet
+        run: dotnet tool install -g lunet
+      - name: Build docs
+        run: |
+          cd docs
+          lunet build

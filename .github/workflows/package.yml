@@ -1,0 +1,34 @@
+name: package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  pack-default:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet pack SliverWidgets.slnx --configuration Release --output artifacts/packages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-default
+          path: artifacts/packages/*.nupkg
+
+  pack-winui:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet pack src/SliverWidgets.WinUI/SliverWidgets.WinUI.csproj --configuration Release --output artifacts/packages
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages-winui
+          path: artifacts/packages/*.nupkg

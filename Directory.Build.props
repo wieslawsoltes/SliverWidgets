@@ -1,0 +1,25 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Wieslaw Soltes</Authors>
+    <Company>Wieslaw Soltes</Company>
+    <Copyright>Copyright (c) 2026 Wieslaw Soltes</Copyright>
+    <PackageProjectUrl>https://github.com/wieslawsoltes/SliverWidgets</PackageProjectUrl>
+    <Description>Flutter-inspired high-performance sliver layout primitives and framework adapters for .NET UI frameworks.</Description>
+    <PackageDescription>Flutter-inspired high-performance sliver layout primitives and framework adapters for .NET UI frameworks.</PackageDescription>
+    <RepositoryUrl>https://github.com/wieslawsoltes/SliverWidgets</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageTags>sliver;layout;virtualization;avalonia;uno;maui;winui</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <Deterministic>true</Deterministic>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(IsPackable)' != 'false'">
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="/" Visible="false" Condition="Exists('$(MSBuildThisFileDirectory)README.md')" />
+  </ItemGroup>
+</Project>
