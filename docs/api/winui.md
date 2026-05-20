@@ -1,0 +1,53 @@
+---
+title: WinUI API
+description: Public API guide for SliverWidgets.WinUI.
+---
+
+# WinUI API
+
+`SliverWidgets.WinUI` provides Windows App SDK `VirtualizingLayout` implementations for `ItemsRepeater`.
+
+## SliverFixedExtentVirtualizingLayout
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `ItemExtent` | `double` | `48` |
+| `Spacing` | `double` | `0` |
+
+## SliverGridVirtualizingLayout
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `SizingMode` | `SliverGridSizingMode` | `FixedCrossAxisCount` |
+| `CrossAxisCount` | `int` | `2` |
+| `MaxCrossAxisExtent` | `double` | `240` |
+| `MainAxisSpacing` | `double` | `0` |
+| `CrossAxisSpacing` | `double` | `0` |
+| `ChildAspectRatio` | `double` | `1` |
+| `MainAxisExtent` | `double` | `NaN` |
+
+## Example
+
+```xml
+<ItemsRepeater ItemsSource="{x:Bind Items}">
+  <ItemsRepeater.Layout>
+    <slivers:SliverFixedExtentVirtualizingLayout
+        xmlns:slivers="using:SliverWidgets.WinUI"
+        ItemExtent="44"
+        Spacing="2" />
+  </ItemsRepeater.Layout>
+</ItemsRepeater>
+```
+
+## Build Note
+
+Build WinUI code on the current host:
+
+```bash
+dotnet build src/SliverWidgets.WinUI/SliverWidgets.WinUI.csproj -c Release
+dotnet build samples/WinUIGallery/SliverWidgets.WinUIGallery.csproj -c Release
+```
+
+Run and device-test WinUI on Windows. The manual API guide includes WinUI even though generated API extraction is limited to cross-platform packages for portable docs builds.
