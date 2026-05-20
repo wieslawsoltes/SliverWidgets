@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Generators;
@@ -187,6 +188,14 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
         return ContainerFromIndex(targetIndex) ?? ScrollIntoView(targetIndex);
     }
 
+    protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
+    {
+        base.OnItemsChanged(items, e);
+        ClearRealizedContainers();
+        InvalidateMeasure();
+        RaiseScrollInvalidated(EventArgs.Empty);
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var axis = Axis;
@@ -321,6 +330,25 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
                 RemoveInternalChild(container);
             }
         }
+    }
+
+    private void ClearRealizedContainers()
+    {
+        if (ItemContainerGenerator is not { } generator)
+        {
+            _containersByIndex.Clear();
+            _indexesByContainer.Clear();
+            return;
+        }
+
+        foreach (var container in GetRealizedContainers().ToArray())
+        {
+            generator.ClearItemContainer(container);
+            RemoveInternalChild(container);
+        }
+
+        _containersByIndex.Clear();
+        _indexesByContainer.Clear();
     }
 
     private bool BringRangeIntoView(double start, double end)
