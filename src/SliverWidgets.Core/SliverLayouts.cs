@@ -577,6 +577,7 @@ public sealed class SliverPaddingLayout : ISliverLayout
         var geometry = SliverFixedExtentListLayout.BuildGeometry(scrollExtent, constraints) with
         {
             MaxPaintExtent = Padding.Before + childResult.Geometry.MaxPaintExtent + Padding.After,
+            MaxScrollObstructionExtent = childResult.Geometry.MaxScrollObstructionExtent,
             CrossAxisExtent = constraints.CrossAxisExtent
         };
         var leadingOffset = Math.Max(0d, Padding.Before - constraints.ScrollOffset);

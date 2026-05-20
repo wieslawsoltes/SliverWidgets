@@ -139,6 +139,21 @@ public sealed class SliverAdvancedLayoutTests
     }
 
     [Fact]
+    public void PaddingPreservesPinnedChildScrollObstruction()
+    {
+        var child = new SliverPersistentHeaderLayout(
+            new SliverPersistentHeaderOptions(MinExtent: 40d, MaxExtent: 120d, Pinned: true));
+        var layout = new SliverPaddingLayout(new SliverEdgeInsets(Before: 10d, After: 5d), child);
+
+        var result = layout.Layout(Constraints(scrollOffset: 100d, remainingPaintExtent: 120d));
+
+        Assert.Equal(135d, result.Geometry.ScrollExtent);
+        Assert.Equal(40d, result.Geometry.MaxScrollObstructionExtent);
+        Assert.Equal(0d, result.Slots[0].MainAxisOffset);
+        Assert.True(result.Slots[0].IsPinned);
+    }
+
+    [Fact]
     public void VisibilityCanRemoveMaintainOrUseReplacement()
     {
         var child = new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(2, 20d));
