@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
@@ -11,8 +12,13 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
     private readonly Dictionary<int, Control> _containersByIndex = [];
     private readonly Dictionary<Control, int> _indexesByContainer = [];
     private readonly Dictionary<int, double> _extentCache = [];
+    private readonly List<double> _offsetCache = [];
     private bool _canHorizontallyScroll;
     private bool _canVerticallyScroll;
+    private bool _offsetCacheDirty = true;
+    private double _offsetCacheEstimatedItemExtent = double.NaN;
+    private double _offsetCacheSpacing = double.NaN;
+    private int _offsetCacheItemCount = -1;
     private Size _extent;
     private Size _viewport;
 
@@ -184,6 +190,16 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
             : null;
     }
 
+    protected override void OnItemsChanged(IReadOnlyList<object?> items, NotifyCollectionChangedEventArgs e)
+    {
+        base.OnItemsChanged(items, e);
+        ClearRealizedContainers();
+        _extentCache.Clear();
+        InvalidateOffsetCache();
+        InvalidateMeasure();
+        RaiseScrollInvalidated(EventArgs.Empty);
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var axis = Axis;
@@ -198,7 +214,13 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
         {
             var container = Realize(index);
             container.Measure(SliverAvaloniaPrimitives.ToSize(axis, double.PositiveInfinity, crossAxisExtent));
-            _extentCache[index] = Math.Max(0d, container.DesiredSize.Main(axis));
+            var measuredExtent = Math.Max(0d, container.DesiredSize.Main(axis));
+            if (!_extentCache.TryGetValue(index, out var previousExtent) ||
+                !SliverAvaloniaPrimitives.AreClose(previousExtent, measuredExtent))
+            {
+                _extentCache[index] = measuredExtent;
+                InvalidateOffsetCache();
+            }
         }
 
         var extent = SliverAvaloniaPrimitives.ToSize(axis, GetTotalExtent(), crossAxisExtent);
@@ -225,15 +247,18 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
                 continue;
             }
 
+            var itemStart = GetOffset(index);
+            var itemExtent = GetExtent(index);
+            var slotOffset = itemStart - Math.Max(0d, ScrollOffset);
             var slot = new SliverLayoutSlot(
                 index,
-                GetOffset(index) - Math.Max(0d, ScrollOffset),
+                slotOffset,
                 0d,
-                GetExtent(index),
+                itemExtent,
                 finalSize.Cross(axis),
                 IsCacheOnly: !SliverAvaloniaPrimitives.IntersectsViewport(
-                    GetOffset(index) - Math.Max(0d, ScrollOffset),
-                    GetExtent(index),
+                    slotOffset,
+                    itemExtent,
                     viewportMainAxisExtent));
             SliverAvaloniaPrimitives.ArrangeSlot(container, axis, slot, viewportMainAxisExtent);
             arranged.Add(index);
@@ -286,58 +311,39 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
         var cacheExtent = Math.Max(0d, CacheExtent);
         var cacheStart = Math.Max(0d, Math.Max(0d, ScrollOffset) - cacheExtent);
         var cacheEnd = Math.Max(cacheStart, Math.Max(0d, ScrollOffset) + viewportMainAxisExtent + cacheExtent);
-        var offset = 0d;
-        var spacing = Math.Max(0d, Spacing);
+        EnsureOffsetCache();
+        var startIndex = FindFirstRangeOverlapIndex(cacheStart);
 
-        for (var index = 0; index < itemCount; index++)
+        for (var index = startIndex; index < itemCount; index++)
         {
+            var offset = _offsetCache[index];
             var extent = GetExtent(index);
             var end = offset + extent;
-
-            if (end >= cacheStart && offset <= cacheEnd)
-            {
-                yield return index;
-            }
 
             if (offset - cacheEnd > SliverMath.Epsilon)
             {
                 yield break;
             }
 
-            offset = end + spacing;
+            if (end - cacheStart > SliverMath.Epsilon && cacheEnd - offset > SliverMath.Epsilon)
+            {
+                yield return index;
+            }
         }
     }
 
     private double GetOffset(int index)
     {
-        var offset = 0d;
-        var spacing = Math.Max(0d, Spacing);
-
-        for (var i = 0; i < index; i++)
-        {
-            offset += GetExtent(i) + spacing;
-        }
-
-        return offset;
+        EnsureOffsetCache();
+        return index <= 0
+            ? 0d
+            : _offsetCache[Math.Min(index, _offsetCache.Count - 1)];
     }
 
     private double GetTotalExtent()
     {
-        var itemCount = Items.Count;
-        if (itemCount == 0)
-        {
-            return 0d;
-        }
-
-        var total = 0d;
-        var spacing = Math.Max(0d, Spacing);
-
-        for (var i = 0; i < itemCount; i++)
-        {
-            total += GetExtent(i);
-        }
-
-        return total + ((itemCount - 1) * spacing);
+        EnsureOffsetCache();
+        return _offsetCache.Count == 0 ? 0d : _offsetCache[^1];
     }
 
     private double GetExtent(int index)
@@ -345,6 +351,72 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
         return _extentCache.TryGetValue(index, out var extent)
             ? extent
             : Math.Max(1d, EstimatedItemExtent);
+    }
+
+    private int FindFirstRangeOverlapIndex(double cacheStart)
+    {
+        var itemCount = Items.Count;
+        var low = 0;
+        var high = itemCount - 1;
+        var result = itemCount;
+
+        while (low <= high)
+        {
+            var mid = low + ((high - low) / 2);
+            var itemEnd = _offsetCache[mid] + GetExtent(mid);
+            if (itemEnd + SliverMath.Epsilon >= cacheStart)
+            {
+                result = mid;
+                high = mid - 1;
+            }
+            else
+            {
+                low = mid + 1;
+            }
+        }
+
+        return result;
+    }
+
+    private void EnsureOffsetCache()
+    {
+        var itemCount = Items.Count;
+        var spacing = Math.Max(0d, Spacing);
+        var estimatedItemExtent = Math.Max(1d, EstimatedItemExtent);
+
+        if (!_offsetCacheDirty &&
+            _offsetCacheItemCount == itemCount &&
+            SliverAvaloniaPrimitives.AreClose(_offsetCacheSpacing, spacing) &&
+            SliverAvaloniaPrimitives.AreClose(_offsetCacheEstimatedItemExtent, estimatedItemExtent) &&
+            _offsetCache.Count == itemCount + 1)
+        {
+            return;
+        }
+
+        _offsetCache.Clear();
+        var offset = 0d;
+
+        for (var index = 0; index < itemCount; index++)
+        {
+            _offsetCache.Add(offset);
+            offset += GetExtent(index);
+
+            if (index < itemCount - 1)
+            {
+                offset += spacing;
+            }
+        }
+
+        _offsetCache.Add(offset);
+        _offsetCacheDirty = false;
+        _offsetCacheItemCount = itemCount;
+        _offsetCacheSpacing = spacing;
+        _offsetCacheEstimatedItemExtent = estimatedItemExtent;
+    }
+
+    private void InvalidateOffsetCache()
+    {
+        _offsetCacheDirty = true;
     }
 
     private Control Realize(int index)
@@ -391,6 +463,25 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
                 RemoveInternalChild(container);
             }
         }
+    }
+
+    private void ClearRealizedContainers()
+    {
+        if (ItemContainerGenerator is not { } generator)
+        {
+            _containersByIndex.Clear();
+            _indexesByContainer.Clear();
+            return;
+        }
+
+        foreach (var container in GetRealizedContainers().ToArray())
+        {
+            generator.ClearItemContainer(container);
+            RemoveInternalChild(container);
+        }
+
+        _containersByIndex.Clear();
+        _indexesByContainer.Clear();
     }
 
     private bool BringRangeIntoView(double start, double end)
