@@ -1,0 +1,338 @@
+<Window
+    x:Class="AvaloniaGallery.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:AvaloniaGallery"
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    Title="SliverWidgets Avalonia Gallery"
+    Width="1180"
+    Height="780"
+    MinWidth="980"
+    MinHeight="680"
+    Background="#F4F7FB">
+
+  <Window.Styles>
+    <Style Selector="TextBlock.h1">
+      <Setter Property="FontSize" Value="24" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="#0F172A" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="#0F172A" />
+    </Style>
+    <Style Selector="TextBlock.muted">
+      <Setter Property="Foreground" Value="#64748B" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#D8E0EC" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="16" />
+    </Style>
+    <Style Selector="Border.viewport">
+      <Setter Property="Background" Value="#E9EEF6" />
+      <Setter Property="BorderBrush" Value="#CBD5E1" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+    <Style Selector="Border.row-card">
+      <Setter Property="Background" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#D8E0EC" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="10" />
+    </Style>
+    <Style Selector="Border.tile-card">
+      <Setter Property="Background" Value="#FFFFFF" />
+      <Setter Property="BorderBrush" Value="#D8E0EC" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="12" />
+    </Style>
+  </Window.Styles>
+
+  <Grid RowDefinitions="Auto,*">
+    <Border
+        Padding="20,16"
+        Background="#FFFFFF"
+        BorderBrush="#D8E0EC"
+        BorderThickness="0,0,0,1">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="h1" Text="SliverWidgets Avalonia Gallery" />
+          <TextBlock Classes="muted" Text="Native Avalonia controls arranged through SliverWidgets panels and core layout slots." />
+        </StackPanel>
+
+        <ItemsControl Grid.Column="1" ItemsSource="{Binding Metrics}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="10" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border
+                  MinWidth="132"
+                  Padding="10"
+                  Background="#F8FAFC"
+                  BorderBrush="{Binding AccentColor}"
+                  BorderThickness="2,0,0,0"
+                  CornerRadius="6">
+                <StackPanel>
+                  <TextBlock Classes="muted" Text="{Binding Label}" />
+                  <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Value}" />
+                  <TextBlock Classes="muted" Text="{Binding Detail}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+    </Border>
+
+    <TabControl x:Name="GalleryTabs" Grid.Row="1" Margin="16">
+      <TabItem Header="Fixed Stack">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Fixed extent rows" />
+              <TextBlock Classes="muted" Text="Rows use arithmetic index-to-offset mapping and native Avalonia ScrollViewer input." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Item extent" />
+              <Slider Minimum="40" Maximum="92" Value="{Binding FixedItemExtent, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <ItemsControl ClipToBounds="True" ItemsSource="{Binding FixedRows}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverStackPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        ItemExtent="{Binding $parent[Window].DataContext.FixedItemExtent}"
+                        Spacing="8" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row-card">
+                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <StackPanel Grid.Column="1">
+                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                          <TextBlock Classes="muted" Text="{Binding Subtitle}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#475569" Text="{Binding Rank}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Grid">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Adaptive grid panel" />
+              <TextBlock Classes="muted" Text="The grid panel uses max cross-axis extent sizing, cache-aware realization slots, and existing Avalonia item templates." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <ItemsControl ClipToBounds="True" ItemsSource="{Binding GridItems}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverGridPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        ChildAspectRatio="1.55"
+                        CrossAxisSpacing="12"
+                        MainAxisSpacing="12"
+                        MaxCrossAxisExtent="220"
+                        SizingMode="MaxCrossAxisExtent" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="tile-card">
+                      <Grid RowDefinitions="Auto,*,Auto">
+                        <Border Width="32" Height="4" HorizontalAlignment="Left" Background="{Binding AccentColor}" CornerRadius="2" />
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                          <TextBlock FontSize="16" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Category}" />
+                          <TextBlock Classes="muted" Text="{Binding Title}" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" FontWeight="SemiBold" Foreground="#475569" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Persistent Header">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Pinned and collapsible header" />
+              <TextBlock Classes="muted" Text="The header follows the list scrollbar and shrinks between max and min extents." TextWrapping="Wrap" />
+              <CheckBox Content="Pinned" IsChecked="{Binding HeaderPinned, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Shared cache extent" />
+              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <Grid RowDefinitions="Auto,*">
+              <slivers:SliverPersistentHeader
+                  MaxExtent="160"
+                  MinExtent="56"
+                  Pinned="{Binding HeaderPinned}"
+                  ScrollOffset="{Binding #HeaderScrollViewer.Offset.Y}">
+                <Border Padding="18,10" Background="#0F172A" ClipToBounds="True" CornerRadius="8">
+                  <StackPanel Spacing="2">
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Text="Persistent Header" />
+                    <TextBlock FontSize="12" Foreground="#CBD5E1" Text="Pinned collapse behavior driven by SliverPersistentHeaderLayout." TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+              </slivers:SliverPersistentHeader>
+
+              <ScrollViewer x:Name="HeaderScrollViewer" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                <ItemsControl ClipToBounds="True" ItemsSource="{Binding FixedRows}">
+                  <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                      <slivers:SliverStackPanel
+                          CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                          ItemExtent="54"
+                          Spacing="6" />
+                    </ItemsPanelTemplate>
+                  </ItemsControl.ItemsPanel>
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Classes="row-card">
+                        <TextBlock Foreground="#0F172A" Text="{Binding Subtitle}" />
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Virtual List">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Large virtualized list" />
+              <TextBlock Classes="muted" Text="The ItemsControl panel realizes only paint plus cache ranges from a deterministic 10,000 item source." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <ItemsControl ClipToBounds="True" ItemsSource="{Binding LargeRows}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverVirtualizingStackPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        ItemExtent="58"
+                        Spacing="6" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row-card">
+                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <StackPanel Grid.Column="1">
+                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                          <TextBlock Classes="muted" Text="{Binding Subtitle}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Category}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Mixed Slivers">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Flutter-inspired composition" />
+              <TextBlock Classes="muted" Text="This sample panel composes a pinned header, fixed rows, padded grid, and fill-remaining region through SliverViewportLayoutEngine." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+              <ItemsControl ItemsSource="{Binding Demos}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Margin="0,4,0,0" Classes="muted" Text="{Binding FlutterReference}" TextWrapping="Wrap" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <local:MixedSliverPreviewPanel CacheExtent="{Binding CacheExtent}">
+                <Border Padding="18,10" Background="#172554" ClipToBounds="True" CornerRadius="8">
+                  <StackPanel Spacing="2">
+                    <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Text="CustomScrollView composition" />
+                    <TextBlock FontSize="12" Foreground="#BFDBFE" Text="Pinned header, fixed rows, grid tiles, and fill remaining in one viewport." TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+                <Border Classes="row-card"><TextBlock Text="Fixed extent row 01" /></Border>
+                <Border Classes="row-card"><TextBlock Text="Fixed extent row 02" /></Border>
+                <Border Classes="row-card"><TextBlock Text="Fixed extent row 03" /></Border>
+                <Border Classes="row-card"><TextBlock Text="Fixed extent row 04" /></Border>
+                <Border Classes="row-card"><TextBlock Text="Fixed extent row 05" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 01" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 02" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 03" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 04" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 05" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 06" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 07" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 08" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 09" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 10" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 11" /></Border>
+                <Border Classes="tile-card"><TextBlock Text="Grid tile 12" /></Border>
+                <Border Padding="18" Background="#ECFDF5" BorderBrush="#10B981" BorderThickness="1" CornerRadius="8">
+                  <StackPanel>
+                    <TextBlock FontWeight="SemiBold" Foreground="#064E3B" Text="Fill remaining" />
+                    <TextBlock Foreground="#047857" Text="The core fills empty viewport space while preserving the sliver scroll model." TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+              </local:MixedSliverPreviewPanel>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+    </TabControl>
+  </Grid>
+</Window>
