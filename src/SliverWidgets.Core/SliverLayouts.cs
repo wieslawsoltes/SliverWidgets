@@ -418,6 +418,347 @@ public sealed class SliverGridLayout : ISliverLayout
     }
 }
 
+public readonly record struct SliverWrapItemExtent(double MainAxisExtent, double CrossAxisExtent)
+{
+    public void Validate(string name)
+    {
+        SliverMath.ThrowIfNegative(MainAxisExtent, $"{name}.{nameof(MainAxisExtent)}");
+        SliverMath.ThrowIfNegative(CrossAxisExtent, $"{name}.{nameof(CrossAxisExtent)}");
+    }
+}
+
+public sealed record SliverWrapLayoutOptions(
+    IReadOnlyList<SliverWrapItemExtent> ItemExtents,
+    double MainAxisSpacing = 0d,
+    double CrossAxisSpacing = 0d)
+{
+    public void Validate()
+    {
+        ArgumentNullException.ThrowIfNull(ItemExtents);
+        SliverMath.ThrowIfNegative(MainAxisSpacing, nameof(MainAxisSpacing));
+        SliverMath.ThrowIfNegative(CrossAxisSpacing, nameof(CrossAxisSpacing));
+
+        if (ItemExtents is SliverDeterministicWrapExtentList)
+        {
+            return;
+        }
+
+        for (var index = 0; index < ItemExtents.Count; index++)
+        {
+            ItemExtents[index].Validate($"{nameof(ItemExtents)}[{index}]");
+        }
+    }
+}
+
+public sealed class SliverDeterministicWrapExtentList : IReadOnlyList<SliverWrapItemExtent>
+{
+    public SliverDeterministicWrapExtentList(
+        int count,
+        double minMainAxisExtent = 56d,
+        double maxMainAxisExtent = 132d,
+        double minCrossAxisExtent = 120d,
+        double maxCrossAxisExtent = 280d)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        SliverMath.ThrowIfNegative(minMainAxisExtent, nameof(minMainAxisExtent));
+        SliverMath.ThrowIfNegative(maxMainAxisExtent, nameof(maxMainAxisExtent));
+        SliverMath.ThrowIfNegative(minCrossAxisExtent, nameof(minCrossAxisExtent));
+        SliverMath.ThrowIfNegative(maxCrossAxisExtent, nameof(maxCrossAxisExtent));
+
+        if (maxMainAxisExtent < minMainAxisExtent)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxMainAxisExtent), "Maximum main-axis extent must be greater than or equal to the minimum.");
+        }
+
+        if (maxCrossAxisExtent < minCrossAxisExtent)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxCrossAxisExtent), "Maximum cross-axis extent must be greater than or equal to the minimum.");
+        }
+
+        Count = count;
+        MinMainAxisExtent = minMainAxisExtent;
+        MaxMainAxisExtent = maxMainAxisExtent;
+        MinCrossAxisExtent = minCrossAxisExtent;
+        MaxCrossAxisExtent = maxCrossAxisExtent;
+    }
+
+    public int Count { get; }
+
+    public double MinMainAxisExtent { get; }
+
+    public double MaxMainAxisExtent { get; }
+
+    public double MinCrossAxisExtent { get; }
+
+    public double MaxCrossAxisExtent { get; }
+
+    public SliverWrapItemExtent this[int index]
+    {
+        get
+        {
+            if ((uint)index >= (uint)Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            var main = Interpolate(MinMainAxisExtent, MaxMainAxisExtent, ((index * 37) + 17) % 101);
+            var cross = Interpolate(MinCrossAxisExtent, MaxCrossAxisExtent, ((index * 53) + 29) % 101);
+            return new SliverWrapItemExtent(main, cross);
+        }
+    }
+
+    public IEnumerator<SliverWrapItemExtent> GetEnumerator()
+    {
+        for (var index = 0; index < Count; index++)
+        {
+            yield return this[index];
+        }
+    }
+
+    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+
+    private static double Interpolate(double minimum, double maximum, int bucket)
+    {
+        if (Math.Abs(maximum - minimum) <= SliverMath.Epsilon)
+        {
+            return minimum;
+        }
+
+        return minimum + ((maximum - minimum) * bucket / 100d);
+    }
+}
+
+public sealed class SliverWrapLayout : ISliverLayout
+{
+    private WrapMetrics? _metrics;
+    private double _metricsCrossAxisExtent = double.NaN;
+
+    public SliverWrapLayout(SliverWrapLayoutOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        Options = options;
+        Options.Validate();
+    }
+
+    public SliverWrapLayoutOptions Options { get; }
+
+    public SliverLayoutResult Layout(in SliverConstraints constraints)
+    {
+        constraints.Validate();
+
+        if (Options.ItemExtents.Count == 0 || constraints.CrossAxisExtent <= SliverMath.Epsilon)
+        {
+            return SliverLayoutResult.Empty with
+            {
+                Geometry = SliverGeometry.Zero with { CrossAxisExtent = constraints.CrossAxisExtent }
+            };
+        }
+
+        var metrics = ResolveMetrics(constraints.CrossAxisExtent);
+        var (cacheStart, cacheEnd) = SliverMath.ResolveCacheRange(
+            constraints.ScrollOffset,
+            constraints.CacheOrigin,
+            constraints.RemainingCacheExtent);
+        var visibleStart = constraints.ScrollOffset;
+        var visibleEnd = constraints.ScrollOffset + constraints.RemainingPaintExtent;
+        var startLine = FindFirstLine(metrics.Lines, cacheStart);
+        var slots = new List<SliverLayoutSlot>();
+
+        for (var lineIndex = startLine; lineIndex < metrics.Lines.Length; lineIndex++)
+        {
+            var line = metrics.Lines[lineIndex];
+            var lineEnd = line.MainAxisOffset + line.MainAxisExtent;
+
+            if (line.MainAxisOffset - cacheEnd >= -SliverMath.Epsilon)
+            {
+                break;
+            }
+
+            if (!SliverMath.RangesOverlap(line.MainAxisOffset, lineEnd, cacheStart, cacheEnd))
+            {
+                continue;
+            }
+
+            for (var index = line.StartIndex; index < line.StartIndex + line.Count; index++)
+            {
+                var item = Options.ItemExtents[index];
+                var itemMainExtent = item.MainAxisExtent;
+                var itemEnd = line.MainAxisOffset + itemMainExtent;
+
+                if (!SliverMath.RangesOverlap(line.MainAxisOffset, itemEnd, cacheStart, cacheEnd))
+                {
+                    continue;
+                }
+
+                slots.Add(new SliverLayoutSlot(
+                    index,
+                    line.MainAxisOffset - constraints.ScrollOffset,
+                    metrics.CrossAxisOffsets[index],
+                    itemMainExtent,
+                    metrics.CrossAxisExtents[index],
+                    IsCacheOnly: SliverMath.IsCacheOnly(line.MainAxisOffset, itemEnd, visibleStart, visibleEnd)));
+            }
+        }
+
+        return new SliverLayoutResult(
+            SliverFixedExtentListLayout.BuildGeometry(metrics.ScrollExtent, constraints),
+            slots);
+    }
+
+    public double GetItemMainAxisOffset(int index, double crossAxisExtent)
+    {
+        if ((uint)index >= (uint)Options.ItemExtents.Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        if (!double.IsFinite(crossAxisExtent) || crossAxisExtent < -SliverMath.Epsilon)
+        {
+            throw new ArgumentOutOfRangeException(nameof(crossAxisExtent));
+        }
+
+        if (crossAxisExtent <= SliverMath.Epsilon)
+        {
+            return 0d;
+        }
+
+        var metrics = ResolveMetrics(crossAxisExtent);
+        var lineIndex = metrics.LineIndexes[index];
+        return lineIndex >= 0 ? metrics.Lines[lineIndex].MainAxisOffset : 0d;
+    }
+
+    private WrapMetrics ResolveMetrics(double crossAxisExtent)
+    {
+        var normalizedCrossAxisExtent = Math.Max(0d, crossAxisExtent);
+        if (_metrics is { } metrics &&
+            Math.Abs(_metricsCrossAxisExtent - normalizedCrossAxisExtent) <= SliverMath.Epsilon)
+        {
+            return metrics;
+        }
+
+        metrics = BuildMetrics(normalizedCrossAxisExtent);
+        _metrics = metrics;
+        _metricsCrossAxisExtent = normalizedCrossAxisExtent;
+        return metrics;
+    }
+
+    private WrapMetrics BuildMetrics(double crossAxisExtent)
+    {
+        var itemCount = Options.ItemExtents.Count;
+        var lines = new List<WrapLine>();
+        var crossOffsets = new double[itemCount];
+        var crossExtents = new double[itemCount];
+        var lineIndexes = new int[itemCount];
+        Array.Fill(lineIndexes, -1);
+
+        var currentLineStart = 0;
+        var currentLineCount = 0;
+        var currentLineCrossOffset = 0d;
+        var currentLineMainExtent = 0d;
+        var currentMainOffset = 0d;
+        var mainAxisSpacing = Options.MainAxisSpacing;
+        var crossAxisSpacing = Options.CrossAxisSpacing;
+
+        for (var index = 0; index < itemCount; index++)
+        {
+            var item = Options.ItemExtents[index];
+            var itemCrossExtent = Math.Min(item.CrossAxisExtent, crossAxisExtent);
+            var projectedCrossEnd = currentLineCount == 0
+                ? itemCrossExtent
+                : currentLineCrossOffset + crossAxisSpacing + itemCrossExtent;
+
+            if (currentLineCount > 0 && projectedCrossEnd - crossAxisExtent > SliverMath.Epsilon)
+            {
+                FinalizeLine();
+            }
+
+            if (currentLineCount == 0)
+            {
+                currentLineStart = index;
+                currentLineCrossOffset = 0d;
+            }
+            else
+            {
+                currentLineCrossOffset += crossAxisSpacing;
+            }
+
+            crossOffsets[index] = currentLineCrossOffset;
+            crossExtents[index] = itemCrossExtent;
+            currentLineCrossOffset += itemCrossExtent;
+            currentLineMainExtent = Math.Max(currentLineMainExtent, item.MainAxisExtent);
+            currentLineCount++;
+        }
+
+        if (currentLineCount > 0)
+        {
+            FinalizeLine();
+        }
+
+        return new WrapMetrics(
+            currentMainOffset,
+            lines.ToArray(),
+            crossOffsets,
+            crossExtents,
+            lineIndexes);
+
+        void FinalizeLine()
+        {
+            var lineIndex = lines.Count;
+            lines.Add(new WrapLine(currentLineStart, currentLineCount, currentMainOffset, currentLineMainExtent));
+
+            for (var itemIndex = currentLineStart; itemIndex < currentLineStart + currentLineCount; itemIndex++)
+            {
+                lineIndexes[itemIndex] = lineIndex;
+            }
+
+            currentMainOffset += currentLineMainExtent;
+            if (currentLineStart + currentLineCount < itemCount)
+            {
+                currentMainOffset += mainAxisSpacing;
+            }
+
+            currentLineCount = 0;
+            currentLineCrossOffset = 0d;
+            currentLineMainExtent = 0d;
+        }
+    }
+
+    private static int FindFirstLine(IReadOnlyList<WrapLine> lines, double cacheStart)
+    {
+        var low = 0;
+        var high = lines.Count;
+
+        while (low < high)
+        {
+            var middle = low + ((high - low) / 2);
+            var lineEnd = lines[middle].MainAxisOffset + lines[middle].MainAxisExtent;
+            if (lineEnd - cacheStart > SliverMath.Epsilon)
+            {
+                high = middle;
+            }
+            else
+            {
+                low = middle + 1;
+            }
+        }
+
+        return Math.Max(0, low - 1);
+    }
+
+    private readonly record struct WrapLine(int StartIndex, int Count, double MainAxisOffset, double MainAxisExtent);
+
+    private sealed record WrapMetrics(
+        double ScrollExtent,
+        WrapLine[] Lines,
+        double[] CrossAxisOffsets,
+        double[] CrossAxisExtents,
+        int[] LineIndexes);
+}
+
 public sealed record SliverPersistentHeaderOptions(double MinExtent, double MaxExtent, bool Pinned = false)
 {
     public void Validate()

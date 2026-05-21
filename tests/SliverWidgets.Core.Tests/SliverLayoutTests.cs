@@ -180,6 +180,80 @@ public sealed class SliverLayoutTests
     }
 
     [Fact]
+    public void WrapPacksVariableItemsIntoLines()
+    {
+        var layout = new SliverWrapLayout(new SliverWrapLayoutOptions(
+            new[]
+            {
+                new SliverWrapItemExtent(30d, 80d),
+                new SliverWrapItemExtent(50d, 120d),
+                new SliverWrapItemExtent(40d, 90d),
+                new SliverWrapItemExtent(20d, 70d)
+            },
+            MainAxisSpacing: 6d,
+            CrossAxisSpacing: 4d));
+
+        var result = layout.Layout(Constraints(remainingPaintExtent: 200d, crossAxisExtent: 204d));
+
+        Assert.Equal(96d, result.Geometry.ScrollExtent);
+        Assert.Equal(new[] { 0, 1, 2, 3 }, result.Slots.Select(slot => slot.Index));
+        Assert.Equal(0d, result.Slots[0].MainAxisOffset);
+        Assert.Equal(84d, result.Slots[1].CrossAxisOffset);
+        Assert.Equal(56d, result.Slots[2].MainAxisOffset);
+        Assert.Equal(94d, result.Slots[3].CrossAxisOffset);
+        Assert.Equal(56d, layout.GetItemMainAxisOffset(2, 204d));
+    }
+
+    [Fact]
+    public void WrapVirtualizesLargeNonUniformSourceAcrossPaintAndCacheRanges()
+    {
+        var layout = new SliverWrapLayout(new SliverWrapLayoutOptions(
+            new SliverDeterministicWrapExtentList(100_000),
+            MainAxisSpacing: 8d,
+            CrossAxisSpacing: 8d));
+        var constraints = new SliverConstraints(
+            SliverAxis.Vertical,
+            ScrollOffset: 4_800d,
+            PrecedingScrollExtent: 0d,
+            Overlap: 0d,
+            RemainingPaintExtent: 480d,
+            CrossAxisExtent: 720d,
+            ViewportMainAxisExtent: 480d,
+            CacheOrigin: -240d,
+            RemainingCacheExtent: 960d);
+
+        var result = layout.Layout(constraints);
+
+        Assert.True(result.Geometry.ScrollExtent > 1_000_000d);
+        Assert.InRange(result.Slots.Count, 1, 100);
+        Assert.Contains(result.Slots, slot => !slot.IsCacheOnly);
+        Assert.Contains(result.Slots, slot => slot.IsCacheOnly);
+        Assert.All(result.Slots, slot =>
+        {
+            Assert.True(slot.CrossAxisExtent > 0d);
+            Assert.True(slot.CrossAxisExtent <= constraints.CrossAxisExtent);
+        });
+    }
+
+    [Fact]
+    public void WrapClampsItemsWiderThanCrossAxisExtent()
+    {
+        var layout = new SliverWrapLayout(new SliverWrapLayoutOptions(
+            new[]
+            {
+                new SliverWrapItemExtent(30d, 400d),
+                new SliverWrapItemExtent(40d, 50d)
+            },
+            CrossAxisSpacing: 8d));
+
+        var result = layout.Layout(Constraints(remainingPaintExtent: 200d, crossAxisExtent: 120d));
+
+        Assert.Equal(120d, result.Slots[0].CrossAxisExtent);
+        Assert.Equal(0d, result.Slots[0].CrossAxisOffset);
+        Assert.Equal(30d, result.Slots[1].MainAxisOffset);
+    }
+
+    [Fact]
     public void PinnedHeaderShrinksAndReportsObstruction()
     {
         var layout = new SliverPersistentHeaderLayout(
