@@ -5,13 +5,14 @@ using SliverWidgets.Core;
 using SliverWidgets.GalleryData;
 using SliverWidgets.Uno;
 using Microsoft.UI.Text;
+using Windows.Foundation;
 using Windows.UI;
 
 namespace SliverWidgets.Samples.UnoGallery;
 
 public sealed class UnoGalleryPage : Page
 {
-    private const double DataGridTableWidth = 1670d;
+    internal const double DataGridTableWidth = 1670d;
 
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(600);
     private readonly IReadOnlyList<GalleryItem> _largeItems = SliverGalleryData.CreateItems(100_000);
@@ -335,11 +336,12 @@ public sealed class UnoGalleryPage : Page
     private UIElement BuildDataGridScenario()
     {
         var scenario = Scenario(GalleryScenarioKind.DataGrid);
-        var layout = new StackLayout { Orientation = Orientation.Vertical, Spacing = 0 };
+        var layout = new DataGridRowsVirtualizingLayout();
         var repeater = new ItemsRepeater
         {
             Layout = layout,
-            ItemTemplate = new DataGridRowElementFactory()
+            ItemTemplate = new DataGridRowElementFactory(),
+            VerticalCacheLength = 2
         };
         var filter = new TextBox
         {
@@ -370,6 +372,7 @@ public sealed class UnoGalleryPage : Page
                 Convert.ToString(sort.SelectedItem) ?? "amount",
                 descending.IsChecked == true);
             repeater.ItemsSource = projected;
+            layout.InvalidateItems();
             visible.Text = $"Visible rows: {projected.Count:N0}";
         }
 
@@ -1237,6 +1240,216 @@ public sealed class UnoGalleryPage : Page
     private sealed record GalleryPage(GalleryScenario Scenario, Func<UIElement> Create);
 }
 
+internal sealed class DataGridRowsVirtualizingLayout : VirtualizingLayout
+{
+    private double[]? _rowOffsets;
+    private int _cachedItemCount = -1;
+    private int _cachedItemsVersion;
+    private double _scrollExtent;
+
+    protected override Size MeasureOverride(VirtualizingLayoutContext context, Size availableSize)
+    {
+        var viewport = GetViewport(context, availableSize);
+        EnsureMetrics(context);
+
+        foreach (var index in EnumerateRealizedIndexes(viewport))
+        {
+            var rowExtent = GetRowExtent(context, index);
+            context.GetOrCreateElementAt(index).Measure(new Size(UnoGalleryPage.DataGridTableWidth, rowExtent));
+        }
+
+        return new Size(UnoGalleryPage.DataGridTableWidth, _scrollExtent);
+    }
+
+    protected override Size ArrangeOverride(VirtualizingLayoutContext context, Size finalSize)
+    {
+        var viewport = GetViewport(context, finalSize);
+        EnsureMetrics(context);
+        context.LayoutOrigin = new Point(0d, 0d);
+
+        foreach (var index in EnumerateRealizedIndexes(viewport))
+        {
+            var rowExtent = GetRowExtent(context, index);
+            context.GetOrCreateElementAt(index).Arrange(new Rect(
+                0d,
+                _rowOffsets![index],
+                UnoGalleryPage.DataGridTableWidth,
+                rowExtent));
+        }
+
+        return new Size(UnoGalleryPage.DataGridTableWidth, _scrollExtent);
+    }
+
+    public void InvalidateItems()
+    {
+        _rowOffsets = null;
+        _cachedItemCount = -1;
+        _cachedItemsVersion = 0;
+        _scrollExtent = 0d;
+        InvalidateMeasure();
+    }
+
+    private void EnsureMetrics(VirtualizingLayoutContext context)
+    {
+        var itemCount = context.ItemCount;
+        var itemsVersion = ComputeItemsVersion(context);
+
+        if (_rowOffsets is not null &&
+            itemCount == _cachedItemCount &&
+            itemsVersion == _cachedItemsVersion)
+        {
+            return;
+        }
+
+        var offsets = new double[itemCount + 1];
+        var cursor = 0d;
+
+        for (var index = 0; index < itemCount; index++)
+        {
+            offsets[index] = cursor;
+            cursor += GetRowExtent(context, index);
+        }
+
+        offsets[itemCount] = cursor;
+        _rowOffsets = offsets;
+        _scrollExtent = cursor;
+        _cachedItemCount = itemCount;
+        _cachedItemsVersion = itemsVersion;
+    }
+
+    private IEnumerable<int> EnumerateRealizedIndexes(DataGridViewportInfo viewport)
+    {
+        if (_rowOffsets is null || _cachedItemCount == 0)
+        {
+            yield break;
+        }
+
+        var cacheStart = Math.Max(0d, viewport.ScrollOffset + viewport.CacheOrigin);
+        var cacheEnd = Math.Max(cacheStart, viewport.ScrollOffset + viewport.RemainingCacheExtent);
+        var startIndex = FindFirstIndex(cacheStart);
+
+        for (var index = startIndex; index < _cachedItemCount; index++)
+        {
+            var rowStart = _rowOffsets[index];
+            var rowEnd = _rowOffsets[index + 1];
+
+            if (rowStart - cacheEnd >= -SliverMath.Epsilon)
+            {
+                yield break;
+            }
+
+            if (RangesOverlap(rowStart, rowEnd, cacheStart, cacheEnd))
+            {
+                yield return index;
+            }
+        }
+    }
+
+    private int FindFirstIndex(double cacheStart)
+    {
+        var offsets = _rowOffsets!;
+        var low = 0;
+        var high = _cachedItemCount;
+
+        while (low < high)
+        {
+            var middle = low + ((high - low) / 2);
+            var rowEnd = offsets[middle + 1];
+            if (rowEnd - cacheStart > SliverMath.Epsilon)
+            {
+                high = middle;
+            }
+            else
+            {
+                low = middle + 1;
+            }
+        }
+
+        return Math.Max(0, low);
+    }
+
+    private static DataGridViewportInfo GetViewport(VirtualizingLayoutContext context, Size availableSize)
+    {
+        var realization = context.RealizationRect;
+        var remainingCacheExtent = realization.Height;
+        var remainingPaintExtent = ResolveVisibleMainAxisExtent(availableSize.Height, remainingCacheExtent);
+        var leadingCacheExtent = realization.Y <= SliverMath.Epsilon
+            ? 0d
+            : Math.Max(0d, (remainingCacheExtent - remainingPaintExtent) / 2d);
+        var scrollOffset = realization.Y + leadingCacheExtent;
+        var cacheOrigin = realization.Y - scrollOffset;
+
+        return new DataGridViewportInfo(
+            Math.Max(0d, scrollOffset),
+            Math.Min(0d, cacheOrigin),
+            Math.Max(0d, remainingPaintExtent),
+            Math.Max(0d, remainingCacheExtent));
+    }
+
+    private static double ResolveVisibleMainAxisExtent(double availableMainAxisExtent, double realizationMainAxisExtent)
+    {
+        if (double.IsFinite(availableMainAxisExtent) && availableMainAxisExtent > SliverMath.Epsilon)
+        {
+            return Math.Min(Math.Max(0d, availableMainAxisExtent), Math.Max(0d, realizationMainAxisExtent));
+        }
+
+        return Math.Max(0d, realizationMainAxisExtent);
+    }
+
+    private static double GetRowExtent(VirtualizingLayoutContext context, int index)
+    {
+        var extent = context.GetItemAt(index) is GalleryDataGridRow row
+            ? row.Extent
+            : SliverGalleryData.GetDataGridRowExtent(index);
+
+        if (!double.IsFinite(extent))
+        {
+            return SliverGalleryData.DataGridMinRowExtent;
+        }
+
+        return Math.Clamp(extent, SliverGalleryData.DataGridMinRowExtent, SliverGalleryData.DataGridMaxRowExtent);
+    }
+
+    private static bool RangesOverlap(double start, double end, double otherStart, double otherEnd)
+    {
+        return end - otherStart > SliverMath.Epsilon && otherEnd - start > SliverMath.Epsilon;
+    }
+
+    private static int ComputeItemsVersion(VirtualizingLayoutContext context)
+    {
+        var itemCount = context.ItemCount;
+        var hash = new HashCode();
+        hash.Add(itemCount);
+
+        if (itemCount > 0)
+        {
+            AddItemVersion(context, ref hash, 0);
+            AddItemVersion(context, ref hash, itemCount / 2);
+            AddItemVersion(context, ref hash, itemCount - 1);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    private static void AddItemVersion(VirtualizingLayoutContext context, ref HashCode hash, int index)
+    {
+        if (context.GetItemAt(index) is GalleryDataGridRow row)
+        {
+            hash.Add(row.Id);
+            hash.Add(row.Extent);
+            return;
+        }
+
+        hash.Add(index);
+    }
+
+    private readonly record struct DataGridViewportInfo(
+        double ScrollOffset,
+        double CacheOrigin,
+        double RemainingPaintExtent,
+        double RemainingCacheExtent);
+}
+
 internal sealed class GalleryItemElementFactory : ElementFactory
 {
     private readonly GalleryItemFactoryKind _kind;
@@ -1643,6 +1856,8 @@ internal sealed class DataGridRowElementFactory : ElementFactory
     {
         if (element is FrameworkElement frameworkElement)
         {
+            frameworkElement.Width = UnoGalleryPage.DataGridTableWidth;
+            frameworkElement.Height = row.Extent;
             frameworkElement.MinHeight = row.Extent;
             frameworkElement.Tag = row;
         }
