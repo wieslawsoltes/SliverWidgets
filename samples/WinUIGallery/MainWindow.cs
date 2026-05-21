@@ -15,6 +15,8 @@ namespace SliverWidgets.WinUIGallery;
 
 public sealed class MainWindow : Window
 {
+    private const double DataGridTableWidth = 1670d;
+
     private static readonly IReadOnlyList<GalleryScenario> Scenarios = SliverGalleryData.CreateScenarios();
 
     private readonly ContentControl _contentHost = new();
@@ -916,44 +918,58 @@ public sealed class MainWindow : Window
         return projected.Select(index => rows[index]).ToArray();
     }
 
-    private static ScrollViewer CreateDataGridViewport(ItemsRepeater repeater)
+    private static FrameworkElement CreateDataGridViewport(ItemsRepeater repeater)
     {
-        var table = new Grid
+        var headerScroller = new ScrollViewer
         {
-            MinWidth = 1580
-        };
-        table.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        table.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        table.Children.Add(CreateDataGridHeader());
-
-        var vertical = new ScrollViewer
-        {
-            Content = repeater,
+            Content = CreateDataGridHeader(),
             Background = Brush(Colors.White),
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            HorizontalScrollMode = ScrollMode.Disabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+            HorizontalScrollMode = ScrollMode.Enabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollMode = ScrollMode.Disabled,
+            ZoomMode = ZoomMode.Disabled,
+            IsTabStop = false
+        };
+
+        var rowsHost = new Grid
+        {
+            MinWidth = DataGridTableWidth,
+            Background = Brush(Colors.White)
+        };
+        rowsHost.Children.Add(repeater);
+
+        var bodyScroller = new ScrollViewer
+        {
+            Content = rowsHost,
+            Background = Brush(Colors.White),
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollMode = ScrollMode.Enabled,
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             VerticalScrollMode = ScrollMode.Enabled,
             ZoomMode = ZoomMode.Disabled
         };
-        Grid.SetRow(vertical, 1);
-        table.Children.Add(vertical);
-
-        return new ScrollViewer
+        bodyScroller.ViewChanged += (_, _) =>
         {
-            Content = table,
-            Background = Brush(Colors.White),
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollMode = ScrollMode.Enabled,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
-            VerticalScrollMode = ScrollMode.Disabled,
-            ZoomMode = ZoomMode.Disabled
+            headerScroller.ChangeView(bodyScroller.HorizontalOffset, null, null, disableAnimation: true);
         };
+
+        var root = new Grid
+        {
+            Background = Brush(Colors.White),
+        };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.Children.Add(headerScroller);
+        Grid.SetRow(bodyScroller, 1);
+        root.Children.Add(bodyScroller);
+        return root;
     }
 
     private static Grid CreateDataGridHeader()
     {
         var grid = CreateDataGridColumns();
+        grid.MinWidth = DataGridTableWidth;
         grid.Background = Brush(Color.FromArgb(255, 226, 232, 240));
         grid.Padding = new Thickness(10, 8, 10, 8);
 

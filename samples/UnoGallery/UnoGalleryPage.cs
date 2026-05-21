@@ -11,6 +11,8 @@ namespace SliverWidgets.Samples.UnoGallery;
 
 public sealed class UnoGalleryPage : Page
 {
+    private const double DataGridTableWidth = 1670d;
+
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(600);
     private readonly IReadOnlyList<GalleryItem> _largeItems = SliverGalleryData.CreateItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _stackItems = SliverGalleryData.CreateStackItems(100_000);
@@ -807,36 +809,50 @@ public sealed class UnoGalleryPage : Page
 
     private static UIElement DataGridViewport(ItemsRepeater repeater)
     {
-        var table = new Grid
+        var headerScroller = new ScrollViewer
         {
-            MinWidth = 1580
+            Content = DataGridHeader(),
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = Brush(0xFFFFFFFF),
+            IsTabStop = false
         };
-        table.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        table.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        table.Children.Add(DataGridHeader());
 
-        var vertical = new ScrollViewer
+        var rowsHost = new Grid
         {
-            Content = repeater,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            MinWidth = DataGridTableWidth,
             Background = Brush(0xFFFFFFFF)
         };
-        Grid.SetRow(vertical, 1);
-        table.Children.Add(vertical);
+        rowsHost.Children.Add(repeater);
 
-        return new ScrollViewer
+        var bodyScroller = new ScrollViewer
         {
-            Content = table,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = rowsHost,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
             HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
             Background = Brush(0xFFFFFFFF)
         };
+        bodyScroller.ViewChanged += (_, _) =>
+        {
+            headerScroller.ChangeView(bodyScroller.HorizontalOffset, null, null, disableAnimation: true);
+        };
+
+        var root = new Grid
+        {
+            Background = Brush(0xFFFFFFFF)
+        };
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        root.Children.Add(headerScroller);
+        Grid.SetRow(bodyScroller, 1);
+        root.Children.Add(bodyScroller);
+        return root;
     }
 
     private static UIElement DataGridHeader()
     {
         var grid = CreateDataGridColumns();
+        grid.MinWidth = DataGridTableWidth;
         grid.Background = Brush(0xFFE2E8F0);
         grid.Padding = new Thickness(10, 8, 10, 8);
 
