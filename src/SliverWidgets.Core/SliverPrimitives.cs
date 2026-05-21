@@ -199,7 +199,7 @@ public static class SliverMath
         }
 
         var start = constraints.ScrollOffset + constraints.CacheOrigin;
-        var end = constraints.ScrollOffset + constraints.RemainingCacheExtent;
+        var end = start + constraints.RemainingCacheExtent;
         return Clamp(Clamp(to, start, end) - Clamp(from, start, end), 0d, constraints.RemainingCacheExtent);
     }
 

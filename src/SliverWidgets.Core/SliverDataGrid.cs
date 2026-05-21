@@ -331,7 +331,7 @@ public sealed class SliverDataGridLayout : ISliverLayout
         var visibleStart = metrics.FrozenCrossAxisExtent + Options.HorizontalScrollOffset;
         var visibleEnd = visibleStart + viewportAfterFrozen;
         var cacheStart = Math.Max(metrics.FrozenCrossAxisExtent, visibleStart + Options.HorizontalCacheOrigin);
-        var cacheEnd = visibleStart + Math.Max(horizontalCacheExtent, viewportAfterFrozen);
+        var cacheEnd = Math.Max(visibleEnd, cacheStart + Math.Max(horizontalCacheExtent, viewportAfterFrozen));
         var slots = new List<SliverDataGridColumnSlot>();
 
         foreach (var column in metrics.Columns)
@@ -427,6 +427,9 @@ public sealed class SliverDataGridLayout : ISliverLayout
             Options.SourceRowIndexes?.Count ?? Options.RowExtents.Count,
             Options.Columns.Count,
             visibleColumnKeys,
+            ComputeRowExtentSignature(),
+            ComputeSourceRowIndexSignature(),
+            ComputeColumnSignature(),
             Options.RowSpacing,
             Options.ColumnSpacing,
             Options.FrozenColumnCount);
@@ -471,6 +474,66 @@ public sealed class SliverDataGridLayout : ISliverLayout
 
         offsets[rowCount] = cursor;
         return offsets;
+    }
+
+    private int ComputeRowExtentSignature()
+    {
+        var hash = new HashCode();
+        var count = Options.RowExtents.Count;
+        hash.Add(count);
+        if (count > 0)
+        {
+            AddExtentSample(ref hash, 0);
+            AddExtentSample(ref hash, count / 2);
+            AddExtentSample(ref hash, count - 1);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    private void AddExtentSample(ref HashCode hash, int index)
+    {
+        hash.Add(Options.RowExtents[index]);
+    }
+
+    private int ComputeSourceRowIndexSignature()
+    {
+        if (Options.SourceRowIndexes is not { } sourceRows)
+        {
+            return 0;
+        }
+
+        var hash = new HashCode();
+        var count = sourceRows.Count;
+        hash.Add(count);
+        if (count > 0)
+        {
+            hash.Add(sourceRows[0]);
+            hash.Add(sourceRows[count / 2]);
+            hash.Add(sourceRows[count - 1]);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    private int ComputeColumnSignature()
+    {
+        var hash = new HashCode();
+        foreach (var column in Options.Columns)
+        {
+            hash.Add(column.Key);
+            hash.Add(column.Header);
+            hash.Add(column.WidthMode);
+            hash.Add(column.Width);
+            hash.Add(column.MinWidth);
+            hash.Add(column.MaxWidth);
+            hash.Add(column.StarWeight);
+            hash.Add(column.HeaderWidth);
+            hash.Add(column.CellWidth);
+            hash.Add(column.IsVisible);
+        }
+
+        return hash.ToHashCode();
     }
 
     private (IReadOnlyList<SliverDataGridResolvedColumn> Columns, double TotalCrossAxisExtent, double FrozenCrossAxisExtent)
@@ -687,6 +750,9 @@ public sealed class SliverDataGridLayout : ISliverLayout
         int VisibleRowCount,
         int SourceColumnCount,
         string VisibleColumnKeys,
+        int RowExtentSignature,
+        int SourceRowIndexSignature,
+        int ColumnSignature,
         double RowSpacing,
         double ColumnSpacing,
         int FrozenColumnCount);

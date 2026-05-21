@@ -405,6 +405,48 @@ public sealed class SliverLayoutTests
     }
 
     [Fact]
+    public void DataGridHorizontalCacheEndIncludesCacheOrigin()
+    {
+        var layout = new SliverDataGridLayout(new SliverDataGridLayoutOptions(
+            new[] { 48d },
+            Enumerable.Range(0, 10)
+                .Select(index => new SliverDataGridColumnDefinition($"c{index}", $"Column {index}", Width: 100d))
+                .ToArray(),
+            HeaderExtent: 0d,
+            HorizontalScrollOffset: 500d,
+            HorizontalCacheOrigin: -200d,
+            RemainingHorizontalCacheExtent: 300d));
+
+        var result = layout.LayoutDataGrid(Constraints(remainingPaintExtent: 100d, crossAxisExtent: 100d));
+
+        Assert.Equal(new[] { 3, 4, 5 }, result.Columns.Select(column => column.ColumnIndex).ToArray());
+        Assert.DoesNotContain(result.Columns, column => column.ColumnIndex == 7);
+    }
+
+    [Fact]
+    public void DataGridInvalidatesMetricsWhenMutableInputsChange()
+    {
+        var rowExtents = new[] { 40d, 40d };
+        var columns = new[]
+        {
+            new SliverDataGridColumnDefinition("name", "Name", Width: 100d)
+        };
+        var layout = new SliverDataGridLayout(new SliverDataGridLayoutOptions(
+            rowExtents,
+            columns,
+            HeaderExtent: 0d));
+
+        var initial = layout.LayoutDataGrid(Constraints(remainingPaintExtent: 120d, crossAxisExtent: 120d));
+        rowExtents[0] = 80d;
+        columns[0] = columns[0] with { Width = 180d };
+        var updated = layout.LayoutDataGrid(Constraints(remainingPaintExtent: 120d, crossAxisExtent: 220d));
+
+        Assert.Equal(100d, initial.TotalCrossAxisExtent);
+        Assert.Equal(180d, updated.TotalCrossAxisExtent);
+        Assert.Equal(80d, updated.Rows[0].MainAxisExtent);
+    }
+
+    [Fact]
     public void DataGridUsesProjectedSourceRowsForFilteringAndSorting()
     {
         var rows = new[]
