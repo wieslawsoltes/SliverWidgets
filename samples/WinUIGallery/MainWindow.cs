@@ -29,6 +29,7 @@ public sealed class MainWindow : Window
             CreatePage(GalleryScenarioKind.FixedExtentList, CreateFixedLargeListPage),
             CreatePage(GalleryScenarioKind.VariableExtentList, CreateVariableListPage),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, CreateAdaptiveGridPage),
+            CreatePage(GalleryScenarioKind.VariableWrap, CreateWrapPage),
             CreatePage(GalleryScenarioKind.PinnedHeader, CreatePinnedHeaderPage),
             CreatePage(GalleryScenarioKind.TabbedNestedScroll, CreateTabbedNestedPage),
             CreatePage(GalleryScenarioKind.MixedComposition, CreateMixedCompositionPage),
@@ -246,6 +247,43 @@ public sealed class MainWindow : Window
         AddSlider(controls, "Main spacing", 0, 24, layout.MainAxisSpacing, value => layout.MainAxisSpacing = value);
         AddSlider(controls, "Cross spacing", 0, 24, layout.CrossAxisSpacing, value => layout.CrossAxisSpacing = value);
         AddSlider(controls, "Vertical cache", 0, 5, repeater.VerticalCacheLength, value => repeater.VerticalCacheLength = value);
+
+        return CreateSampleLayout(controls, scrollViewer);
+    }
+
+    private static FrameworkElement CreateWrapPage()
+    {
+        var scenario = Scenario(GalleryScenarioKind.VariableWrap);
+        var items = SliverGalleryData.CreateWrapItems(100_000);
+        var layout = new SliverWrapVirtualizingLayout
+        {
+            MinItemMainAxisExtent = SliverGalleryData.WrapMinMainAxisExtent,
+            MaxItemMainAxisExtent = SliverGalleryData.WrapMaxMainAxisExtent,
+            MinItemCrossAxisExtent = SliverGalleryData.WrapMinCrossAxisExtent,
+            MaxItemCrossAxisExtent = SliverGalleryData.WrapMaxCrossAxisExtent,
+            MainAxisSpacing = 10,
+            CrossAxisSpacing = 10
+        };
+        var factory = new GalleryItemElementFactory(GalleryItemVisualMode.WrapChip);
+        var repeater = CreateRepeater(items, layout, factory);
+        var scrollViewer = CreateScrollViewer(repeater);
+
+        var controls = CreateControlPanel(
+            scenario.Title,
+            scenario.Summary);
+        var realized = Text("Realized elements: 0", 13, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55));
+        factory.ActiveCountChanged += count => realized.Text = $"Realized elements: {count}";
+        controls.Children.Add(realized);
+        AddSlider(controls, "Min height", 40, 100, layout.MinItemMainAxisExtent, value => layout.MinItemMainAxisExtent = value);
+        AddSlider(controls, "Max height", 96, 180, layout.MaxItemMainAxisExtent, value => layout.MaxItemMainAxisExtent = value);
+        AddSlider(controls, "Min width", 80, 180, layout.MinItemCrossAxisExtent, value => layout.MinItemCrossAxisExtent = value);
+        AddSlider(controls, "Max width", 180, 360, layout.MaxItemCrossAxisExtent, value => layout.MaxItemCrossAxisExtent = value);
+        AddSlider(controls, "Spacing", 0, 24, layout.MainAxisSpacing, value =>
+        {
+            layout.MainAxisSpacing = value;
+            layout.CrossAxisSpacing = value;
+        });
+        AddSlider(controls, "Vertical cache", 0, 8, repeater.VerticalCacheLength, value => repeater.VerticalCacheLength = value);
 
         return CreateSampleLayout(controls, scrollViewer);
     }
@@ -840,7 +878,8 @@ internal enum GalleryItemVisualMode
     Row,
     DenseRow,
     Tile,
-    VariableRow
+    VariableRow,
+    WrapChip
 }
 
 internal sealed class GalleryItemElementFactory : IElementFactory
@@ -863,6 +902,7 @@ internal sealed class GalleryItemElementFactory : IElementFactory
             GalleryItemVisualMode.Tile => CreateTile(item),
             GalleryItemVisualMode.VariableRow => CreateVariableRow(item),
             GalleryItemVisualMode.DenseRow => CreateDenseRow(item),
+            GalleryItemVisualMode.WrapChip => CreateWrapChip(item),
             _ => CreateRow(item)
         };
 
@@ -998,6 +1038,37 @@ internal sealed class GalleryItemElementFactory : IElementFactory
                     Text(item.Title, 16, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)),
                     Text(item.Subtitle, 12, FontWeights.Normal, Color.FromArgb(255, 107, 114, 128)),
                     Text(item.Category, 12, FontWeights.SemiBold, Accent(item))
+                }
+            }
+        };
+    }
+
+    private static UIElement CreateWrapChip(GalleryItem item)
+    {
+        var accent = Accent(item);
+        return new Border
+        {
+            Padding = new Thickness(10),
+            Background = Brush(Color.FromArgb(255, 249, 250, 251)),
+            BorderBrush = Brush(Color.FromArgb(255, 226, 232, 240)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = new StackPanel
+            {
+                Spacing = 4,
+                Children =
+                {
+                    new Border
+                    {
+                        Width = 28,
+                        Height = 4,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        CornerRadius = new CornerRadius(2),
+                        Background = Brush(accent)
+                    },
+                    Text(item.Title, 14, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)),
+                    Text(item.Category, 11, FontWeights.SemiBold, accent),
+                    Text(item.Subtitle, 11, FontWeights.Normal, Color.FromArgb(255, 107, 114, 128))
                 }
             }
         };

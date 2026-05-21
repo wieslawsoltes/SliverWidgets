@@ -18,6 +18,7 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     {
         var variableItems = SliverGalleryData.CreateVariableItems(10000);
         var fixedItems = SliverGalleryData.CreateUniformItems(100_000, 64d);
+        var wrapItems = SliverGalleryData.CreateWrapItems(100_000);
         var stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
         var sections = SliverGalleryData.CreateSections(8, 24);
 
@@ -25,6 +26,7 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
         PreviewRows = new ObservableCollection<GalleryItem>(variableItems.Take(36));
         VariableRows = new ObservableCollection<GalleryItem>(variableItems.Skip(360).Take(1200));
         GridItems = new ObservableCollection<GalleryItem>(SliverGalleryData.CreateItems(1200));
+        WrapItems = new ObservableCollection<GalleryItem>(wrapItems);
         StressRows = new ObservableCollection<GalleryItem>(stressItems);
         Metrics = new ObservableCollection<GalleryMetric>(SliverGalleryData.CreateMetrics());
         Demos = new ObservableCollection<GalleryDemo>(SliverGalleryData.CreateDemos());
@@ -45,6 +47,8 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     public ObservableCollection<GalleryItem> VariableRows { get; }
 
     public ObservableCollection<GalleryItem> GridItems { get; }
+
+    public ObservableCollection<GalleryItem> WrapItems { get; }
 
     public ObservableCollection<GalleryItem> StressRows { get; }
 

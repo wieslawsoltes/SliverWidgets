@@ -20,7 +20,7 @@ public sealed class AvaloniaGallerySmokeTests
         var scenarioTitles = viewModel.ScenarioCatalog.Select(scenario => scenario.Title).ToArray();
         var expectedTitles = SliverGalleryData.CreateScenarios().Select(scenario => scenario.Title).ToArray();
         var scenarioTabs = viewModel.ScenarioCatalog.Select(scenario => scenario.TabLabel).ToArray();
-        var expectedTabs = new[] { "Fixed", "Variable", "Grid", "Header", "Tabs", "Mixed", "Sections", "Fill", "Cache" };
+        var expectedTabs = new[] { "Fixed", "Variable", "Grid", "Wrap", "Header", "Tabs", "Mixed", "Sections", "Fill", "Cache" };
 
         Assert.Equal(expectedTitles, scenarioTitles);
         Assert.Equal(expectedTabs, scenarioTabs);
@@ -43,7 +43,7 @@ public sealed class AvaloniaGallerySmokeTests
         var tabs = window.FindControl<TabControl>("GalleryTabs")
                    ?? throw new InvalidOperationException("Gallery tab control was not found.");
 
-        Assert.Equal(9, tabs.ItemCount);
+        Assert.Equal(10, tabs.ItemCount);
 
         for (var index = 0; index < tabs.ItemCount; index++)
         {
@@ -60,13 +60,21 @@ public sealed class AvaloniaGallerySmokeTests
             Assert.Equal(ScrollBarVisibility.Visible, scrollViewer!.VerticalScrollBarVisibility);
             Assert.True(scrollViewer!.Extent.Height > scrollViewer.Viewport.Height, $"Tab {index} should expose a vertical scroll extent.");
             Assert.True(scrollViewer.Viewport.Height > 0, $"Tab {index} should have a measured viewport.");
-            if (index is 0 or 1 or 8)
+            if (index is 0 or 1 or 9)
             {
                 var visibleItemTextCount = window
                     .GetVisualDescendants()
                     .OfType<TextBlock>()
                     .Count(text => text.IsEffectivelyVisible && text.Text?.StartsWith("Sliver item", StringComparison.Ordinal) == true);
                 Assert.True(visibleItemTextCount >= 7, $"Tab {index} should realize enough rows to fill the initial viewport.");
+            }
+            else if (index is 3)
+            {
+                var visibleItemTextCount = window
+                    .GetVisualDescendants()
+                    .OfType<TextBlock>()
+                    .Count(text => text.IsEffectivelyVisible && text.Text?.StartsWith("Wrap item", StringComparison.Ordinal) == true);
+                Assert.True(visibleItemTextCount >= 5, $"Tab {index} should realize enough wrap chips to fill the initial viewport.");
             }
 
             SaveScreenshot(window, $"avalonia-gallery-tab-{index}");
@@ -95,7 +103,7 @@ public sealed class AvaloniaGallerySmokeTests
         var tabs = window.FindControl<TabControl>("GalleryTabs")
                    ?? throw new InvalidOperationException("Gallery tab control was not found.");
 
-        foreach (var tabIndex in new[] { 0, 1, 2, 8 })
+        foreach (var tabIndex in new[] { 0, 1, 2, 3, 9 })
         {
             tabs.SelectedIndex = tabIndex;
             window.UpdateLayout();
@@ -116,7 +124,7 @@ public sealed class AvaloniaGallerySmokeTests
 
                 var visibleTextCount = CountRenderedTextInViewport(
                     scrollViewer,
-                    "Sliver item");
+                    tabIndex == 3 ? "Wrap item" : "Sliver item");
                 Assert.True(visibleTextCount > 0, $"Tab {tabIndex} should render sliver content at offset {scrollViewer.Offset.Y}.");
             }
         }
@@ -136,7 +144,7 @@ public sealed class AvaloniaGallerySmokeTests
 
         var tabs = window.FindControl<TabControl>("GalleryTabs")
                    ?? throw new InvalidOperationException("Gallery tab control was not found.");
-        tabs.SelectedIndex = 3;
+        tabs.SelectedIndex = 4;
         window.UpdateLayout();
 
         var scrollViewer = window.FindControl<ScrollViewer>("HeaderScrollViewer")
@@ -359,7 +367,7 @@ public sealed class AvaloniaGallerySmokeTests
     {
         var actualOffset = tabIndex switch
         {
-            0 or 8 => window
+            0 or 9 => window
                 .GetVisualDescendants()
                 .OfType<AvaloniaSlivers.SliverVirtualizingStackPanel>()
                 .Single(panel => panel.IsEffectivelyVisible)
@@ -372,6 +380,11 @@ public sealed class AvaloniaGallerySmokeTests
             2 => window
                 .GetVisualDescendants()
                 .OfType<AvaloniaSlivers.SliverVirtualizingGridPanel>()
+                .Single(panel => panel.IsEffectivelyVisible)
+                .ScrollOffset,
+            3 => window
+                .GetVisualDescendants()
+                .OfType<AvaloniaSlivers.SliverVirtualizingWrapPanel>()
                 .Single(panel => panel.IsEffectivelyVisible)
                 .ScrollOffset,
             _ => throw new ArgumentOutOfRangeException(nameof(tabIndex), tabIndex, null)

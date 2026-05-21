@@ -17,6 +17,7 @@ public sealed class MainPage : ContentPage
 
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(100_000);
+    private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
     private readonly IReadOnlyList<MauiGallerySection> _sections = SliverGalleryData
         .CreateSections(8, 60)
@@ -26,6 +27,7 @@ public sealed class MainPage : ContentPage
     private readonly SliverCollectionView _largeList;
     private readonly CollectionView _variableList;
     private readonly SliverCollectionView _adaptiveGrid;
+    private readonly CollectionView _wrapList;
     private readonly SliverCollectionView _sectionList;
     private readonly SliverCollectionView _stressList;
     private readonly ContentView _scenarioHost = new();
@@ -49,6 +51,7 @@ public sealed class MainPage : ContentPage
         _largeList = CreateLargeList();
         _variableList = CreateVariableList();
         _adaptiveGrid = CreateAdaptiveGrid();
+        _wrapList = CreateWrapList();
         _sectionList = CreateSectionList();
         _stressList = CreateStressList();
 
@@ -164,6 +167,10 @@ public sealed class MainPage : ContentPage
                 GalleryScenarioKind.AdaptiveGrid,
                 CreateGridControls(),
                 _adaptiveGrid),
+            CreatePage(
+                GalleryScenarioKind.VariableWrap,
+                CreateNote("MAUI projects the same 100,000-item wrap feed as virtualized native rows; each row contains variable-size chip controls produced from shared deterministic extents."),
+                _wrapList),
             CreatePage(
                 GalleryScenarioKind.PinnedHeader,
                 CreateNote("A native overlay follows CollectionView.Scrolled offsets while the adapter surface stays thin."),
@@ -512,6 +519,21 @@ public sealed class MainPage : ContentPage
         };
 
         return grid;
+    }
+
+    private CollectionView CreateWrapList()
+    {
+        return new CollectionView
+        {
+            HeightRequest = 520,
+            ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
+            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+            {
+                ItemSpacing = 10
+            },
+            ItemsSource = CreateWrapRows(_wrapItems, 760d),
+            ItemTemplate = new DataTemplate(() => new WrapRowView())
+        };
     }
 
     private SliverCollectionView CreateSectionList()
@@ -1302,12 +1324,124 @@ public sealed class MainPage : ContentPage
         return label;
     }
 
+    private static IReadOnlyList<MauiWrapRow> CreateWrapRows(IReadOnlyList<GalleryItem> items, double crossAxisExtent)
+    {
+        var rows = new List<MauiWrapRow>();
+        var current = new List<GalleryItem>();
+        var crossCursor = 0d;
+        var rowHeight = 0d;
+
+        foreach (var item in items)
+        {
+            var itemWidth = SliverGalleryData.GetWrapCrossAxisExtent(item.Id);
+            var itemHeight = SliverGalleryData.GetWrapMainAxisExtent(item.Id);
+            var projectedCrossEnd = current.Count == 0
+                ? itemWidth
+                : crossCursor + InitialSpacing + itemWidth;
+
+            if (current.Count > 0 && projectedCrossEnd > crossAxisExtent)
+            {
+                rows.Add(new MauiWrapRow(current.ToArray(), rowHeight));
+                current.Clear();
+                crossCursor = 0d;
+                rowHeight = 0d;
+            }
+
+            if (current.Count > 0)
+            {
+                crossCursor += InitialSpacing;
+            }
+
+            current.Add(item);
+            crossCursor += itemWidth;
+            rowHeight = Math.Max(rowHeight, itemHeight);
+        }
+
+        if (current.Count > 0)
+        {
+            rows.Add(new MauiWrapRow(current.ToArray(), rowHeight));
+        }
+
+        return rows;
+    }
+
     private GalleryScenario Scenario(GalleryScenarioKind kind)
     {
         return _scenarios.First(scenario => scenario.Kind == kind);
     }
 
     private sealed record MauiGalleryPage(GalleryScenario Scenario, View Content);
+
+    private sealed record MauiWrapRow(IReadOnlyList<GalleryItem> Items, double Height);
+
+    private sealed class WrapRowView : HorizontalStackLayout
+    {
+        public WrapRowView()
+        {
+            Spacing = InitialSpacing;
+            Padding = new Thickness(8, 0);
+        }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+            Children.Clear();
+
+            if (BindingContext is not MauiWrapRow row)
+            {
+                return;
+            }
+
+            HeightRequest = row.Height;
+            foreach (var item in row.Items)
+            {
+                Children.Add(CreateChip(item));
+            }
+        }
+
+        private static View CreateChip(GalleryItem item)
+        {
+            var accent = Color.FromArgb(item.AccentColor);
+            return new Border
+            {
+                WidthRequest = SliverGalleryData.GetWrapCrossAxisExtent(item.Id),
+                HeightRequest = SliverGalleryData.GetWrapMainAxisExtent(item.Id),
+                Padding = new Thickness(8),
+                BackgroundColor = Colors.White,
+                Stroke = Color.FromArgb("#D8E0EC"),
+                StrokeThickness = 1,
+                Content = new VerticalStackLayout
+                {
+                    Spacing = 4,
+                    Children =
+                    {
+                        new BoxView
+                        {
+                            WidthRequest = 28,
+                            HeightRequest = 4,
+                            HorizontalOptions = LayoutOptions.Start,
+                            Color = accent
+                        },
+                        new Label
+                        {
+                            Text = item.Title,
+                            FontSize = 13,
+                            FontAttributes = FontAttributes.Bold,
+                            TextColor = Color.FromArgb("#111827"),
+                            LineBreakMode = LineBreakMode.TailTruncation
+                        },
+                        new Label
+                        {
+                            Text = $"{item.Category} {item.Extent:0}px",
+                            FontSize = 11,
+                            TextColor = accent,
+                            LineBreakMode = LineBreakMode.TailTruncation
+                        }
+                    }
+                }
+            };
+        }
+    }
 
     private sealed class MauiGallerySection : List<GalleryItem>
     {

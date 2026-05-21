@@ -13,6 +13,7 @@ public sealed class UnoGalleryPage : Page
 {
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(600);
     private readonly IReadOnlyList<GalleryItem> _largeItems = SliverGalleryData.CreateItems(100_000);
+    private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
     private readonly IReadOnlyList<GallerySection> _sections = SliverGalleryData.CreateSections(6, 90);
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly ContentControl _scenarioHost = new();
@@ -27,6 +28,7 @@ public sealed class UnoGalleryPage : Page
             CreatePage(GalleryScenarioKind.FixedExtentList, BuildFixedLargeListScenario),
             CreatePage(GalleryScenarioKind.VariableExtentList, BuildVariableListScenario),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, BuildAdaptiveGridScenario),
+            CreatePage(GalleryScenarioKind.VariableWrap, BuildWrapScenario),
             CreatePage(GalleryScenarioKind.PinnedHeader, BuildPinnedHeaderScenario),
             CreatePage(GalleryScenarioKind.TabbedNestedScroll, BuildTabbedNestedScenario),
             CreatePage(GalleryScenarioKind.MixedComposition, BuildMixedCompositionScenario),
@@ -284,6 +286,41 @@ public sealed class UnoGalleryPage : Page
         controls.Children.Add(ControlSlider("main spacing", 0, 32, layout.MainAxisSpacing, 1, value => layout.MainAxisSpacing = value));
         controls.Children.Add(ControlSlider("cross spacing", 0, 32, layout.CrossAxisSpacing, 1, value => layout.CrossAxisSpacing = value));
         controls.Children.Add(ControlSlider("aspect ratio", 0.7, 2.4, layout.ChildAspectRatio, 0.05, value => layout.ChildAspectRatio = value));
+        controls.Children.Add(ControlSlider("cache length", 0, 8, repeater.VerticalCacheLength, 0.5, value => repeater.VerticalCacheLength = value));
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            controls,
+            Viewport(repeater));
+    }
+
+    private UIElement BuildWrapScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.VariableWrap);
+        var layout = new SliverWrapVirtualizingLayout
+        {
+            MinItemMainAxisExtent = SliverGalleryData.WrapMinMainAxisExtent,
+            MaxItemMainAxisExtent = SliverGalleryData.WrapMaxMainAxisExtent,
+            MinItemCrossAxisExtent = SliverGalleryData.WrapMinCrossAxisExtent,
+            MaxItemCrossAxisExtent = SliverGalleryData.WrapMaxCrossAxisExtent,
+            MainAxisSpacing = 10,
+            CrossAxisSpacing = 10
+        };
+
+        var repeater = CreateRepeater(_wrapItems, layout, GalleryItemFactoryKind.Wrap);
+        repeater.VerticalCacheLength = 2;
+
+        var controls = new StackPanel { Spacing = 14 };
+        controls.Children.Add(ControlSlider("min height", 40, 110, layout.MinItemMainAxisExtent, 1, value => layout.MinItemMainAxisExtent = value));
+        controls.Children.Add(ControlSlider("max height", 96, 190, layout.MaxItemMainAxisExtent, 1, value => layout.MaxItemMainAxisExtent = value));
+        controls.Children.Add(ControlSlider("min width", 80, 200, layout.MinItemCrossAxisExtent, 1, value => layout.MinItemCrossAxisExtent = value));
+        controls.Children.Add(ControlSlider("max width", 180, 380, layout.MaxItemCrossAxisExtent, 1, value => layout.MaxItemCrossAxisExtent = value));
+        controls.Children.Add(ControlSlider("spacing", 0, 28, layout.MainAxisSpacing, 1, value =>
+        {
+            layout.MainAxisSpacing = value;
+            layout.CrossAxisSpacing = value;
+        }));
         controls.Children.Add(ControlSlider("cache length", 0, 8, repeater.VerticalCacheLength, 0.5, value => repeater.VerticalCacheLength = value));
 
         return Scenario(
@@ -1030,6 +1067,7 @@ internal sealed class GalleryItemElementFactory : ElementFactory
             GalleryItemFactoryKind.Grid => CreateGridTile(),
             GalleryItemFactoryKind.Variable => CreateVariableRow(),
             GalleryItemFactoryKind.Compact => CreateCompactRow(),
+            GalleryItemFactoryKind.Wrap => CreateWrapChip(),
             _ => CreateListRow()
         };
     }
@@ -1144,6 +1182,35 @@ internal sealed class GalleryItemElementFactory : ElementFactory
                     CreateBadge(),
                     CreateTextStack(),
                     CreateMetricText()
+                }
+            }
+        };
+    }
+
+    private static UIElement CreateWrapChip()
+    {
+        return new Border
+        {
+            Margin = new Thickness(0),
+            Padding = new Thickness(8),
+            CornerRadius = new CornerRadius(8),
+            Background = UnoGalleryPageBrushes.White,
+            BorderBrush = UnoGalleryPageBrushes.Border,
+            BorderThickness = new Thickness(1),
+            Child = new StackPanel
+            {
+                Spacing = 4,
+                Children =
+                {
+                    new Border
+                    {
+                        Width = 28,
+                        Height = 4,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        CornerRadius = new CornerRadius(2),
+                        Background = UnoGalleryPageBrushes.BadgeText
+                    },
+                    CreateTextStack()
                 }
             }
         };
@@ -1273,7 +1340,8 @@ internal enum GalleryItemFactoryKind
     List,
     Compact,
     Grid,
-    Variable
+    Variable,
+    Wrap
 }
 
 internal static class UnoGalleryPageBrushes

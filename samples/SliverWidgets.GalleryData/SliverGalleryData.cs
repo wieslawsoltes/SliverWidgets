@@ -24,6 +24,14 @@ public static class SliverGalleryData
         "#7C3AED"
     ];
 
+    public const double WrapMinMainAxisExtent = 72d;
+
+    public const double WrapMaxMainAxisExtent = 150d;
+
+    public const double WrapMinCrossAxisExtent = 120d;
+
+    public const double WrapMaxCrossAxisExtent = 280d;
+
     public static IReadOnlyList<GalleryItem> CreateItems(int count = 5000)
     {
         if (count < 0)
@@ -76,6 +84,55 @@ public static class SliverGalleryData
     public static IReadOnlyList<GalleryItem> CreateVariableItems(int count = 5000)
     {
         return CreateItems(count);
+    }
+
+    public static IReadOnlyList<GalleryItem> CreateWrapItems(int count = 100_000)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        var items = new GalleryItem[count];
+
+        for (var index = 0; index < count; index++)
+        {
+            var mainExtent = GetWrapMainAxisExtent(index);
+            var crossExtent = GetWrapCrossAxisExtent(index);
+            var category = Categories[index % Categories.Length];
+
+            items[index] = new GalleryItem(
+                index,
+                $"Wrap item {index:0000}",
+                $"{category} variable wrap chip {crossExtent:0}x{mainExtent:0}px",
+                category,
+                Palette[index % Palette.Length],
+                mainExtent,
+                1 + (index % 100),
+                index % 37 == 0);
+        }
+
+        return items;
+    }
+
+    public static double GetWrapMainAxisExtent(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return Interpolate(WrapMinMainAxisExtent, WrapMaxMainAxisExtent, ((index * 37) + 17) % 101);
+    }
+
+    public static double GetWrapCrossAxisExtent(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return Interpolate(WrapMinCrossAxisExtent, WrapMaxCrossAxisExtent, ((index * 53) + 29) % 101);
     }
 
     public static IReadOnlyList<GallerySection> CreateSections(int sectionCount = 8, int itemsPerSection = 80)
@@ -168,6 +225,16 @@ public static class SliverGalleryData
                 UsesVirtualization: true,
                 UsesVariableExtents: false),
             new GalleryScenario(
+                "variable-wrap",
+                "Variable wrap layout",
+                "Non-uniform width and height chips flow into cache-aware wrap lines without realizing the 100,000-item source.",
+                "Custom RenderSliver / SliverLayoutBuilder with wrap-style line packing",
+                "Variable-size sliver wrap layout",
+                GalleryScenarioKind.VariableWrap,
+                100_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: true),
+            new GalleryScenario(
                 "pinned-header",
                 "Pinned and collapsible header",
                 "A header shrinks between max and min extents and pins at the viewport edge while content scrolls underneath.",
@@ -231,4 +298,14 @@ public static class SliverGalleryData
     }
 
     public static IReadOnlyList<string> AccentPalette => Palette;
+
+    private static double Interpolate(double minimum, double maximum, int bucket)
+    {
+        if (Math.Abs(maximum - minimum) <= 0.0001d)
+        {
+            return minimum;
+        }
+
+        return minimum + ((maximum - minimum) * bucket / 100d);
+    }
 }
