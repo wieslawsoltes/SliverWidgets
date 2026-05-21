@@ -78,6 +78,8 @@ Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts an
 | `SliverViewportLayoutResult` | Combined viewport layout result. |
 | `SliverViewportLayoutEngine` | Mixed sliver composition engine. |
 
+`SliverViewportLayoutEngine` restarts layout when a sliver reports a finite `SliverGeometry.ScrollOffsetCorrection`. This lets variable or estimated slivers request a corrected scroll position and prevents stale viewport offsets from being returned.
+
 ## Example
 
 ```csharp

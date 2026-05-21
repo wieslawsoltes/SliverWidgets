@@ -27,6 +27,8 @@ description: MAUI layout and CollectionView integration.
 
 Use it for bounded child counts or custom content where you want sliver-compatible layout math.
 
+When MAUI measures the cross-axis with an unconstrained value, `SliverStackLayout` measures children with the fixed main-axis extent and reports the largest child desired cross-axis size. This keeps horizontal stacks from collapsing to height zero under containers that pass infinite height.
+
 ## SliverCollectionView
 
 For large item counts, use `SliverCollectionView`. It keeps MAUI's native `CollectionView` realization and recycling behavior.

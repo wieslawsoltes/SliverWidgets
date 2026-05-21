@@ -52,6 +52,32 @@ public static class SliverGalleryData
         return items;
     }
 
+    public static IReadOnlyList<GalleryItem> CreateUniformItems(int count = 5000, double extent = 64d)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        if (double.IsNaN(extent) || extent < 0d)
+        {
+            throw new ArgumentOutOfRangeException(nameof(extent));
+        }
+
+        return CreateItems(count)
+            .Select(item => item with
+            {
+                Subtitle = $"{item.Category} uniform fixed-extent sample {extent:0}px",
+                Extent = extent
+            })
+            .ToArray();
+    }
+
+    public static IReadOnlyList<GalleryItem> CreateVariableItems(int count = 5000)
+    {
+        return CreateItems(count);
+    }
+
     public static IReadOnlyList<GallerySection> CreateSections(int sectionCount = 8, int itemsPerSection = 80)
     {
         if (sectionCount < 0)
@@ -88,7 +114,7 @@ public static class SliverGalleryData
     {
         return
         [
-            new GalleryMetric("Rows", "5,000", "Large deterministic source list", "#2563EB"),
+            new GalleryMetric("Rows", "100,000", "Large deterministic source list", "#2563EB"),
             new GalleryMetric("Grid tiles", "1,200", "Adaptive max-extent tile demo", "#0F766E"),
             new GalleryMetric("Cache", "2x viewport", "Paint plus near-future realization", "#EA580C"),
             new GalleryMetric("Headers", "Pinned", "Persistent header shrink and obstruction", "#9333EA")
@@ -97,38 +123,100 @@ public static class SliverGalleryData
 
     public static IReadOnlyList<GalleryDemo> CreateDemos()
     {
+        return CreateScenarios()
+            .Select(scenario => new GalleryDemo(
+                scenario.Key,
+                scenario.Title,
+                scenario.Summary,
+                scenario.FlutterReference,
+                scenario.SupportedFeature))
+            .ToArray();
+    }
+
+    public static IReadOnlyList<GalleryScenario> CreateScenarios()
+    {
         return
         [
-            new GalleryDemo(
-                "custom-scroll",
-                "Mixed sliver composition",
-                "Expanded header, adaptive grid, and fixed-extent list in one gallery surface.",
-                "CustomScrollView + SliverAppBar + SliverGrid + SliverFixedExtentList",
-                "Shared viewport layout engine"),
-            new GalleryDemo(
-                "fixed-list",
-                "Fixed extent virtual list",
-                "Arithmetic index-to-offset mapping for smooth long-list scrolling.",
+            new GalleryScenario(
+                "fixed-large-list",
+                "Fixed large list",
+                "Uniform-height rows use arithmetic index-to-offset mapping for high-throughput long-list scrolling.",
                 "SliverFixedExtentList",
-                "SliverFixedExtentListLayout"),
-            new GalleryDemo(
+                "Fixed extent sliver virtualization",
+                GalleryScenarioKind.FixedExtentList,
+                100_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "variable-list",
+                "Variable and non-uniform list",
+                "Measured rows use deterministic mixed extents to exercise dead-reckoned offset and extent caching behavior.",
+                "SliverList + SliverPrototypeExtentList + SliverVariedExtentList",
+                "Variable extent list layout and native measured rows",
+                GalleryScenarioKind.VariableExtentList,
+                5_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: true),
+            new GalleryScenario(
                 "adaptive-grid",
-                "Adaptive sliver grid",
-                "Max cross-axis extent and fixed column-count grid modes.",
-                "SliverGridDelegateWithMaxCrossAxisExtent",
-                "SliverGridLayout"),
-            new GalleryDemo(
-                "persistent-header",
-                "Persistent headers",
-                "Pinned, floating, and snap-ready header behavior expressed through sliver geometry.",
-                "SliverPersistentHeader and SliverAppBar pinned/floating/snap",
-                "SliverAdvancedPersistentHeaderLayout"),
-            new GalleryDemo(
-                "fill-padding",
+                "Adaptive grid",
+                "Tiles adapt to available cross-axis size while preserving cache-aware grid slot computation.",
+                "SliverGrid + SliverGridDelegateWithMaxCrossAxisExtent",
+                "Adaptive sliver grid layout",
+                GalleryScenarioKind.AdaptiveGrid,
+                1_200,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "pinned-header",
+                "Pinned and collapsible header",
+                "A header shrinks between max and min extents and pins at the viewport edge while content scrolls underneath.",
+                "SliverAppBar + SliverPersistentHeader",
+                "Persistent header obstruction geometry",
+                GalleryScenarioKind.PinnedHeader,
+                5_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "sectioned-headers",
+                "Sectioned list with sticky headers",
+                "Grouped content alternates header regions and list regions to model catalog, settings, and feed layouts.",
+                "SliverPersistentHeader + SliverList",
+                "Section header composition",
+                GalleryScenarioKind.SectionedHeaders,
+                1_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "mixed-composition",
+                "Mixed CustomScrollView composition",
+                "Box adapters, pinned header content, fixed rows, grid tiles, and fill regions share one scrollable surface.",
+                "CustomScrollView + SliverToBoxAdapter + SliverGrid + SliverFixedExtentList",
+                "Shared viewport composition",
+                GalleryScenarioKind.MixedComposition,
+                600,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "fill-padding-visibility",
                 "Fill, padding, and visibility",
-                "Box-to-sliver adapter composition for gaps, empty states, and replacement content.",
-                "SliverFillRemaining + SliverPadding + SliverVisibility",
-                "Core utility sliver layouts")
+                "Utility slivers demonstrate insets, empty states, replacement content, and remaining-viewport fill behavior.",
+                "SliverPadding + SliverFillRemaining + SliverVisibility",
+                "Core utility sliver layouts",
+                GalleryScenarioKind.FillPaddingVisibility,
+                20,
+                UsesVirtualization: false,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "cache-stress",
+                "Cache and performance stress",
+                "A large deterministic source verifies that adapters realize only visible and cached elements.",
+                "CustomScrollView cacheExtent + sliver delegates",
+                "Viewport plus cache realization",
+                GalleryScenarioKind.CacheStress,
+                100_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: false)
         ];
     }
 

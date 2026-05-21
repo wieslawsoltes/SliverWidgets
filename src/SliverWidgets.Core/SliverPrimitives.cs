@@ -148,7 +148,7 @@ public static class SliverMath
 
     public static void ThrowIfNegative(double value, string name)
     {
-        if (double.IsNaN(value) || value < -Epsilon)
+        if (!double.IsFinite(value) || value < -Epsilon)
         {
             throw new ArgumentOutOfRangeException(name, value, "Sliver geometry values must be finite and non-negative.");
         }

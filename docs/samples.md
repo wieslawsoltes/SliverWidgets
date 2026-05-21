@@ -13,8 +13,8 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 
 | Flutter concept | SliverWidgets gallery coverage |
 |---|---|
-| `CustomScrollView` with mixed slivers | Avalonia mixed preview, Uno custom-scroll page, MAUI demo cards, WinUI composite pages |
-| `SliverAppBar` / persistent header | Avalonia `SliverPersistentHeader`, WinUI pinned/floating header concept, MAUI grouped headers |
+| `CustomScrollView` with mixed slivers | Avalonia mixed preview with pinned-obstruction clipping, Uno custom-scroll page, MAUI demo cards, WinUI composite pages |
+| `SliverAppBar` / persistent header | Avalonia `SliverPersistentHeader` and push-style section headers, WinUI pinned/floating header concept, MAUI grouped headers |
 | `SliverGrid` | Avalonia `SliverGridPanel`, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
 | `SliverFixedExtentList` | Core fixed extent layout plus Avalonia, MAUI, Uno, and WinUI fixed list samples |
 | Lazy child lifecycle and cache windows | Avalonia virtualizing panel, MAUI native `CollectionView`, Uno/WinUI `ItemsRepeater` realization windows |
@@ -92,6 +92,6 @@ When running a gallery:
 
 - fixed lists should stay responsive with large item counts
 - grids should adapt to viewport width without reflow jitter
-- persistent headers should shrink and pin predictably
+- persistent headers should shrink and pin predictably, and section headers should not leave cumulative empty gaps
 - realization counters should remain close to visible plus cache range
-- mixed compositions should scroll as a single surface, not as nested scroll views
+- mixed compositions should scroll as a single surface, with content clipped below pinned headers instead of visually overlapping them

@@ -61,18 +61,25 @@ internal sealed class SliverStackLayoutManager : ILayoutManager
     public Size Measure(double widthConstraint, double heightConstraint)
     {
         var axis = _layout.Axis;
-        var crossAxisExtent = axis == SliverAxis.Vertical
-            ? FiniteOrZero(widthConstraint)
-            : FiniteOrZero(heightConstraint);
+        var crossAxisConstraint = axis == SliverAxis.Vertical
+            ? ResolveMeasureConstraint(widthConstraint)
+            : ResolveMeasureConstraint(heightConstraint);
         var itemExtent = Math.Max(0d, _layout.ItemExtent);
-        var childWidth = axis == SliverAxis.Vertical ? crossAxisExtent : itemExtent;
-        var childHeight = axis == SliverAxis.Vertical ? itemExtent : crossAxisExtent;
+        var childWidth = axis == SliverAxis.Vertical ? crossAxisConstraint : itemExtent;
+        var childHeight = axis == SliverAxis.Vertical ? itemExtent : crossAxisConstraint;
+        var measuredCrossAxisExtent = 0d;
 
         foreach (var child in _layout)
         {
-            child.Measure(childWidth, childHeight);
+            var desired = child.Measure(childWidth, childHeight);
+            measuredCrossAxisExtent = Math.Max(
+                measuredCrossAxisExtent,
+                axis == SliverAxis.Vertical ? desired.Width : desired.Height);
         }
 
+        var crossAxisExtent = ResolveCrossAxisExtent(
+            axis == SliverAxis.Vertical ? widthConstraint : heightConstraint,
+            measuredCrossAxisExtent);
         var mainAxisExtent = SliverFixedExtentListLayout.GetScrollExtent(_layout.Count, itemExtent, Math.Max(0d, _layout.Spacing));
         return axis == SliverAxis.Vertical
             ? new Size(crossAxisExtent, mainAxisExtent)
@@ -110,8 +117,15 @@ internal sealed class SliverStackLayoutManager : ILayoutManager
         return bounds.Size;
     }
 
-    private static double FiniteOrZero(double value)
+    private static double ResolveMeasureConstraint(double value)
     {
-        return double.IsInfinity(value) || double.IsNaN(value) ? 0d : Math.Max(0d, value);
+        return double.IsFinite(value) ? Math.Max(0d, value) : double.PositiveInfinity;
+    }
+
+    private static double ResolveCrossAxisExtent(double constraint, double measuredExtent)
+    {
+        return double.IsFinite(constraint)
+            ? Math.Max(0d, constraint)
+            : Math.Max(0d, measuredExtent);
     }
 }

@@ -105,14 +105,7 @@ public class SliverStackPanel : Panel, ILogicalScrollable
 
     public bool IsLogicalScrollEnabled => true;
 
-    public Size ScrollSize
-    {
-        get
-        {
-            var step = Math.Max(1d, Math.Max(0d, ItemExtent) + Math.Max(0d, Spacing));
-            return SliverAvaloniaPrimitives.ToSize(Axis, step, 16d);
-        }
-    }
+    public Size ScrollSize => SliverAvaloniaPrimitives.LineScrollSize(Axis);
 
     public Size PageScrollSize => _viewport;
 

@@ -219,6 +219,40 @@ public sealed class SliverLayoutTests
         Assert.Equal(70d, followingSlot.MainAxisOffset);
     }
 
+    [Fact]
+    public void ViewportAppliesScrollOffsetCorrectionsAndRelayouts()
+    {
+        var engine = new SliverViewportLayoutEngine();
+        var correctingSliver = new CorrectingSliver(25d);
+
+        var result = engine.Layout(
+            new ISliverLayout[] { correctingSliver },
+            new SliverViewport(200d, 300d),
+            scrollOffset: 10d);
+
+        Assert.Equal(new[] { 10d, 35d }, correctingSliver.ObservedScrollOffsets);
+        Assert.Single(result.Slots);
+        Assert.Equal(-35d, result.Slots[0].MainAxisOffset);
+    }
+
+    [Fact]
+    public void ViewportRejectsNonConvergingScrollOffsetCorrections()
+    {
+        var engine = new SliverViewportLayoutEngine();
+
+        Assert.Throws<InvalidOperationException>(() => engine.Layout(
+            new ISliverLayout[] { new NonConvergingCorrectionSliver() },
+            new SliverViewport(200d, 300d),
+            scrollOffset: 10d));
+    }
+
+    [Fact]
+    public void NonNegativeGuardRejectsInfiniteValues()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() => SliverMath.ThrowIfNegative(double.PositiveInfinity, "value"));
+        Assert.Throws<ArgumentOutOfRangeException>(() => SliverMath.ThrowIfNegative(double.NegativeInfinity, "value"));
+    }
+
     private sealed class RecordingSliver : ISliverLayout
     {
         public SliverConstraints LastConstraints { get; private set; }
@@ -241,6 +275,74 @@ public sealed class SliverLayoutTests
                 paintExtent > SliverMath.Epsilon
                     ? new[] { new SliverLayoutSlot(0, 0d, 0d, 25d, constraints.CrossAxisExtent) }
                     : Array.Empty<SliverLayoutSlot>());
+        }
+    }
+
+    private sealed class CorrectingSliver : ISliverLayout
+    {
+        private readonly double _correction;
+        private bool _corrected;
+        private readonly List<double> _observedScrollOffsets = new();
+
+        public CorrectingSliver(double correction)
+        {
+            _correction = correction;
+        }
+
+        public IReadOnlyList<double> ObservedScrollOffsets => _observedScrollOffsets;
+
+        public SliverLayoutResult Layout(in SliverConstraints constraints)
+        {
+            _observedScrollOffsets.Add(constraints.ScrollOffset);
+            if (!_corrected)
+            {
+                _corrected = true;
+                return new SliverLayoutResult(
+                    new SliverGeometry
+                    {
+                        ScrollExtent = 100d,
+                        PaintExtent = 0d,
+                        LayoutExtent = 0d,
+                        MaxPaintExtent = 100d,
+                        HitTestExtent = 0d,
+                        ScrollOffsetCorrection = _correction,
+                        CrossAxisExtent = constraints.CrossAxisExtent
+                    },
+                    Array.Empty<SliverLayoutSlot>());
+            }
+
+            var paintExtent = Math.Min(25d, constraints.RemainingPaintExtent);
+            return new SliverLayoutResult(
+                new SliverGeometry
+                {
+                    ScrollExtent = 100d,
+                    PaintExtent = paintExtent,
+                    LayoutExtent = paintExtent,
+                    MaxPaintExtent = 100d,
+                    HitTestExtent = paintExtent,
+                    Visible = true,
+                    CrossAxisExtent = constraints.CrossAxisExtent
+                },
+                new[] { new SliverLayoutSlot(0, -constraints.ScrollOffset, 0d, 25d, constraints.CrossAxisExtent) });
+        }
+    }
+
+    private sealed class NonConvergingCorrectionSliver : ISliverLayout
+    {
+        public SliverLayoutResult Layout(in SliverConstraints constraints)
+        {
+            return new SliverLayoutResult(
+                new SliverGeometry
+                {
+                    ScrollExtent = 100d,
+                    PaintExtent = 0d,
+                    LayoutExtent = 0d,
+                    MaxPaintExtent = 100d,
+                    HitTestExtent = 0d,
+                    ScrollOffsetCorrection = 1d,
+                    CrossAxisExtent = constraints.CrossAxisExtent
+                },
+                Array.Empty<SliverLayoutSlot>());
         }
     }
 }

@@ -11,6 +11,7 @@ description: Avalonia panels, decorators, and virtualizing panels.
 
 | Control | Purpose |
 |---|---|
+| `SliverItemsControl` | `ItemsControl` host that forwards outer `ScrollViewer` logical offsets into sliver items panels. |
 | `SliverStackPanel` | Non-virtual fixed-extent stack panel. |
 | `SliverGridPanel` | Non-virtual sliver grid panel. |
 | `SliverPersistentHeader` | Single-child persistent header decorator. |
@@ -34,34 +35,40 @@ Use this when child count is bounded or when composing custom content manually.
 
 ## Virtualizing ItemsControl
 
-Use `SliverVirtualizingStackPanel` for large fixed-height item sources:
+Use `SliverItemsControl` with `SliverVirtualizingStackPanel` for large fixed-height item sources:
 
 ```xml
-<ItemsControl ItemsSource="{Binding Rows}">
-  <ItemsControl.ItemsPanel>
-    <ItemsPanelTemplate>
-      <slivers:SliverVirtualizingStackPanel
-          ItemExtent="44"
-          Spacing="2"
-          CacheExtent="500" />
-    </ItemsPanelTemplate>
-  </ItemsControl.ItemsPanel>
-</ItemsControl>
+<ScrollViewer VerticalScrollBarVisibility="Visible">
+  <slivers:SliverItemsControl
+      xmlns:slivers="using:SliverWidgets.Avalonia"
+      ItemsSource="{Binding Rows}">
+    <slivers:SliverItemsControl.ItemsPanel>
+      <ItemsPanelTemplate>
+        <slivers:SliverVirtualizingStackPanel
+            ItemExtent="44"
+            Spacing="2"
+            CacheExtent="500" />
+      </ItemsPanelTemplate>
+    </slivers:SliverItemsControl.ItemsPanel>
+  </slivers:SliverItemsControl>
+</ScrollViewer>
 ```
 
 Use `SliverVirtualizingListPanel` when row heights vary:
 
 ```xml
-<ItemsControl ItemsSource="{Binding Rows}">
-  <ItemsControl.ItemsPanel>
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding Rows}">
+  <slivers:SliverItemsControl.ItemsPanel>
     <ItemsPanelTemplate>
       <slivers:SliverVirtualizingListPanel
           EstimatedItemExtent="56"
           Spacing="4"
           CacheExtent="600" />
     </ItemsPanelTemplate>
-  </ItemsControl.ItemsPanel>
-</ItemsControl>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
 ```
 
 ## Grid Panel
@@ -89,6 +96,9 @@ Use `SliverVirtualizingListPanel` when row heights vary:
 ## Notes
 
 - `ScrollOffset` is an adapter property for surfaces that coordinate scrolling externally.
+- `SliverItemsControl` is required when an outer `ScrollViewer` wraps an items panel that implements `ILogicalScrollable`; a plain `ItemsControl` does not expose the panel to `ScrollViewer`.
+- Avalonia sliver panels use a 16px logical line scroll size so wheel input can drive smooth persistent-header collapse instead of jumping by an item extent.
+- The gallery's sectioned sample uses a sample-local push-style sticky header so only one section header reserves the leading edge at a time; this avoids cumulative empty gaps between sections.
 - `CacheExtent` is measured in main-axis units.
 - Non-virtual panels still use sliver math but do not recycle controls.
 - Virtualizing panels should be used for high-volume item sources.

@@ -47,4 +47,6 @@ var result = new SliverViewportLayoutEngine().Layout(
 
 ## Validation
 
-The engine validates each sliver's geometry against its constraints. Invalid negative values, excessive paint extents, or layout extents larger than paint extents fail early.
+The engine validates each sliver's geometry against its constraints. Invalid negative or infinite values, excessive paint extents, or layout extents larger than paint extents fail early.
+
+If a sliver returns a finite `ScrollOffsetCorrection`, the engine adjusts the effective scroll offset and restarts the viewport pass so estimated or corrected slivers can converge before slots are returned. Non-converging corrections fail fast instead of producing persistent jitter.

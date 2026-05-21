@@ -109,14 +109,7 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
 
     public bool IsLogicalScrollEnabled => true;
 
-    public Size ScrollSize
-    {
-        get
-        {
-            var step = Math.Max(1d, Math.Max(0d, ItemExtent) + Math.Max(0d, Spacing));
-            return SliverAvaloniaPrimitives.ToSize(Axis, step, 16d);
-        }
-    }
+    public Size ScrollSize => SliverAvaloniaPrimitives.LineScrollSize(Axis);
 
     public Size PageScrollSize => _viewport;
 
@@ -201,7 +194,9 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
         var axis = Axis;
         var itemExtent = Math.Max(0d, ItemExtent);
         var spacing = Math.Max(0d, Spacing);
-        var viewportMainAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Main(axis));
+        var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
+            availableSize.Main(axis),
+            _viewport.Main(axis));
         var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
         var constraints = CreateConstraints(axis, viewportMainAxisExtent, crossAxisExtent);
         var layout = new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(Items.Count, itemExtent, spacing));

@@ -114,14 +114,7 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
 
     public bool IsLogicalScrollEnabled => true;
 
-    public Size ScrollSize
-    {
-        get
-        {
-            var step = Math.Max(1d, Math.Max(0d, EstimatedItemExtent) + Math.Max(0d, Spacing));
-            return SliverAvaloniaPrimitives.ToSize(Axis, step, 16d);
-        }
-    }
+    public Size ScrollSize => SliverAvaloniaPrimitives.LineScrollSize(Axis);
 
     public Size PageScrollSize => _viewport;
 
@@ -203,7 +196,9 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
     protected override Size MeasureOverride(Size availableSize)
     {
         var axis = Axis;
-        var viewportMainAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Main(axis));
+        var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
+            availableSize.Main(axis),
+            _viewport.Main(axis));
         var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
         var realizedIndexes = GetRealizedIndexes(viewportMainAxisExtent).ToArray();
         var realizedSet = realizedIndexes.ToHashSet();

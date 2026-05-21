@@ -7,32 +7,41 @@ using SliverWidgets.Core;
 
 namespace AvaloniaGallery;
 
-public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
+public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
 {
-    private const int HeaderChildIndex = 0;
-    private const int FixedChildStart = 1;
-    private const int FixedChildCount = 5;
-    private const int GridChildStart = FixedChildStart + FixedChildCount;
-    private const int GridChildCount = 12;
-    private const int FillChildIndex = GridChildStart + GridChildCount;
+    private const double HeaderMinExtent = 42d;
     private bool _canHorizontallyScroll;
     private bool _canVerticallyScroll;
     private Size _extent;
     private Size _viewport;
 
     public static readonly StyledProperty<double> ScrollOffsetProperty =
-        AvaloniaProperty.Register<MixedSliverPreviewPanel, double>(nameof(ScrollOffset));
+        AvaloniaProperty.Register<SliverScenarioStackPanel, double>(nameof(ScrollOffset));
 
     public static readonly StyledProperty<double> CacheExtentProperty =
-        AvaloniaProperty.Register<MixedSliverPreviewPanel, double>(nameof(CacheExtent), 280d);
+        AvaloniaProperty.Register<SliverScenarioStackPanel, double>(nameof(CacheExtent), 280d);
 
-    static MixedSliverPreviewPanel()
+    public static readonly StyledProperty<bool> ShowVisibilitySliverProperty =
+        AvaloniaProperty.Register<SliverScenarioStackPanel, bool>(nameof(ShowVisibilitySliver), true);
+
+    public static readonly StyledProperty<bool> MaintainVisibilitySliverSizeProperty =
+        AvaloniaProperty.Register<SliverScenarioStackPanel, bool>(nameof(MaintainVisibilitySliverSize));
+
+    static SliverScenarioStackPanel()
     {
-        AffectsMeasure<MixedSliverPreviewPanel>(ScrollOffsetProperty, CacheExtentProperty);
-        AffectsArrange<MixedSliverPreviewPanel>(ScrollOffsetProperty, CacheExtentProperty);
+        AffectsMeasure<SliverScenarioStackPanel>(
+            ScrollOffsetProperty,
+            CacheExtentProperty,
+            ShowVisibilitySliverProperty,
+            MaintainVisibilitySliverSizeProperty);
+        AffectsArrange<SliverScenarioStackPanel>(
+            ScrollOffsetProperty,
+            CacheExtentProperty,
+            ShowVisibilitySliverProperty,
+            MaintainVisibilitySliverSizeProperty);
     }
 
-    public MixedSliverPreviewPanel()
+    public SliverScenarioStackPanel()
     {
         ClipToBounds = true;
     }
@@ -49,6 +58,18 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
     {
         get => GetValue(CacheExtentProperty);
         set => SetValue(CacheExtentProperty, value);
+    }
+
+    public bool ShowVisibilitySliver
+    {
+        get => GetValue(ShowVisibilitySliverProperty);
+        set => SetValue(ShowVisibilitySliverProperty, value);
+    }
+
+    public bool MaintainVisibilitySliverSize
+    {
+        get => GetValue(MaintainVisibilitySliverSizeProperty);
+        set => SetValue(MaintainVisibilitySliverSizeProperty, value);
     }
 
     public bool CanHorizontallyScroll
@@ -103,12 +124,21 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
     {
         var viewport = CreateViewport(availableSize);
         var result = LayoutSlivers(viewport);
+        var extent = new Size(viewport.CrossAxisExtent, result.ScrollExtent);
+        var measuredViewport = new Size(viewport.CrossAxisExtent, viewport.MainAxisExtent);
+        var stickyHeader = GetActiveStickyHeader();
+
+        if (!CanVerticallyScroll)
+        {
+            result = LayoutSlivers(new SliverViewport(Math.Max(viewport.MainAxisExtent, result.ScrollExtent), viewport.CrossAxisExtent));
+        }
+
         var measured = new bool[Children.Count];
-        UpdateScrollInfo(new Size(viewport.CrossAxisExtent, result.ScrollExtent), new Size(viewport.CrossAxisExtent, viewport.MainAxisExtent));
+        UpdateScrollInfo(extent, measuredViewport);
 
         foreach (var slot in result.Slots)
         {
-            var childIndex = GetChildIndex(slot);
+            var childIndex = slot.SliverIndex;
             if (childIndex < 0 || childIndex >= Children.Count)
             {
                 continue;
@@ -116,6 +146,12 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
 
             Children[childIndex].Measure(new Size(slot.CrossAxisExtent, slot.MainAxisExtent));
             measured[childIndex] = true;
+        }
+
+        if (stickyHeader.IsVisible && stickyHeader.ChildIndex < Children.Count)
+        {
+            Children[stickyHeader.ChildIndex].Measure(new Size(viewport.CrossAxisExtent, stickyHeader.MainAxisExtent));
+            measured[stickyHeader.ChildIndex] = true;
         }
 
         for (var i = 0; i < Children.Count; i++)
@@ -126,7 +162,7 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
             }
         }
 
-        return new Size(viewport.CrossAxisExtent, viewport.MainAxisExtent);
+        return CanVerticallyScroll ? measuredViewport : extent;
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -134,19 +170,27 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
         var viewport = new SliverViewport(finalSize.Height, finalSize.Width);
         var result = LayoutSlivers(viewport);
         var arranged = new bool[Children.Count];
-        var pinnedObstructionExtent = GetPinnedObstructionExtent(result.Slots);
+        var stickyHeader = GetActiveStickyHeader();
+        var pinnedObstructionExtent = stickyHeader.IsVisible
+            ? Math.Max(0d, stickyHeader.MainAxisOffset + stickyHeader.MainAxisExtent)
+            : GetPinnedObstructionExtent(result.Slots);
         UpdateScrollInfo(new Size(viewport.CrossAxisExtent, result.ScrollExtent), new Size(viewport.CrossAxisExtent, viewport.MainAxisExtent));
 
         foreach (var slot in result.Slots)
         {
-            var childIndex = GetChildIndex(slot);
+            var childIndex = slot.SliverIndex;
             if (childIndex < 0 || childIndex >= Children.Count)
             {
                 continue;
             }
 
+            if (stickyHeader.IsVisible && childIndex == stickyHeader.ChildIndex)
+            {
+                continue;
+            }
+
             var child = Children[childIndex];
-            child.SetValue(ZIndexProperty, slot.IsPinned ? 10 : 0);
+            child.SetValue(ZIndexProperty, slot.IsPinned ? 20 : 0);
             if (slot.IsCacheOnly ||
                 !TryGetVisibleClip(
                     slot,
@@ -165,6 +209,17 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
             }
 
             arranged[childIndex] = true;
+        }
+
+        if (stickyHeader.IsVisible && stickyHeader.ChildIndex < Children.Count)
+        {
+            var child = Children[stickyHeader.ChildIndex];
+            child.SetValue(ZIndexProperty, 20);
+            child.Opacity = 1d;
+            child.IsHitTestVisible = true;
+            child.Clip = null;
+            child.Arrange(new Rect(0d, stickyHeader.MainAxisOffset, viewport.CrossAxisExtent, stickyHeader.MainAxisExtent));
+            arranged[stickyHeader.ChildIndex] = true;
         }
 
         for (var i = 0; i < Children.Count; i++)
@@ -187,7 +242,7 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
         }
 
         var result = LayoutSlivers(new SliverViewport(Math.Max(1d, _viewport.Height), Math.Max(1d, _viewport.Width)));
-        var slot = result.Slots.FirstOrDefault(candidate => GetChildIndex(candidate) == index);
+        var slot = result.Slots.FirstOrDefault(candidate => candidate.SliverIndex == index);
         if (slot == default)
         {
             return false;
@@ -230,21 +285,40 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
 
     private SliverViewportLayoutResult LayoutSlivers(SliverViewport viewport)
     {
-        var slivers = new ISliverLayout[]
-        {
-            new SliverAdvancedPersistentHeaderLayout(new SliverAdvancedPersistentHeaderOptions(56d, 152d, Pinned: true)),
-            new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(FixedChildCount, 62d, 8d)),
-            new SliverPaddingLayout(
-                new SliverEdgeInsets(14d, 14d),
-                new SliverGridLayout(SliverGridLayoutOptions.FixedCrossAxisCount(GridChildCount, 3, 10d, 10d, mainAxisExtent: 96d))),
-            new SliverFillRemainingLayout(new SliverFillRemainingOptions(180d, HasScrollBody: false))
-        };
+        var slivers = Children
+            .Select(child => CreateLayout(child.DataContext as AvaloniaSliverBlock))
+            .ToArray();
 
         return new SliverViewportLayoutEngine().Layout(
             slivers,
             viewport,
             Math.Max(0d, ScrollOffset),
             Math.Max(0d, CacheExtent));
+    }
+
+    private ISliverLayout CreateLayout(AvaloniaSliverBlock? block)
+    {
+        if (block is null)
+        {
+            return new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(48d));
+        }
+
+        var extent = Math.Max(0d, block.Extent);
+        return block.Kind switch
+        {
+            AvaloniaSliverBlockKind.Header => new SliverToBoxAdapterLayout(
+                new SliverToBoxAdapterOptions(Math.Max(HeaderMinExtent, extent))),
+            AvaloniaSliverBlockKind.PaddedBox => new SliverPaddingLayout(
+                new SliverEdgeInsets(18d, 18d, 18d, 18d),
+                new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(extent))),
+            AvaloniaSliverBlockKind.FillRemaining => new SliverFillRemainingLayout(
+                new SliverFillRemainingOptions(extent, HasScrollBody: false)),
+            AvaloniaSliverBlockKind.Visibility => new SliverVisibilityLayout(
+                ShowVisibilitySliver,
+                new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(extent)),
+                maintainSize: MaintainVisibilitySliverSize),
+            _ => new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(extent))
+        };
     }
 
     private static SliverViewport CreateViewport(Size size)
@@ -254,15 +328,73 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
             double.IsFinite(size.Width) ? Math.Max(0d, size.Width) : 760d);
     }
 
-    private static int GetChildIndex(SliverViewportSlot slot)
+    private StickyHeaderState GetActiveStickyHeader()
     {
-        return slot.SliverIndex switch
+        var scrollOffset = Math.Max(0d, ScrollOffset);
+        var cursor = 0d;
+        var activeChildIndex = -1;
+        var activeStart = 0d;
+        var activeMaxExtent = 0d;
+        double? nextHeaderStart = null;
+
+        for (var childIndex = 0; childIndex < Children.Count; childIndex++)
         {
-            0 => HeaderChildIndex,
-            1 => FixedChildStart + slot.ItemIndex,
-            2 => GridChildStart + slot.ItemIndex,
-            3 => FillChildIndex,
-            _ => -1
+            var block = Children[childIndex].DataContext as AvaloniaSliverBlock;
+            var extent = GetScrollExtent(block);
+
+            if (block?.Kind == AvaloniaSliverBlockKind.Header)
+            {
+                if (cursor <= scrollOffset + SliverMath.Epsilon)
+                {
+                    activeChildIndex = childIndex;
+                    activeStart = cursor;
+                    activeMaxExtent = Math.Max(HeaderMinExtent, block.Extent);
+                    nextHeaderStart = null;
+                }
+                else if (activeChildIndex >= 0)
+                {
+                    nextHeaderStart = cursor;
+                    break;
+                }
+            }
+
+            cursor += extent;
+        }
+
+        if (activeChildIndex < 0)
+        {
+            return default;
+        }
+
+        var shrinkOffset = SliverMath.Clamp(scrollOffset - activeStart, 0d, activeMaxExtent - HeaderMinExtent);
+        var currentExtent = SliverMath.Clamp(activeMaxExtent - shrinkOffset, HeaderMinExtent, activeMaxExtent);
+        var mainAxisOffset = 0d;
+        if (nextHeaderStart.HasValue)
+        {
+            mainAxisOffset = Math.Min(0d, nextHeaderStart.Value - scrollOffset - currentExtent);
+        }
+
+        if (mainAxisOffset + currentExtent <= SliverMath.Epsilon)
+        {
+            return default;
+        }
+
+        return new StickyHeaderState(activeChildIndex, mainAxisOffset, currentExtent);
+    }
+
+    private static double GetScrollExtent(AvaloniaSliverBlock? block)
+    {
+        if (block is null)
+        {
+            return 48d;
+        }
+
+        var extent = Math.Max(0d, block.Extent);
+        return block.Kind switch
+        {
+            AvaloniaSliverBlockKind.Header => Math.Max(HeaderMinExtent, extent),
+            AvaloniaSliverBlockKind.PaddedBox => extent + 36d,
+            _ => extent
         };
     }
 
@@ -383,5 +515,10 @@ public sealed class MixedSliverPreviewPanel : Panel, ILogicalScrollable
     private static bool AreClose(Size left, Size right)
     {
         return AreClose(left.Width, right.Width) && AreClose(left.Height, right.Height);
+    }
+
+    private readonly record struct StickyHeaderState(int ChildIndex, double MainAxisOffset, double MainAxisExtent)
+    {
+        public bool IsVisible => ChildIndex >= 0 && MainAxisExtent > SliverMath.Epsilon;
     }
 }

@@ -6,6 +6,9 @@ namespace SliverWidgets.Avalonia;
 
 internal static class SliverAvaloniaPrimitives
 {
+    private const double DefaultViewportMainAxisExtent = 600d;
+    private const double DefaultLineScrollExtent = 16d;
+
     public static double Main(this Size size, SliverAxis axis)
     {
         return axis == SliverAxis.Vertical ? size.Height : size.Width;
@@ -50,6 +53,11 @@ internal static class SliverAvaloniaPrimitives
     public static double Main(this Vector vector, SliverAxis axis)
     {
         return axis == SliverAxis.Vertical ? vector.Y : vector.X;
+    }
+
+    public static Size LineScrollSize(SliverAxis axis)
+    {
+        return ToSize(axis, DefaultLineScrollExtent, DefaultLineScrollExtent);
     }
 
     public static bool AreClose(double left, double right)
@@ -97,5 +105,17 @@ internal static class SliverAvaloniaPrimitives
     public static double FiniteOrZero(double value)
     {
         return double.IsInfinity(value) || double.IsNaN(value) ? 0d : Math.Max(0d, value);
+    }
+
+    public static double ResolveViewportMainAxisExtent(double availableMainAxisExtent, double previousViewportMainAxisExtent)
+    {
+        if (!double.IsInfinity(availableMainAxisExtent) && !double.IsNaN(availableMainAxisExtent))
+        {
+            return Math.Max(0d, availableMainAxisExtent);
+        }
+
+        return previousViewportMainAxisExtent > SliverMath.Epsilon
+            ? previousViewportMainAxisExtent
+            : DefaultViewportMainAxisExtent;
     }
 }

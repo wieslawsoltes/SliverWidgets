@@ -305,7 +305,10 @@ public sealed class SliverAdvancedPersistentHeaderLayout : ISliverLayout
         var paintExtent = Options.Pinned || canFloatIntoView
             ? Math.Min(currentExtent, constraints.RemainingPaintExtent)
             : remainingNaturalPaint;
-        var mainAxisOffset = (Options.Pinned || canFloatIntoView) && constraints.ScrollOffset > SliverMath.Epsilon
+        var shouldPin = canFloatIntoView
+            ? constraints.ScrollOffset > SliverMath.Epsilon
+            : Options.Pinned && constraints.ScrollOffset > shrinkRange + SliverMath.Epsilon;
+        var mainAxisOffset = shouldPin
             ? 0d
             : -constraints.ScrollOffset;
 

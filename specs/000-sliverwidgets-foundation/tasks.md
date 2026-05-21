@@ -24,3 +24,8 @@
 - [x] `T022` Implement Uno gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
 - [x] `T023` Implement WinUI gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
 - [x] `T024` Add gallery docs and sample validation notes. Acceptance: `AC-009`, `AC-010`.
+- [x] `T025` Fix Avalonia gallery logical scrolling so `ScrollViewer` offsets drive sliver panels instead of physically scrolling realized item windows. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T026` Fix Avalonia persistent-header scroll smoothness by using pixel-sized logical line increments instead of item-sized wheel jumps. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T027` Fix Avalonia mixed gallery composition so direct child slots are clipped below pinned header obstruction instead of rendering through the header. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T028` Fix Avalonia sectioned gallery sticky headers so one active section header shrinks smoothly and clips rows without cumulative empty header gaps. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T029` Address PR review findings for viewport scroll-offset correction relayouts, finite core validation, and MAUI unconstrained cross-axis measurement. Requirements: `SW-FR-004`, `SW-FR-015`; Non-functional: `SW-NFR-002`.

@@ -65,7 +65,7 @@
       <Grid ColumnDefinitions="*,Auto">
         <StackPanel Spacing="4">
           <TextBlock Classes="h1" Text="SliverWidgets Avalonia Gallery" />
-          <TextBlock Classes="muted" Text="Native Avalonia controls arranged through SliverWidgets panels and core layout slots." />
+          <TextBlock Classes="muted" Text="Unified Flutter-inspired sliver scenario catalog using native Avalonia controls." />
         </StackPanel>
 
         <ItemsControl Grid.Column="1" ItemsSource="{Binding Metrics}">
@@ -96,31 +96,31 @@
     </Border>
 
     <TabControl x:Name="GalleryTabs" Grid.Row="1" Margin="16">
-      <TabItem Header="Fixed Stack">
+      <TabItem Header="Fixed">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
             <StackPanel Spacing="14">
-              <TextBlock Classes="h2" Text="Fixed extent rows" />
-              <TextBlock Classes="muted" Text="Rows use arithmetic index-to-offset mapping and native Avalonia ScrollViewer input." TextWrapping="Wrap" />
+              <TextBlock Classes="h2" Text="Fixed large list" />
+              <TextBlock Classes="muted" Text="100,000 uniform rows keep index-to-offset mapping arithmetic while preserving native ScrollViewer input." TextWrapping="Wrap" />
               <TextBlock Classes="muted" Text="Item extent" />
               <Slider Minimum="40" Maximum="92" Value="{Binding FixedItemExtent, Mode=TwoWay}" />
               <TextBlock Classes="muted" Text="Cache extent" />
-              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
             </StackPanel>
           </Border>
 
           <Border Grid.Column="1" Classes="viewport">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-              <ItemsControl ClipToBounds="True" ItemsSource="{Binding FixedRows}">
-                <ItemsControl.ItemsPanel>
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding FixedRows}">
+                <slivers:SliverItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <slivers:SliverStackPanel
+                    <slivers:SliverVirtualizingStackPanel
                         CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
                         ItemExtent="{Binding $parent[Window].DataContext.FixedItemExtent}"
                         Spacing="8" />
                   </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
                   <DataTemplate>
                     <Border Classes="row-card">
                       <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
@@ -133,8 +133,52 @@
                       </Grid>
                     </Border>
                   </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Variable">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Variable and non-uniform list" />
+              <TextBlock Classes="muted" Text="Rows report measured heights from the item template while the panel estimates unobserved extents." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Estimated extent" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="76 px" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding VariableRows}">
+                <slivers:SliverItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverVirtualizingListPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        EstimatedItemExtent="76"
+                        Spacing="8" />
+                  </ItemsPanelTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Height="{Binding Extent}" Classes="row-card">
+                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                          <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Category}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
             </ScrollViewer>
           </Border>
         </Grid>
@@ -144,17 +188,17 @@
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
             <StackPanel Spacing="14">
-              <TextBlock Classes="h2" Text="Adaptive grid panel" />
-              <TextBlock Classes="muted" Text="The grid panel uses max cross-axis extent sizing, cache-aware realization slots, and existing Avalonia item templates." TextWrapping="Wrap" />
+              <TextBlock Classes="h2" Text="Adaptive grid" />
+              <TextBlock Classes="muted" Text="Max cross-axis extent sizing adapts column count as the viewport width changes." TextWrapping="Wrap" />
               <TextBlock Classes="muted" Text="Cache extent" />
-              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
             </StackPanel>
           </Border>
 
           <Border Grid.Column="1" Classes="viewport">
             <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-              <ItemsControl ClipToBounds="True" ItemsSource="{Binding GridItems}">
-                <ItemsControl.ItemsPanel>
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding GridItems}">
+                <slivers:SliverItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
                     <slivers:SliverGridPanel
                         CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
@@ -164,8 +208,8 @@
                         MaxCrossAxisExtent="220"
                         SizingMode="MaxCrossAxisExtent" />
                   </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
                   <DataTemplate>
                     <Border Classes="tile-card">
                       <Grid RowDefinitions="Auto,*,Auto">
@@ -178,22 +222,22 @@
                       </Grid>
                     </Border>
                   </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
             </ScrollViewer>
           </Border>
         </Grid>
       </TabItem>
 
-      <TabItem Header="Persistent Header">
+      <TabItem Header="Header">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
             <StackPanel Spacing="14">
-              <TextBlock Classes="h2" Text="Pinned and collapsible header" />
-              <TextBlock Classes="muted" Text="The header follows the list scrollbar and shrinks between max and min extents." TextWrapping="Wrap" />
+              <TextBlock Classes="h2" Text="Pinned collapsible header" />
+              <TextBlock Classes="muted" Text="The app-bar header follows the list scrollbar and shrinks between max and min extents." TextWrapping="Wrap" />
               <CheckBox Content="Pinned" IsChecked="{Binding HeaderPinned, Mode=TwoWay}" />
               <TextBlock Classes="muted" Text="Shared cache extent" />
-              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
             </StackPanel>
           </Border>
 
@@ -213,79 +257,37 @@
               </slivers:SliverPersistentHeader>
 
               <ScrollViewer x:Name="HeaderScrollViewer" Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-                <ItemsControl ClipToBounds="True" ItemsSource="{Binding FixedRows}">
-                  <ItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding PreviewRows}">
+                  <slivers:SliverItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                       <slivers:SliverStackPanel
                           CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
                           ItemExtent="54"
                           Spacing="6" />
                     </ItemsPanelTemplate>
-                  </ItemsControl.ItemsPanel>
-                  <ItemsControl.ItemTemplate>
+                  </slivers:SliverItemsControl.ItemsPanel>
+                  <slivers:SliverItemsControl.ItemTemplate>
                     <DataTemplate>
                       <Border Classes="row-card">
                         <TextBlock Foreground="#0F172A" Text="{Binding Subtitle}" />
                       </Border>
                     </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                  </slivers:SliverItemsControl.ItemTemplate>
+                </slivers:SliverItemsControl>
               </ScrollViewer>
             </Grid>
           </Border>
         </Grid>
       </TabItem>
 
-      <TabItem Header="Virtual List">
+      <TabItem Header="Mixed">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
             <StackPanel Spacing="14">
-              <TextBlock Classes="h2" Text="Large virtualized list" />
-              <TextBlock Classes="muted" Text="The ItemsControl panel realizes only paint plus cache ranges from a deterministic 10,000 item source." TextWrapping="Wrap" />
+              <TextBlock Classes="h2" Text="Mixed sliver composition" />
+              <TextBlock Classes="muted" Text="A sample-only panel composes a pinned header, fixed rows, padded grid, and fill-remaining region through SliverViewportLayoutEngine." TextWrapping="Wrap" />
               <TextBlock Classes="muted" Text="Cache extent" />
               <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
-            </StackPanel>
-          </Border>
-
-          <Border Grid.Column="1" Classes="viewport">
-            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
-              <ItemsControl ClipToBounds="True" ItemsSource="{Binding LargeRows}">
-                <ItemsControl.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <slivers:SliverVirtualizingStackPanel
-                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
-                        ItemExtent="58"
-                        Spacing="6" />
-                  </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border Classes="row-card">
-                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
-                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
-                        <StackPanel Grid.Column="1">
-                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
-                          <TextBlock Classes="muted" Text="{Binding Subtitle}" />
-                        </StackPanel>
-                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Category}" />
-                      </Grid>
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </ScrollViewer>
-          </Border>
-        </Grid>
-      </TabItem>
-
-      <TabItem Header="Mixed Slivers">
-        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
-          <Border Classes="panel">
-            <StackPanel Spacing="14">
-              <TextBlock Classes="h2" Text="Flutter-inspired composition" />
-              <TextBlock Classes="muted" Text="This sample panel composes a pinned header, fixed rows, padded grid, and fill-remaining region through SliverViewportLayoutEngine." TextWrapping="Wrap" />
-              <TextBlock Classes="muted" Text="Cache extent" />
-              <Slider Minimum="0" Maximum="700" Value="{Binding CacheExtent, Mode=TwoWay}" />
               <ItemsControl ItemsSource="{Binding Demos}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
@@ -329,6 +331,130 @@
                   </StackPanel>
                 </Border>
               </local:MixedSliverPreviewPanel>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Sections">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Sectioned list with sticky headers" />
+              <TextBlock Classes="muted" Text="Avalonia-local projections flatten shared gallery sections into alternating pinned headers and row slivers." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding SectionedBlocks}">
+                <slivers:SliverItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <local:SliverScenarioStackPanel CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}" />
+                  </ItemsPanelTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row-card">
+                      <Grid ColumnDefinitions="5,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                          <TextBlock Classes="muted" Text="{Binding Summary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="muted" Text="{Binding Kind}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Fill">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Fill, padding, visibility" />
+              <TextBlock Classes="muted" Text="One-child-per-sliver blocks demonstrate SliverPadding, SliverToBoxAdapter, SliverVisibility, and SliverFillRemaining." TextWrapping="Wrap" />
+              <CheckBox Content="Show visibility sliver" IsChecked="{Binding ShowOptionalSliver, Mode=TwoWay}" />
+              <CheckBox Content="Maintain hidden size" IsChecked="{Binding MaintainOptionalSliverSize, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding CompositionBlocks}">
+                <slivers:SliverItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <local:SliverScenarioStackPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        MaintainVisibilitySliverSize="{Binding $parent[Window].DataContext.MaintainOptionalSliverSize}"
+                        ShowVisibilitySliver="{Binding $parent[Window].DataContext.ShowOptionalSliver}" />
+                  </ItemsPanelTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="tile-card">
+                      <Grid RowDefinitions="Auto,*,Auto">
+                        <Border Width="36" Height="4" HorizontalAlignment="Left" Background="{Binding AccentColor}" CornerRadius="2" />
+                        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+                          <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                          <TextBlock Classes="muted" Text="{Binding Summary}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Kind}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Cache">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Cache performance stress" />
+              <TextBlock Classes="muted" Text="A 100,000-row fixed-extent source exercises paint plus cache realization without materializing the full item source as controls." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Rows" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="100,000" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="2000" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding StressRows}">
+                <slivers:SliverItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverVirtualizingStackPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        ItemExtent="50"
+                        Spacing="4" />
+                  </ItemsPanelTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row-card">
+                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="muted" Text="{Binding Category}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
             </ScrollViewer>
           </Border>
         </Grid>

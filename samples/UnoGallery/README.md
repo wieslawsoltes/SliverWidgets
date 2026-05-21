@@ -8,11 +8,11 @@ window.Content = new SliverWidgets.Samples.UnoGallery.UnoGalleryPage();
 
 The gallery demonstrates:
 
-- `ItemsRepeater` fixed-list virtualization through `SliverFixedExtentVirtualizingLayout`.
-- `ItemsRepeater` grid virtualization through `SliverGridVirtualizingLayout`.
-- A 100,000 item source with realized/prepared counters.
-- Runtime controls for extent, spacing, aspect ratio, grid columns, and `ItemsRepeater.VerticalCacheLength`.
-- A Flutter-inspired CustomScrollView-style composition that combines box panels, fixed-list slivers, and grid slivers in one scroll surface.
+- Fixed large list virtualization through `SliverFixedExtentVirtualizingLayout`.
+- Variable/non-uniform rows using native Uno `StackLayout` virtualization until a sliver variable-extent adapter is available.
+- Adaptive max-cross-axis grid virtualization through `SliverGridVirtualizingLayout`.
+- Pinned/collapsible header, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.
+- Runtime controls for extent, spacing, aspect ratio, adaptive tile width, and `ItemsRepeater.VerticalCacheLength`.
 
 The sample targets `net10.0` as a buildable gallery surface on macOS and references `src/SliverWidgets.Uno`, `src/SliverWidgets.Core`, and `samples/SliverWidgets.GalleryData` directly.
 

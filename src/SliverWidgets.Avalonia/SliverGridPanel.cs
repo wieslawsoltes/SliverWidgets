@@ -157,15 +157,7 @@ public class SliverGridPanel : Panel, ILogicalScrollable
 
     public bool IsLogicalScrollEnabled => true;
 
-    public Size ScrollSize
-    {
-        get
-        {
-            var metrics = ResolveMetrics(_viewport.Cross(Axis));
-            var step = Math.Max(1d, metrics.TileMainAxisExtent + Math.Max(0d, MainAxisSpacing));
-            return SliverAvaloniaPrimitives.ToSize(Axis, step, 16d);
-        }
-    }
+    public Size ScrollSize => SliverAvaloniaPrimitives.LineScrollSize(Axis);
 
     public Size PageScrollSize => _viewport;
 

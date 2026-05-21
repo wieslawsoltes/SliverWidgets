@@ -2,7 +2,7 @@
 
 ## Gallery app
 
-The buildable code-only gallery lives in `../MauiGallery`. It references `SliverWidgets.Maui`, `SliverWidgets.Core`, and `SliverWidgets.GalleryData`, and demonstrates fixed list layout, native-backed virtualized lists, grid collection mode, grouped section headers, cache metadata, spacing, and extent controls.
+The buildable code-only gallery lives in `../MauiGallery`. It references `SliverWidgets.Maui`, `SliverWidgets.Core`, and `SliverWidgets.GalleryData`, and demonstrates the unified sliver scenario catalog: fixed large list, variable/non-uniform list, adaptive grid, pinned/collapsible header concept, mixed composition, sectioned/sticky-header concept, fill/padding/visibility composition, and cache/performance stress.
 
 ```bash
 dotnet build samples/MauiGallery/MauiGallery.csproj
@@ -44,4 +44,6 @@ Use `SliverCollectionView` for large item sources. It wraps MAUI `CollectionView
 </slivers:SliverCollectionView>
 ```
 
-For grids, set `LayoutMode="FixedExtentGrid"` and `CrossAxisCount`. MAUI does not expose a direct per-item extent property on `CollectionView`, so `ItemExtent` records the sliver contract and the item template should set the matching `HeightRequest` for vertical layouts or `WidthRequest` for horizontal layouts. `CacheExtent` is retained as sliver metadata; MAUI handlers own the actual realization window.
+For grids, set `LayoutMode="FixedExtentGrid"` and `CrossAxisCount`. The gallery derives that count from the available width to model Flutter's max-cross-axis-extent grid concept on top of MAUI's fixed-span grid handler.
+
+MAUI does not expose a direct per-item extent property on `CollectionView`, so `ItemExtent` records the sliver contract and the item template should set the matching `HeightRequest` for vertical layouts or `WidthRequest` for horizontal layouts. Variable/non-uniform samples use native `CollectionView` measurement instead of `SliverCollectionView`. `CacheExtent` is retained as sliver metadata; MAUI handlers own the actual realization window.

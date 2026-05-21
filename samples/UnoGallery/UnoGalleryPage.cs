@@ -14,6 +14,8 @@ public sealed class UnoGalleryPage : Page
 {
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(600);
     private readonly IReadOnlyList<GalleryItem> _largeItems = SliverGalleryData.CreateItems(100_000);
+    private readonly IReadOnlyList<GallerySection> _sections = SliverGalleryData.CreateSections(6, 90);
+    private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly ContentControl _scenarioHost = new();
     private readonly ObservableCollection<Button> _navigationButtons = new();
 
@@ -21,7 +23,7 @@ public sealed class UnoGalleryPage : Page
     {
         Background = Brush(0xFFF6F8FB);
         Content = BuildShell();
-        ShowScenario("Fixed List", BuildFixedListScenario);
+        ShowScenario(Scenario(GalleryScenarioKind.FixedExtentList).Title, BuildFixedLargeListScenario);
     }
 
     private UIElement BuildShell()
@@ -59,10 +61,14 @@ public sealed class UnoGalleryPage : Page
             Margin = new Thickness(0, 0, 0, 18)
         });
 
-        AddNavigation(nav, "Fixed List", BuildFixedListScenario);
-        AddNavigation(nav, "Responsive Grid", BuildGridScenario);
-        AddNavigation(nav, "Large Data", BuildLargeDataScenario);
-        AddNavigation(nav, "Custom Scroll", BuildCustomScrollScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.FixedExtentList).Title, BuildFixedLargeListScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.VariableExtentList).Title, BuildVariableListScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.AdaptiveGrid).Title, BuildAdaptiveGridScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.PinnedHeader).Title, BuildPinnedHeaderScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.MixedComposition).Title, BuildMixedCompositionScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.SectionedHeaders).Title, BuildSectionedHeaderScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.FillPaddingVisibility).Title, BuildFillVisibilityScenario);
+        AddNavigation(nav, Scenario(GalleryScenarioKind.CacheStress).Title, BuildCacheStressScenario);
 
         Grid.SetColumn(nav, 0);
         root.Children.Add(nav);
@@ -110,15 +116,21 @@ public sealed class UnoGalleryPage : Page
         _scenarioHost.Content = create();
     }
 
-    private UIElement BuildFixedListScenario()
+    private GalleryScenario Scenario(GalleryScenarioKind kind)
     {
+        return _scenarios.First(scenario => scenario.Kind == kind);
+    }
+
+    private UIElement BuildFixedLargeListScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.FixedExtentList);
         var layout = new SliverFixedExtentVirtualizingLayout
         {
             ItemExtent = 64,
             Spacing = 6
         };
 
-        var repeater = CreateRepeater(_items, layout, GalleryItemFactoryKind.List);
+        var repeater = CreateRepeater(_largeItems, layout, GalleryItemFactoryKind.List);
         repeater.VerticalCacheLength = 2;
 
         var controls = new StackPanel { Spacing = 14 };
@@ -127,18 +139,49 @@ public sealed class UnoGalleryPage : Page
         controls.Children.Add(ControlSlider("cache length", 0, 8, repeater.VerticalCacheLength, 0.5, value => repeater.VerticalCacheLength = value));
 
         return Scenario(
-            "Fixed extent list",
-            "ItemsRepeater with SliverFixedExtentVirtualizingLayout. Row offsets use arithmetic index-to-offset mapping.",
+            scenario.Title,
+            scenario.Summary,
             controls,
             Viewport(repeater));
     }
 
-    private UIElement BuildGridScenario()
+    private UIElement BuildVariableListScenario()
     {
+        var scenario = Scenario(GalleryScenarioKind.VariableExtentList);
+        var layout = new StackLayout
+        {
+            Orientation = Orientation.Vertical,
+            Spacing = 6
+        };
+
+        var repeater = CreateRepeater(_items, layout, GalleryItemFactoryKind.Variable);
+        repeater.VerticalCacheLength = 2;
+
+        var controls = new StackPanel { Spacing = 14 };
+        controls.Children.Add(new TextBlock
+        {
+            Text = "Uses native Uno/WinUI StackLayout virtualization for non-uniform rows until the framework adapter exposes SliverVariableExtentListLayout.",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Brush(0xFF475467),
+            FontSize = 13
+        });
+        controls.Children.Add(ControlSlider("spacing", 0, 20, layout.Spacing, 1, value => layout.Spacing = value));
+        controls.Children.Add(ControlSlider("cache length", 0, 8, repeater.VerticalCacheLength, 0.5, value => repeater.VerticalCacheLength = value));
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            controls,
+            Viewport(repeater));
+    }
+
+    private UIElement BuildAdaptiveGridScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.AdaptiveGrid);
         var layout = new SliverGridVirtualizingLayout
         {
-            SizingMode = SliverGridSizingMode.FixedCrossAxisCount,
-            CrossAxisCount = 3,
+            SizingMode = SliverGridSizingMode.MaxCrossAxisExtent,
+            MaxCrossAxisExtent = 220,
             MainAxisSpacing = 12,
             CrossAxisSpacing = 12,
             ChildAspectRatio = 1.45
@@ -148,21 +191,246 @@ public sealed class UnoGalleryPage : Page
         repeater.VerticalCacheLength = 1.5;
 
         var controls = new StackPanel { Spacing = 14 };
-        controls.Children.Add(ControlSlider("columns", 1, 6, layout.CrossAxisCount, 1, value => layout.CrossAxisCount = Math.Max(1, (int)Math.Round(value))));
+        controls.Children.Add(ControlSlider("max tile width", 140, 340, layout.MaxCrossAxisExtent, 10, value => layout.MaxCrossAxisExtent = value));
         controls.Children.Add(ControlSlider("main spacing", 0, 32, layout.MainAxisSpacing, 1, value => layout.MainAxisSpacing = value));
         controls.Children.Add(ControlSlider("cross spacing", 0, 32, layout.CrossAxisSpacing, 1, value => layout.CrossAxisSpacing = value));
         controls.Children.Add(ControlSlider("aspect ratio", 0.7, 2.4, layout.ChildAspectRatio, 0.05, value => layout.ChildAspectRatio = value));
         controls.Children.Add(ControlSlider("cache length", 0, 8, repeater.VerticalCacheLength, 0.5, value => repeater.VerticalCacheLength = value));
 
         return Scenario(
-            "Grid layout",
-            "ItemsRepeater with SliverGridVirtualizingLayout. The gallery exposes spacing, aspect, cache, and column controls.",
+            scenario.Title,
+            scenario.Summary,
             controls,
             Viewport(repeater));
     }
 
-    private UIElement BuildLargeDataScenario()
+    private UIElement BuildPinnedHeaderScenario()
     {
+        var scenario = Scenario(GalleryScenarioKind.PinnedHeader);
+        const double maxHeaderHeight = 148;
+        const double minHeaderHeight = 58;
+
+        var layout = new SliverFixedExtentVirtualizingLayout
+        {
+            ItemExtent = 52,
+            Spacing = 4
+        };
+
+        var repeater = CreateRepeater(_largeItems, layout, GalleryItemFactoryKind.Compact);
+        repeater.VerticalCacheLength = 2;
+
+        var scroller = new ScrollViewer
+        {
+            Content = repeater,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = Brush(0xFFFFFFFF),
+            Margin = new Thickness(0, maxHeaderHeight, 0, 0)
+        };
+
+        var title = new TextBlock
+        {
+            Text = "Pinned SliverAppBar concept",
+            Foreground = Brush(0xFFFFFFFF),
+            FontSize = 24,
+            FontWeight = FontWeights.SemiBold
+        };
+
+        var subtitle = new TextBlock
+        {
+            Text = "Collapses to a pinned toolbar while fixed-extent rows virtualize below.",
+            Foreground = Brush(0xFFDDE7FF),
+            FontSize = 13,
+            TextWrapping = TextWrapping.Wrap
+        };
+
+        var header = new Border
+        {
+            Height = maxHeaderHeight,
+            Padding = new Thickness(22, 18, 22, 14),
+            Background = Brush(0xFF1D4ED8),
+            VerticalAlignment = VerticalAlignment.Top,
+            Child = new StackPanel
+            {
+                Spacing = 8,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                Children = { title, subtitle }
+            }
+        };
+
+        scroller.ViewChanged += (_, _) =>
+        {
+            var collapsed = Math.Min(maxHeaderHeight - minHeaderHeight, scroller.VerticalOffset);
+            header.Height = maxHeaderHeight - collapsed;
+            scroller.Margin = new Thickness(0, header.Height, 0, 0);
+            title.FontSize = scroller.VerticalOffset > 70 ? 18 : 24;
+            subtitle.Opacity = scroller.VerticalOffset > 48 ? 0 : 1;
+        };
+
+        var layered = new Grid();
+        layered.Children.Add(scroller);
+        layered.Children.Add(header);
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            ScenarioNote("Persistent header layout is available in the core protocol; this Uno gallery keeps the adapter surface thin until a native header adapter is added."),
+            layered);
+    }
+
+    private UIElement BuildMixedCompositionScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.MixedComposition);
+        var root = new StackPanel
+        {
+            Spacing = 18,
+            Padding = new Thickness(0, 0, 0, 24)
+        };
+
+        root.Children.Add(HeroPanel());
+        root.Children.Add(SectionHeader("SliverToBoxAdapter-style summary", "Ordinary Uno controls can sit between virtualized sliver sections."));
+        root.Children.Add(SummaryBand());
+        root.Children.Add(SectionHeader("Fixed extent sliver list", "A compact activity feed hosted by ItemsRepeater."));
+        root.Children.Add(FixedHeightRepeater(SliverGalleryData.CreateItems(300), 260, new SliverFixedExtentVirtualizingLayout { ItemExtent = 58, Spacing = 4 }, GalleryItemFactoryKind.Compact));
+        root.Children.Add(SectionHeader("Responsive grid sliver", "A Flutter-inspired CustomScrollView composition using normal Uno panels plus sliver layouts."));
+        root.Children.Add(FixedHeightRepeater(SliverGalleryData.CreateItems(480), 420, new SliverGridVirtualizingLayout
+        {
+            SizingMode = SliverGridSizingMode.MaxCrossAxisExtent,
+            MaxCrossAxisExtent = 210,
+            MainAxisSpacing = 10,
+            CrossAxisSpacing = 10,
+            ChildAspectRatio = 1.35
+        }, GalleryItemFactoryKind.Grid));
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            ScenarioNote("Nested preview repeaters are height-bounded so ItemsRepeater still receives a finite viewport and cache window."),
+            new ScrollViewer
+            {
+                Content = root,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                Background = Brush(0xFFFFFFFF)
+            });
+    }
+
+    private UIElement BuildSectionedHeaderScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.SectionedHeaders);
+        var stickyTitle = new TextBlock
+        {
+            Text = _sections[0].Title,
+            Foreground = Brush(0xFFFFFFFF),
+            FontWeight = FontWeights.SemiBold,
+            FontSize = 16
+        };
+
+        var content = new StackPanel { Spacing = 18, Padding = new Thickness(16, 62, 16, 24) };
+        foreach (var section in _sections)
+        {
+            content.Children.Add(SectionHeader(section.Title, section.Summary));
+            content.Children.Add(FixedHeightRepeater(section.Items, 280, new SliverFixedExtentVirtualizingLayout { ItemExtent = 50, Spacing = 3 }, GalleryItemFactoryKind.Compact));
+        }
+
+        var scroller = new ScrollViewer
+        {
+            Content = content,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = Brush(0xFFFFFFFF)
+        };
+
+        scroller.ViewChanged += (_, _) =>
+        {
+            var index = Math.Clamp((int)(scroller.VerticalOffset / 390), 0, _sections.Count - 1);
+            stickyTitle.Text = _sections[index].Title;
+        };
+
+        var overlay = new Border
+        {
+            Height = 46,
+            Margin = new Thickness(12),
+            Padding = new Thickness(16, 0, 16, 0),
+            CornerRadius = new CornerRadius(8),
+            Background = Brush(0xFF0F766E),
+            VerticalAlignment = VerticalAlignment.Top,
+            Child = stickyTitle
+        };
+
+        var layered = new Grid();
+        layered.Children.Add(scroller);
+        layered.Children.Add(overlay);
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            ScenarioNote("The sticky header is an Uno overlay in this sample; a future adapter can translate persistent-header geometry directly."),
+            layered);
+    }
+
+    private UIElement BuildFillVisibilityScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.FillPaddingVisibility);
+        var showDetails = new CheckBox
+        {
+            Content = "show replacement sliver content",
+            IsChecked = true
+        };
+
+        var detail = FillPanel("Visible content", "SliverVisibility keeps this content in the composition when enabled.", 0xFFEEF2FF, 0xFF3730A3);
+        var replacement = FillPanel("Replacement content", "The hidden branch can still reserve layout space or swap an alternate child.", 0xFFFFF7ED, 0xFFC2410C);
+
+        showDetails.Checked += (_, _) =>
+        {
+            detail.Visibility = Visibility.Visible;
+            replacement.Visibility = Visibility.Collapsed;
+        };
+        showDetails.Unchecked += (_, _) =>
+        {
+            detail.Visibility = Visibility.Collapsed;
+            replacement.Visibility = Visibility.Visible;
+        };
+        replacement.Visibility = Visibility.Collapsed;
+
+        var content = new StackPanel
+        {
+            Spacing = 16,
+            Padding = new Thickness(24),
+            Children =
+            {
+                new Border { Height = 44, Background = Brush(0xFFE0F2FE), CornerRadius = new CornerRadius(8) },
+                detail,
+                replacement,
+                new Border
+                {
+                    MinHeight = 260,
+                    Padding = new Thickness(20),
+                    Background = Brush(0xFFF8FAFC),
+                    BorderBrush = Brush(0xFFE2E8F0),
+                    BorderThickness = new Thickness(1),
+                    CornerRadius = new CornerRadius(8),
+                    Child = SectionHeader("Fill remaining", "This block stretches the composition like SliverFillRemaining after padded content.")
+                }
+            }
+        };
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            showDetails,
+            new ScrollViewer
+            {
+                Content = content,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                Background = Brush(0xFFFFFFFF)
+            });
+    }
+
+    private UIElement BuildCacheStressScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.CacheStress);
         var layout = new SliverFixedExtentVirtualizingLayout
         {
             ItemExtent = 52,
@@ -210,51 +478,10 @@ public sealed class UnoGalleryPage : Page
         controls.Children.Add(JumpButtons(scroller, layout));
 
         return Scenario(
-            "Large data virtualization",
-            "A 100,000 item source verifies that the layout realizes the viewport plus cache range instead of the full collection.",
+            scenario.Title,
+            scenario.Summary,
             controls,
             scroller);
-    }
-
-    private UIElement BuildCustomScrollScenario()
-    {
-        var root = new StackPanel
-        {
-            Spacing = 18,
-            Padding = new Thickness(0, 0, 0, 24)
-        };
-
-        root.Children.Add(HeroPanel());
-        root.Children.Add(SectionHeader("SliverToBoxAdapter-style summary", "Ordinary Uno controls can sit between virtualized sliver sections."));
-        root.Children.Add(SummaryBand());
-        root.Children.Add(SectionHeader("Fixed extent sliver list", "A compact activity feed hosted by ItemsRepeater."));
-        root.Children.Add(CreateRepeater(SliverGalleryData.CreateItems(36), new SliverFixedExtentVirtualizingLayout { ItemExtent = 58, Spacing = 4 }, GalleryItemFactoryKind.Compact));
-        root.Children.Add(SectionHeader("Responsive grid sliver", "A Flutter-inspired CustomScrollView composition using normal Uno panels plus sliver layouts."));
-        root.Children.Add(CreateRepeater(SliverGalleryData.CreateItems(72), new SliverGridVirtualizingLayout
-        {
-            SizingMode = SliverGridSizingMode.MaxCrossAxisExtent,
-            MaxCrossAxisExtent = 210,
-            MainAxisSpacing = 10,
-            CrossAxisSpacing = 10,
-            ChildAspectRatio = 1.35
-        }, GalleryItemFactoryKind.Grid));
-
-        return Scenario(
-            "CustomScrollView-style panels",
-            "This page composes box panels, fixed list slivers, and grid slivers in one vertical scroll surface.",
-            new TextBlock
-            {
-                Text = "The composite view keeps platform scrolling policy in ScrollViewer and delegates realized item layout to SliverWidgets.Uno.",
-                TextWrapping = TextWrapping.Wrap,
-                Foreground = Brush(0xFF475467)
-            },
-            new ScrollViewer
-            {
-                Content = root,
-                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
-                Background = Brush(0xFFFFFFFF)
-            });
     }
 
     private static ItemsRepeater CreateRepeater(IReadOnlyList<GalleryItem> items, VirtualizingLayout layout, GalleryItemFactoryKind kind)
@@ -264,6 +491,60 @@ public sealed class UnoGalleryPage : Page
             ItemsSource = items,
             Layout = layout,
             ItemTemplate = new GalleryItemElementFactory(kind)
+        };
+    }
+
+    private static UIElement FixedHeightRepeater(IReadOnlyList<GalleryItem> items, double height, VirtualizingLayout layout, GalleryItemFactoryKind kind)
+    {
+        return new Border
+        {
+            Height = height,
+            BorderBrush = Brush(0xFFE4E7EC),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = Viewport(CreateRepeater(items, layout, kind))
+        };
+    }
+
+    private static UIElement ScenarioNote(string text)
+    {
+        return new TextBlock
+        {
+            Text = text,
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Brush(0xFF475467),
+            FontSize = 13
+        };
+    }
+
+    private static UIElement FillPanel(string title, string detail, uint background, uint foreground)
+    {
+        return new Border
+        {
+            MinHeight = 118,
+            Padding = new Thickness(20),
+            Background = Brush(background),
+            CornerRadius = new CornerRadius(8),
+            Child = new StackPanel
+            {
+                Spacing = 6,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = title,
+                        Foreground = Brush(foreground),
+                        FontSize = 18,
+                        FontWeight = FontWeights.SemiBold
+                    },
+                    new TextBlock
+                    {
+                        Text = detail,
+                        Foreground = Brush(0xFF475467),
+                        TextWrapping = TextWrapping.Wrap
+                    }
+                }
+            }
         };
     }
 
@@ -581,6 +862,7 @@ internal sealed class GalleryItemElementFactory : ElementFactory
         return _kind switch
         {
             GalleryItemFactoryKind.Grid => CreateGridTile(),
+            GalleryItemFactoryKind.Variable => CreateVariableRow(),
             GalleryItemFactoryKind.Compact => CreateCompactRow(),
             _ => CreateListRow()
         };
@@ -642,6 +924,41 @@ internal sealed class GalleryItemElementFactory : ElementFactory
             }
         };
     }
+
+    private static UIElement CreateVariableRow()
+    {
+        return new Border
+        {
+            Margin = new Thickness(8, 0, 8, 0),
+            Padding = new Thickness(14, 10, 14, 10),
+            CornerRadius = new CornerRadius(8),
+            Background = UnoGalleryPageBrushes.White,
+            BorderBrush = UnoGalleryPageBrushes.Border,
+            BorderThickness = new Thickness(1),
+            Child = new Grid
+            {
+                ColumnSpacing = 12,
+                RowDefinitions =
+                {
+                    new RowDefinition { Height = GridLength.Auto },
+                    new RowDefinition { Height = GridLength.Auto }
+                },
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = GridLength.Auto },
+                    new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                    new ColumnDefinition { Width = GridLength.Auto }
+                },
+                Children =
+                {
+                    CreateBadge(),
+                    CreateTextStack(),
+                    CreateMetricText()
+                }
+            }
+        };
+    }
+
 
     private static UIElement CreateGridTile()
     {
@@ -730,11 +1047,15 @@ internal sealed class GalleryItemElementFactory : ElementFactory
         return metric;
     }
 
-    private static void UpdateElement(UIElement element, GalleryItem item)
+    private void UpdateElement(UIElement element, GalleryItem item)
     {
         if (element is FrameworkElement frameworkElement)
         {
             frameworkElement.Tag = item;
+            if (frameworkElement is Border border)
+            {
+                border.MinHeight = _kind == GalleryItemFactoryKind.Variable ? item.Extent : 0d;
+            }
         }
 
         if (FindByName<TextBlock>(element, "IdText") is { } id)
@@ -785,7 +1106,8 @@ internal enum GalleryItemFactoryKind
 {
     List,
     Compact,
-    Grid
+    Grid,
+    Variable
 }
 
 internal static class UnoGalleryPageBrushes

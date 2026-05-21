@@ -7,6 +7,10 @@ description: Public API guide for SliverWidgets.Avalonia.
 
 `SliverWidgets.Avalonia` provides panels and virtualizing panels that arrange Avalonia controls from core sliver slots.
 
+## SliverItemsControl
+
+`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
+
 ## SliverStackPanel
 
 Fixed-extent non-virtual panel.
@@ -74,15 +78,37 @@ Variable-height `VirtualizingPanel` for `ItemsControl`.
 ## Example
 
 ```xml
-<ItemsControl ItemsSource="{Binding Rows}">
-  <ItemsControl.ItemsPanel>
+<ScrollViewer VerticalScrollBarVisibility="Visible">
+  <slivers:SliverItemsControl
+      xmlns:slivers="using:SliverWidgets.Avalonia"
+      ItemsSource="{Binding Rows}">
+    <slivers:SliverItemsControl.ItemsPanel>
+      <ItemsPanelTemplate>
+        <slivers:SliverVirtualizingStackPanel
+            ItemExtent="44"
+            Spacing="2"
+            CacheExtent="500" />
+      </ItemsPanelTemplate>
+    </slivers:SliverItemsControl.ItemsPanel>
+  </slivers:SliverItemsControl>
+</ScrollViewer>
+```
+
+The `ScrollViewer` content should be `SliverItemsControl`, not a plain `ItemsControl`, when using a logical sliver items panel. Otherwise Avalonia physically scrolls the `ItemsControl` and can move beyond the realized item window.
+
+Avalonia sliver panels report a 16px logical line scroll size. This keeps wheel-driven persistent-header collapse smooth while preserving fixed-extent arithmetic for realization and bring-into-view.
+
+```xml
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding Rows}">
+  <slivers:SliverItemsControl.ItemsPanel>
     <ItemsPanelTemplate>
       <slivers:SliverVirtualizingStackPanel
-          xmlns:slivers="using:SliverWidgets.Avalonia"
           ItemExtent="44"
           Spacing="2"
           CacheExtent="500" />
     </ItemsPanelTemplate>
-  </ItemsControl.ItemsPanel>
-</ItemsControl>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
 ```

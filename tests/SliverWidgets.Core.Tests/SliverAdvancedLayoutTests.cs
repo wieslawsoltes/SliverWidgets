@@ -209,6 +209,21 @@ public sealed class SliverAdvancedLayoutTests
     }
 
     [Fact]
+    public void AdvancedPinnedHeaderTransitionsUntilCollapsedBeforePinning()
+    {
+        var layout = new SliverAdvancedPersistentHeaderLayout(
+            new SliverAdvancedPersistentHeaderOptions(40d, 120d, Pinned: true));
+
+        var partiallyCollapsed = layout.Layout(Constraints(scrollOffset: 32d, remainingPaintExtent: 120d));
+        var pinned = layout.Layout(Constraints(scrollOffset: 90d, remainingPaintExtent: 120d));
+
+        Assert.Equal(88d, partiallyCollapsed.Slots[0].MainAxisExtent);
+        Assert.Equal(-32d, partiallyCollapsed.Slots[0].MainAxisOffset);
+        Assert.Equal(40d, pinned.Slots[0].MainAxisExtent);
+        Assert.Equal(0d, pinned.Slots[0].MainAxisOffset);
+    }
+
+    [Fact]
     public void StepSnapServiceAdvancesTowardTargetWithoutFrameworkTime()
     {
         var state = new SliverPersistentHeaderState();

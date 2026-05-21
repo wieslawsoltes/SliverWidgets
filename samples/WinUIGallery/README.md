@@ -14,7 +14,8 @@ Run and validate the app on Windows with Windows App SDK support. Non-Windows bu
 
 ## Included Demos
 
-- Fixed extent `ItemsRepeater` list using `SliverFixedExtentVirtualizingLayout`.
-- Grid `ItemsRepeater` using `SliverGridVirtualizingLayout`.
-- 100,000 item source with realized element counts and jump controls.
-- Pinned and floating header concepts over virtualized content.
+- Fixed large list `ItemsRepeater` virtualization using `SliverFixedExtentVirtualizingLayout`.
+- Variable/non-uniform rows using native WinUI `StackLayout` virtualization until a sliver variable-extent adapter is available.
+- Adaptive max-cross-axis grid virtualization using `SliverGridVirtualizingLayout`.
+- Pinned/collapsible header, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.
+- 100,000 item source with realized element counts, cache controls, and jump controls.
