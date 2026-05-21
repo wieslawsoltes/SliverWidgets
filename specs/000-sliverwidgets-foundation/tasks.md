@@ -37,3 +37,4 @@
 - [x] `T035` Add Avalonia virtualizing grid panel and use it in the adaptive grid gallery sample. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-021`.
 - [x] `T036` Fix Avalonia sectioned gallery clipping so incoming stacked headers do not create blank bands before they reach the leading pinned-header run. Requirements: `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-010`.
 - [x] `T037` Fix non-pinned persistent header shrink/paint geometry so scrolling headers resize at the leading edge before scrolling away without reserving empty space. Requirements: `SW-FR-008`, `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-003`, `AC-010`, `AC-012`.
+- [x] `T038` Address Avalonia PR review findings for unconstrained cross-axis measure and generator-safe realized-container clearing. Requirements: `SW-FR-014`; Acceptance: `AC-010`.

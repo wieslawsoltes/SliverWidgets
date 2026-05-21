@@ -174,8 +174,12 @@ public class SliverGridPanel : Panel, ILogicalScrollable
     protected override Size MeasureOverride(Size availableSize)
     {
         var axis = Axis;
-        var viewportMainAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Main(axis));
-        var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
+        var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
+            availableSize.Main(axis),
+            _viewport.Main(axis));
+        var crossAxisExtent = SliverAvaloniaPrimitives.ResolveViewportCrossAxisExtent(
+            availableSize.Cross(axis),
+            _viewport.Cross(axis));
         var layout = CreateLayout(Children.Count);
         var constraints = new SliverConstraints(
             axis,

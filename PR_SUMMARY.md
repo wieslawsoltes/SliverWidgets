@@ -21,6 +21,8 @@ The main change is that core sliver geometry now follows Flutter more closely fo
   - incoming stacked section headers no longer clip rows before they reach the leading pinned-header run.
   - mixed sliver preview clipping only accounts for the active leading pinned obstruction.
   - non-pinned persistent headers report only their visible paint extent, so following rows move up smoothly.
+  - unconstrained cross-axis measure no longer collapses sliver children to zero width.
+  - virtualizing panels remove realized mappings before clearing item containers.
 - Updated WinUI virtualizing layouts to map `VisibleRect` to paint and `RealizationRect` to cache.
 - Updated Uno virtualizing layouts to infer visible range from realization data where Uno does not support `VisibleRect`.
 - Expanded core and Avalonia headless tests for cache windows, header geometry, padding correction, fill remaining, adaptive grids, section headers, and gallery behavior.
@@ -55,7 +57,7 @@ Test results:
 
 - Core tests: 35 passed.
 - Framework parity tests: 5 passed.
-- Avalonia headless tests: 10 passed.
+- Avalonia headless tests: 11 passed.
 
 ## Notes
 

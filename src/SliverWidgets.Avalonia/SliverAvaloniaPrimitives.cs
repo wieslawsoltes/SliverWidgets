@@ -104,7 +104,7 @@ internal static class SliverAvaloniaPrimitives
 
     public static double FiniteOrZero(double value)
     {
-        return double.IsInfinity(value) || double.IsNaN(value) ? 0d : Math.Max(0d, value);
+        return double.IsNaN(value) ? 0d : Math.Max(0d, value);
     }
 
     public static double ResolveViewportMainAxisExtent(double availableMainAxisExtent, double previousViewportMainAxisExtent)
@@ -117,5 +117,32 @@ internal static class SliverAvaloniaPrimitives
         return previousViewportMainAxisExtent > SliverMath.Epsilon
             ? previousViewportMainAxisExtent
             : DefaultViewportMainAxisExtent;
+    }
+
+    public static double ResolveViewportCrossAxisExtent(double availableCrossAxisExtent, double previousCrossAxisExtent)
+    {
+        if (double.IsFinite(availableCrossAxisExtent))
+        {
+            return Math.Max(0d, availableCrossAxisExtent);
+        }
+
+        return previousCrossAxisExtent > SliverMath.Epsilon
+            ? previousCrossAxisExtent
+            : DefaultViewportMainAxisExtent;
+    }
+
+    public static double ResolveDesiredCrossAxisExtent(double availableCrossAxisExtent, double measuredCrossAxisExtent, double fallbackCrossAxisExtent)
+    {
+        if (double.IsFinite(availableCrossAxisExtent))
+        {
+            return Math.Max(0d, availableCrossAxisExtent);
+        }
+
+        if (double.IsFinite(measuredCrossAxisExtent) && measuredCrossAxisExtent > SliverMath.Epsilon)
+        {
+            return measuredCrossAxisExtent;
+        }
+
+        return Math.Max(0d, fallbackCrossAxisExtent);
     }
 }

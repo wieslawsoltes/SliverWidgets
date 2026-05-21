@@ -183,6 +183,35 @@ public sealed class AvaloniaGallerySmokeTests
     }
 
     [AvaloniaFact]
+    public void Sliver_controls_preserve_unconstrained_cross_axis_measure()
+    {
+        var headerText = new TextBlock { Text = "Unconstrained persistent header" };
+        var header = new AvaloniaSlivers.SliverPersistentHeader
+        {
+            MinExtent = 32d,
+            MaxExtent = 64d,
+            Child = headerText
+        };
+
+        header.Measure(new Size(double.PositiveInfinity, 200d));
+
+        Assert.True(headerText.DesiredSize.Width > 0d);
+        Assert.True(header.DesiredSize.Width > 0d);
+
+        var stackText = new TextBlock { Text = "Unconstrained stack row" };
+        var stack = new AvaloniaSlivers.SliverStackPanel
+        {
+            ItemExtent = 32d
+        };
+        stack.Children.Add(stackText);
+
+        stack.Measure(new Size(double.PositiveInfinity, 200d));
+
+        Assert.True(stackText.DesiredSize.Width > 0d);
+        Assert.True(stack.DesiredSize.Width > 0d);
+    }
+
+    [AvaloniaFact]
     public void Mixed_panel_clips_scrolled_content_below_pinned_header()
     {
         var panel = new MixedSliverPreviewPanel

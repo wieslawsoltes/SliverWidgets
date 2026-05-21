@@ -199,17 +199,19 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
         var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
             availableSize.Main(axis),
             _viewport.Main(axis));
-        var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
+        var measureCrossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
         var realizedIndexes = GetRealizedIndexes(viewportMainAxisExtent).ToArray();
         var realizedSet = realizedIndexes.ToHashSet();
+        var measuredCrossAxisExtent = 0d;
 
         ClearUnrealizedContainers(realizedSet);
 
         foreach (var index in realizedIndexes)
         {
             var container = Realize(index);
-            container.Measure(SliverAvaloniaPrimitives.ToSize(axis, double.PositiveInfinity, crossAxisExtent));
+            container.Measure(SliverAvaloniaPrimitives.ToSize(axis, double.PositiveInfinity, measureCrossAxisExtent));
             var measuredExtent = Math.Max(0d, container.DesiredSize.Main(axis));
+            measuredCrossAxisExtent = Math.Max(measuredCrossAxisExtent, container.DesiredSize.Cross(axis));
             if (!_extentCache.TryGetValue(index, out var previousExtent) ||
                 !SliverAvaloniaPrimitives.AreClose(previousExtent, measuredExtent))
             {
@@ -218,8 +220,12 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
             }
         }
 
-        var extent = SliverAvaloniaPrimitives.ToSize(axis, GetTotalExtent(), crossAxisExtent);
-        var viewport = SliverAvaloniaPrimitives.ToSize(axis, viewportMainAxisExtent, crossAxisExtent);
+        var desiredCrossAxisExtent = SliverAvaloniaPrimitives.ResolveDesiredCrossAxisExtent(
+            availableSize.Cross(axis),
+            measuredCrossAxisExtent,
+            _viewport.Cross(axis));
+        var extent = SliverAvaloniaPrimitives.ToSize(axis, GetTotalExtent(), desiredCrossAxisExtent);
+        var viewport = SliverAvaloniaPrimitives.ToSize(axis, viewportMainAxisExtent, desiredCrossAxisExtent);
         UpdateScrollInfo(extent, viewport);
         return IsScrollingEnabled(axis) ? viewport : extent;
     }
@@ -471,12 +477,16 @@ public class SliverVirtualizingListPanel : VirtualizingPanel, ILogicalScrollable
 
         foreach (var container in GetRealizedContainers().ToArray())
         {
+            var index = IndexFromContainer(container);
+            if (index >= 0)
+            {
+                _containersByIndex.Remove(index);
+            }
+
+            _indexesByContainer.Remove(container);
             generator.ClearItemContainer(container);
             RemoveInternalChild(container);
         }
-
-        _containersByIndex.Clear();
-        _indexesByContainer.Clear();
     }
 
     private bool BringRangeIntoView(double start, double end)

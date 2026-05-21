@@ -261,7 +261,9 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
         var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
             availableSize.Main(axis),
             _viewport.Main(axis));
-        var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
+        var crossAxisExtent = SliverAvaloniaPrimitives.ResolveViewportCrossAxisExtent(
+            availableSize.Cross(axis),
+            _viewport.Cross(axis));
         var constraints = CreateConstraints(axis, viewportMainAxisExtent, crossAxisExtent);
         var result = CreateLayout(Items.Count).Layout(constraints);
         var realizedIndexes = result.Slots.Select(slot => slot.Index).ToHashSet();
@@ -450,12 +452,16 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
 
         foreach (var container in GetRealizedContainers().ToArray())
         {
+            var index = IndexFromContainer(container);
+            if (index >= 0)
+            {
+                _containersByIndex.Remove(index);
+            }
+
+            _indexesByContainer.Remove(container);
             generator.ClearItemContainer(container);
             RemoveInternalChild(container);
         }
-
-        _containersByIndex.Clear();
-        _indexesByContainer.Clear();
     }
 
     private bool BringRangeIntoView(double start, double end)

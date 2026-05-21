@@ -70,11 +70,15 @@ public class SliverPersistentHeader : Decorator
         }
 
         var axis = Axis;
-        var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
+        var measureCrossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
         var currentExtent = GetCurrentExtent();
         var visibleExtent = GetVisibleExtent(currentExtent, availableSize.Main(axis));
-        Child.Measure(SliverAvaloniaPrimitives.ToSize(axis, currentExtent, crossAxisExtent));
-        return SliverAvaloniaPrimitives.ToSize(axis, visibleExtent, crossAxisExtent);
+        Child.Measure(SliverAvaloniaPrimitives.ToSize(axis, currentExtent, measureCrossAxisExtent));
+        var desiredCrossAxisExtent = SliverAvaloniaPrimitives.ResolveDesiredCrossAxisExtent(
+            availableSize.Cross(axis),
+            Child.DesiredSize.Cross(axis),
+            0d);
+        return SliverAvaloniaPrimitives.ToSize(axis, visibleExtent, desiredCrossAxisExtent);
     }
 
     protected override Size ArrangeOverride(Size finalSize)

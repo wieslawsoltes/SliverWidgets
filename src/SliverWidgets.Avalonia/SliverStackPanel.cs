@@ -123,17 +123,26 @@ public class SliverStackPanel : Panel, ILogicalScrollable
     {
         var axis = Axis;
         var itemExtent = Math.Max(0d, ItemExtent);
-        var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
-        var childConstraint = SliverAvaloniaPrimitives.ToSize(axis, itemExtent, crossAxisExtent);
+        var measureCrossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
+        var childConstraint = SliverAvaloniaPrimitives.ToSize(axis, itemExtent, measureCrossAxisExtent);
+        var measuredCrossAxisExtent = 0d;
 
         foreach (var child in Children)
         {
             child.Measure(childConstraint);
+            measuredCrossAxisExtent = Math.Max(measuredCrossAxisExtent, child.DesiredSize.Cross(axis));
         }
 
         var mainAxisExtent = SliverFixedExtentListLayout.GetScrollExtent(Children.Count, itemExtent, Math.Max(0d, Spacing));
-        var viewport = SliverAvaloniaPrimitives.ToSize(axis, SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Main(axis)), crossAxisExtent);
-        var extent = SliverAvaloniaPrimitives.ToSize(axis, mainAxisExtent, crossAxisExtent);
+        var viewportMainAxisExtent = SliverAvaloniaPrimitives.ResolveViewportMainAxisExtent(
+            availableSize.Main(axis),
+            _viewport.Main(axis));
+        var desiredCrossAxisExtent = SliverAvaloniaPrimitives.ResolveDesiredCrossAxisExtent(
+            availableSize.Cross(axis),
+            measuredCrossAxisExtent,
+            _viewport.Cross(axis));
+        var viewport = SliverAvaloniaPrimitives.ToSize(axis, viewportMainAxisExtent, desiredCrossAxisExtent);
+        var extent = SliverAvaloniaPrimitives.ToSize(axis, mainAxisExtent, desiredCrossAxisExtent);
         UpdateScrollInfo(extent, viewport);
         return IsScrollingEnabled(axis) ? viewport : extent;
     }
