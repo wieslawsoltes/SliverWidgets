@@ -30,3 +30,10 @@
 - [x] `T028` Fix Avalonia sectioned gallery sticky headers so one active section header shrinks smoothly and clips rows without cumulative empty header gaps. Requirements: `SW-FR-014`, `SW-FR-017`.
 - [x] `T029` Address PR review findings for viewport scroll-offset correction relayouts, finite core validation, and MAUI unconstrained cross-axis measurement. Requirements: `SW-FR-004`, `SW-FR-015`; Non-functional: `SW-NFR-002`.
 - [x] `T030` Add configurable Avalonia section header modes and use stacked sticky headers by default in the gallery. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T031` Compare against Flutter sliver rendering source and document parity gaps. Acceptance: `AC-012`.
+- [x] `T032` Fix viewport `PaintOrigin`, `LayoutExtent`, overlap, and cache composition semantics. Requirements: `SW-FR-004`, `SW-FR-019`; Acceptance: `AC-003`.
+- [x] `T033` Fix pinned header, padding correction, fill remaining, max-cross-axis grid, and geometry validation parity gaps. Requirements: `SW-FR-003`, `SW-FR-008`, `SW-FR-009`, `SW-FR-010`, `SW-FR-020`; Acceptance: `AC-003`.
+- [x] `T034` Fix WinUI paint/cache mapping and gate Uno realization behavior around unsupported `VisibleRect`. Requirements: `SW-FR-013`; Acceptance: `AC-005`, `AC-012`.
+- [x] `T035` Add Avalonia virtualizing grid panel and use it in the adaptive grid gallery sample. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-021`.
+- [x] `T036` Fix Avalonia sectioned gallery clipping so incoming stacked headers do not create blank bands before they reach the leading pinned-header run. Requirements: `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-010`.
+- [x] `T037` Fix non-pinned persistent header shrink/paint geometry so scrolling headers resize at the leading edge before scrolling away without reserving empty space. Requirements: `SW-FR-008`, `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-003`, `AC-010`, `AC-012`.

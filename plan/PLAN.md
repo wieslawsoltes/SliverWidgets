@@ -33,12 +33,14 @@ flowchart TD
   - `src/SliverWidgets.Core/SliverLayouts.cs`
   - `src/SliverWidgets.Core/SliverViewportLayoutEngine.cs`
     - Honors finite `ScrollOffsetCorrection` values by restarting the viewport pass from the corrected offset.
+    - Honors Flutter-style `PaintOrigin`, `LayoutExtent`, `Overlap`, cache-origin correction, and per-sliver cache consumption.
 - Framework adapters:
   - `src/SliverWidgets.Avalonia/SliverStackPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverItemsControl.cs`
   - `src/SliverWidgets.Avalonia/SliverGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverPersistentHeader.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingStackPanel.cs`
+  - `src/SliverWidgets.Avalonia/SliverVirtualizingGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingListPanel.cs`
   - `src/SliverWidgets.Maui/SliverStackLayout.cs`
     - Preserves measured cross-axis size when MAUI gives an unconstrained cross-axis.
@@ -53,8 +55,9 @@ flowchart TD
 - Samples:
   - `samples/SliverWidgets.GalleryData`
   - `samples/AvaloniaGallery`
+    - Header sample maps non-pinned header desired size to visible paint extent so rows move up while the header shrinks and scrolls away.
     - `MixedSliverPreviewPanel` clips direct children to the active pinned-header obstruction when composing multiple slivers in one panel.
-    - `SliverScenarioStackPanel` supports configurable stacked and push sticky section header modes. Stacked is the gallery default.
+    - `SliverScenarioStackPanel` supports configurable stacked and push sticky section header modes. Stacked is the gallery default and clips rows only below the active leading-edge header run.
   - `samples/MauiGallery`
   - `samples/UnoGallery`
   - `samples/UnoGalleryApp`
@@ -64,9 +67,9 @@ flowchart TD
 
 | Framework | Implemented Track | Next Track |
 |---|---|---|
-| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, mixed sample clipping below pinned headers, configurable section sticky-header modes, fixed-extent `VirtualizingPanel`, variable-extent `VirtualizingPanel` | deeper platform gesture/device validation |
-| WinUI | `VirtualizingLayout` for fixed rows and grids, non-Windows compile path with PRI disabled | Windows runtime/device validation |
-| Uno | WinUI-style row and grid `VirtualizingLayout` | renderer-specific validation |
+| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent `VirtualizingPanel` | deeper platform gesture/device validation |
+| WinUI | `VirtualizingLayout` for fixed rows and grids, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
+| Uno | WinUI-style row and grid `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
 | MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView` | device validation |
 
 ## Milestones
@@ -98,6 +101,11 @@ flowchart TD
    - MAUI gallery surface.
    - Uno `ItemsRepeater` gallery surface.
    - WinUI gallery surface with Windows runtime validation.
+7. Flutter Parity Remediation
+   - viewport `PaintOrigin`/`LayoutExtent`/cache composition.
+   - pinned header, padding, fill remaining, and max-cross-axis grid parity fixes.
+   - Avalonia virtualizing grid sample path.
+   - adapter matrix limitations documented.
 
 ## Validation Matrix
 
