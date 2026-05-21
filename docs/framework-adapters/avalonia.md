@@ -16,6 +16,7 @@ description: Avalonia panels, decorators, and virtualizing panels.
 | `SliverGridPanel` | Non-virtual sliver grid panel. |
 | `SliverPersistentHeader` | Single-child persistent header decorator. |
 | `SliverVirtualizingStackPanel` | Fixed-extent virtualizing items panel. |
+| `SliverVirtualizingGridPanel` | Fixed-count or max-cross-axis-extent virtualizing grid items panel. |
 | `SliverVirtualizingListPanel` | Variable-height virtualizing items panel with observed extent cache. |
 
 ## Fixed Stack Panel
@@ -73,6 +74,28 @@ Use `SliverVirtualizingListPanel` when row heights vary:
 
 ## Grid Panel
 
+Use `SliverVirtualizingGridPanel` for large item sources:
+
+```xml
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding Tiles}">
+  <slivers:SliverItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <slivers:SliverVirtualizingGridPanel
+          SizingMode="MaxCrossAxisExtent"
+          MaxCrossAxisExtent="260"
+          MainAxisSpacing="12"
+          CrossAxisSpacing="12"
+          ChildAspectRatio="1.4"
+          CacheExtent="600" />
+    </ItemsPanelTemplate>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
+```
+
+`SliverGridPanel` remains available for bounded direct-child grids:
+
 ```xml
 <slivers:SliverGridPanel
     xmlns:slivers="using:SliverWidgets.Avalonia"
@@ -102,3 +125,4 @@ Use `SliverVirtualizingListPanel` when row heights vary:
 - `CacheExtent` is measured in main-axis units.
 - Non-virtual panels still use sliver math but do not recycle controls.
 - Virtualizing panels should be used for high-volume item sources.
+- `SliverPersistentHeader` is a single-child decorator coordinated by an external scroll offset. Use the mixed or sectioned sample panels when you need one `CustomScrollView`-style viewport that composes headers with following slivers.

@@ -480,10 +480,17 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
         var obstructionExtent = 0d;
         foreach (var slot in slots)
         {
-            if (slot.IsPinned && !slot.IsCacheOnly)
+            if (!slot.IsPinned || slot.IsCacheOnly)
             {
-                obstructionExtent = Math.Max(obstructionExtent, slot.MainAxisOffset + slot.MainAxisExtent);
+                continue;
             }
+
+            if (slot.MainAxisOffset - obstructionExtent > SliverMath.Epsilon)
+            {
+                continue;
+            }
+
+            obstructionExtent = Math.Max(obstructionExtent, slot.MainAxisOffset + slot.MainAxisExtent);
         }
 
         return obstructionExtent;

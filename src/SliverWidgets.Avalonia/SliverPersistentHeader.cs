@@ -72,8 +72,9 @@ public class SliverPersistentHeader : Decorator
         var axis = Axis;
         var crossAxisExtent = SliverAvaloniaPrimitives.FiniteOrZero(availableSize.Cross(axis));
         var currentExtent = GetCurrentExtent();
+        var visibleExtent = GetVisibleExtent(currentExtent, availableSize.Main(axis));
         Child.Measure(SliverAvaloniaPrimitives.ToSize(axis, currentExtent, crossAxisExtent));
-        return SliverAvaloniaPrimitives.ToSize(axis, currentExtent, crossAxisExtent);
+        return SliverAvaloniaPrimitives.ToSize(axis, visibleExtent, crossAxisExtent);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -115,5 +116,20 @@ public class SliverPersistentHeader : Decorator
         var maxExtent = Math.Max(minExtent, MaxExtent);
         var shrinkOffset = SliverMath.Clamp(Math.Max(0d, ScrollOffset), 0d, maxExtent - minExtent);
         return SliverMath.Clamp(maxExtent - shrinkOffset, minExtent, maxExtent);
+    }
+
+    private double GetVisibleExtent(double currentExtent, double availableMainAxisExtent)
+    {
+        var maxExtent = Math.Max(Math.Max(0d, MinExtent), MaxExtent);
+        var visibleExtent = Pinned
+            ? currentExtent
+            : Math.Min(currentExtent, Math.Max(0d, maxExtent - Math.Max(0d, ScrollOffset)));
+
+        if (double.IsFinite(availableMainAxisExtent))
+        {
+            return Math.Min(visibleExtent, Math.Max(0d, availableMainAxisExtent));
+        }
+
+        return visibleExtent;
     }
 }

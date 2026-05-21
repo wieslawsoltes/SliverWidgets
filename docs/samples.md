@@ -15,7 +15,7 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 |---|---|
 | `CustomScrollView` with mixed slivers | Avalonia mixed preview with pinned-obstruction clipping, Uno custom-scroll page, MAUI demo cards, WinUI composite pages |
 | `SliverAppBar` / persistent header | Avalonia `SliverPersistentHeader` and configurable stacked or push section headers, WinUI pinned/floating header concept, MAUI grouped headers |
-| `SliverGrid` | Avalonia `SliverGridPanel`, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
+| `SliverGrid` | Avalonia `SliverVirtualizingGridPanel` for large grids and `SliverGridPanel` for bounded direct children, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
 | `SliverFixedExtentList` | Core fixed extent layout plus Avalonia, MAUI, Uno, and WinUI fixed list samples |
 | Lazy child lifecycle and cache windows | Avalonia virtualizing panel, MAUI native `CollectionView`, Uno/WinUI `ItemsRepeater` realization windows |
 
@@ -85,6 +85,13 @@ dotnet build samples/WinUIGallery/SliverWidgets.WinUIGallery.csproj
 ```
 
 The WinUI sample targets Windows App SDK. It can compile on non-Windows hosts with PRI generation disabled; run and device validation should happen on Windows.
+
+## Platform Limitations
+
+- Avalonia provides the most complete single-viewport sample coverage through the mixed and sectioned panels. The standalone `SliverPersistentHeader` decorator is externally coordinated by a scroll offset.
+- Uno currently lacks an implemented `VirtualizingLayoutContext.VisibleRect`, so its adapter infers the visible paint range from `RealizationRect` and available size.
+- MAUI delegates large-data realization to native `CollectionView`; its cache distance is platform-owned.
+- WinUI, Uno, and MAUI mixed pages demonstrate the concepts with native surfaces, but they are not yet one shared `CustomScrollView`-style viewport pipeline.
 
 ## What to Look For
 

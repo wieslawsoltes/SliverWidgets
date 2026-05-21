@@ -9,7 +9,7 @@ description: Public API guide for SliverWidgets.Avalonia.
 
 ## SliverItemsControl
 
-`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
+`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingGridPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
 
 ## SliverStackPanel
 
@@ -60,6 +60,23 @@ Fixed-extent `VirtualizingPanel` for `ItemsControl`.
 | `Axis` | `SliverAxis` | `Vertical` |
 | `ItemExtent` | `double` | `48` |
 | `Spacing` | `double` | `0` |
+| `ScrollOffset` | `double` | `0` |
+| `CacheExtent` | `double` | `250` |
+
+## SliverVirtualizingGridPanel
+
+Grid `VirtualizingPanel` for large `ItemsControl` sources.
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `SizingMode` | `SliverGridSizingMode` | `FixedCrossAxisCount` |
+| `CrossAxisCount` | `int` | `2` |
+| `MaxCrossAxisExtent` | `double` | `240` |
+| `MainAxisSpacing` | `double` | `0` |
+| `CrossAxisSpacing` | `double` | `0` |
+| `ChildAspectRatio` | `double` | `1` |
+| `MainAxisExtent` | `double` | `NaN` |
 | `ScrollOffset` | `double` | `0` |
 | `CacheExtent` | `double` | `250` |
 

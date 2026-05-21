@@ -162,12 +162,33 @@ public sealed class AvaloniaGallerySmokeTests
     }
 
     [AvaloniaFact]
+    public void Header_control_non_pinned_reserves_only_visible_paint_extent()
+    {
+        var child = new Border();
+        var header = new AvaloniaSlivers.SliverPersistentHeader
+        {
+            MinExtent = 56d,
+            MaxExtent = 160d,
+            Pinned = false,
+            ScrollOffset = 130d,
+            Child = child
+        };
+
+        header.Measure(new Size(760d, 520d));
+        header.Arrange(new Rect(0d, 0d, 760d, header.DesiredSize.Height));
+
+        Assert.Equal(30d, header.DesiredSize.Height);
+        Assert.Equal(-26d, child.Bounds.Y);
+        Assert.Equal(56d, child.Bounds.Height);
+    }
+
+    [AvaloniaFact]
     public void Mixed_panel_clips_scrolled_content_below_pinned_header()
     {
         var panel = new MixedSliverPreviewPanel
         {
             CacheExtent = 280d,
-            ScrollOffset = 450d
+            ScrollOffset = 430d
         };
 
         for (var index = 0; index < 19; index++)
@@ -222,6 +243,29 @@ public sealed class AvaloniaGallerySmokeTests
         Assert.Equal(42d, firstHeader.Bounds.Height);
         Assert.Equal(firstHeader.Bounds.Bottom, secondHeader.Bounds.Y);
         Assert.Equal(42d, secondHeader.Bounds.Height);
+    }
+
+    [AvaloniaFact]
+    public void Section_panel_does_not_clip_rows_when_next_header_enters_viewport()
+    {
+        var panel = CreateSectionPanel(sectionCount: 2, itemCount: 10);
+        panel.ScrollOffset = 220d;
+
+        ArrangePanel(panel);
+
+        var firstHeader = Assert.IsAssignableFrom<Control>(panel.Children[0]);
+        var secondHeader = Assert.IsAssignableFrom<Control>(panel.Children[11]);
+        var visibleFirstSectionRows = panel.Children
+            .OfType<Control>()
+            .Skip(1)
+            .Take(10)
+            .Count(child => child.Opacity > 0d && child.Bounds.Bottom > firstHeader.Bounds.Bottom + 0.5d);
+
+        Assert.Equal(0d, firstHeader.Bounds.Y);
+        Assert.True(
+            secondHeader.Bounds.Y > firstHeader.Bounds.Bottom + 100d,
+            "The incoming section header should stay in its natural viewport position until it reaches the stacked header run.");
+        Assert.True(visibleFirstSectionRows > 0, "Rows above the incoming section header should remain visible.");
     }
 
     [AvaloniaFact]
@@ -295,7 +339,7 @@ public sealed class AvaloniaGallerySmokeTests
                 .ScrollOffset,
             2 => window
                 .GetVisualDescendants()
-                .OfType<AvaloniaSlivers.SliverGridPanel>()
+                .OfType<AvaloniaSlivers.SliverVirtualizingGridPanel>()
                 .Single(panel => panel.IsEffectivelyVisible)
                 .ScrollOffset,
             _ => throw new ArgumentOutOfRangeException(nameof(tabIndex), tabIndex, null)

@@ -200,7 +200,7 @@
               <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding GridItems}">
                 <slivers:SliverItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <slivers:SliverGridPanel
+                    <slivers:SliverVirtualizingGridPanel
                         CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
                         ChildAspectRatio="1.55"
                         CrossAxisSpacing="12"
