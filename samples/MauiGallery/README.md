@@ -4,6 +4,10 @@ Code-only MAUI Mac Catalyst gallery for SliverWidgets. The gallery projects the 
 Flutter-inspired scenario catalog onto MAUI-native controls without duplicating the
 shared gallery data.
 
+The shell matches the Avalonia gallery: top metric cards, short scenario tabs
+(`Fixed`, `Variable`, `Grid`, `Header`, `Mixed`, `Sections`, `Fill`, `Cache`),
+left-side controls/notes, and a right-side MAUI-native viewport.
+
 ## Build
 
 ```bash

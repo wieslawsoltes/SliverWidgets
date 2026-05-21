@@ -58,7 +58,7 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - `SW-FR-014`: Avalonia shall provide non-virtual panels, fixed/variable extent `VirtualizingPanel` adapters, smooth pixel-sized logical scroll increments, persistent headers whose non-pinned visible extent follows core paint geometry, unconstrained cross-axis measure handling, generator-safe realized-container clearing, direct-child mixed composition clipping below pinned header obstruction, configurable stacked or push section sticky headers that clip only against the active leading-edge header run, and an items host that exposes logical panel scrolling to native `ScrollViewer` hosts.
 - `SW-FR-015`: MAUI shall provide a layout manager path that preserves unconstrained cross-axis desired size and a native-backed `CollectionView` virtualization integration.
 - `SW-FR-016`: Core shall provide a sliver-to-box adapter for single fixed box content.
-- `SW-FR-017`: Each supported framework shall provide a gallery-style sample app or sample surface that demonstrates fixed lists, adaptive grids, persistent headers, mixed sliver composition without visual overlap through pinned headers, and large-data virtualization.
+- `SW-FR-017`: Each supported framework shall provide a gallery-style sample app or sample surface that uses the Avalonia gallery shell as the reference: a top metrics header, the same short scenario tabs (`Fixed`, `Variable`, `Grid`, `Header`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right native viewport demonstrating fixed lists, adaptive grids, persistent headers, mixed sliver composition without visual overlap through pinned headers, and large-data virtualization.
 - `SW-FR-018`: Gallery samples shall use shared deterministic data so virtualization behavior, row counts, and visual content are comparable across frameworks.
 - `SW-FR-019`: Viewport composition shall honor Flutter-style `PaintOrigin`, `LayoutExtent`, computed `Overlap`, cache-origin correction, and per-sliver cache consumption.
 - `SW-FR-020`: Max-cross-axis grid sizing shall use Flutter-style ceiling column/row count so tile cross-axis extent does not exceed the configured maximum.
@@ -85,7 +85,7 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - `AC-008`: `plan/PLAN.md`, `plan/SPEC.md`, `AGENTS.md`, docs, samples, and traceability exist.
 - `AC-009`: Avalonia, MAUI, Uno, and WinUI gallery samples exist and document platform-specific run/build commands.
 - `AC-010`: Gallery samples include Flutter-inspired examples covering fixed large lists, variable/non-uniform lists, adaptive grids, pinned/collapsible headers, sectioned headers, mixed `CustomScrollView` composition, fill/padding/visibility, and cache/performance stress.
-- `AC-011`: Avalonia, MAUI, Uno, and WinUI galleries shall project the same scenario list from `SliverGalleryData.CreateScenarios()` and document framework-specific limitations where a native adapter is conceptual rather than fully implemented.
+- `AC-011`: Avalonia, MAUI, Uno, and WinUI galleries shall project the same scenario list from `SliverGalleryData.CreateScenarios()` through the same Avalonia-derived shell shape and document framework-specific limitations where a native adapter is conceptual rather than fully implemented.
 - `AC-012`: Flutter sliver comparison findings and remaining platform limitations are documented.
 
 ## Current Implementation Status
@@ -95,4 +95,4 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - MAUI stack layout manager with unconstrained cross-axis measurement and native-backed `SliverCollectionView`: implemented.
 - Uno fixed-extent and grid virtualizing layouts: implemented using `RealizationRect` with an inferred visible range because Uno reports `VirtualizingLayoutContext.VisibleRect` as unsupported; renderer-specific validation remains required.
 - WinUI fixed-extent and grid virtualizing layouts: implemented using `VisibleRect` for paint and `RealizationRect` for cache; build works on non-Windows hosts with PRI generation disabled, and full runtime validation remains a Windows lane.
-- Shared gallery scenario data and framework gallery apps: implemented. Avalonia, MAUI, Uno, and WinUI expose the same eight scenario catalog entries. Avalonia, MAUI, Uno, and WinUI compile on macOS; WinUI runtime validation remains a Windows lane.
+- Shared gallery scenario data and framework gallery apps: implemented. Avalonia, MAUI, Uno, and WinUI expose the same eight scenario catalog entries through the same top metrics header, short scenario tabs, and left-controls/right-viewport shell. Avalonia, MAUI, Uno, and WinUI compile on macOS; WinUI runtime validation remains a Windows lane.

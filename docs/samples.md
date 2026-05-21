@@ -7,7 +7,7 @@ description: Framework sample galleries and validation commands.
 
 The repository includes gallery-style samples for each supported framework. They mirror Flutter's sliver teaching examples with native .NET controls: expanded or persistent headers, adaptive grids, fixed-extent lists, variable-size content, and mixed scroll compositions.
 
-The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, tiles, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI.
+The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, tiles, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI. The galleries also share the Avalonia reference shell: a top metrics header, short scenario tabs (`Fixed`, `Variable`, `Grid`, `Header`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right framework-native viewport.
 
 ## Coverage Matrix
 
@@ -25,10 +25,10 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 |---|---|
 | `samples/SliverWidgets.GalleryData` | Shared deterministic data, metrics, and demo descriptions. |
 | `samples/AvaloniaGallery` | Desktop gallery for panels, virtualizing panels, persistent headers, and mixed slivers. |
-| `samples/MauiGallery` | MAUI Mac Catalyst gallery for `SliverStackLayout` and `SliverCollectionView`. |
-| `samples/UnoGallery` | Reusable Uno gallery page with `ItemsRepeater` examples. |
+| `samples/MauiGallery` | MAUI Mac Catalyst gallery for `SliverStackLayout` and `SliverCollectionView`, using the shared Avalonia-style shell. |
+| `samples/UnoGallery` | Reusable Uno gallery page with `ItemsRepeater` examples, using the shared Avalonia-style shell. |
 | `samples/UnoGalleryApp` | Uno desktop host for the reusable gallery page. |
-| `samples/WinUIGallery` | WinUI gallery for `ItemsRepeater` layouts; run validation is Windows-specific. |
+| `samples/WinUIGallery` | WinUI gallery for `ItemsRepeater` layouts, using the shared Avalonia-style shell; run validation is Windows-specific. |
 
 ## Buildable Gallery Solutions
 

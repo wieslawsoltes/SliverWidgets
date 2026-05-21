@@ -9,3 +9,4 @@
 - Fixed Avalonia sectioned gallery clipping so incoming stacked headers no longer blank rows before they reach the leading pinned-header run.
 - Fixed Avalonia unconstrained cross-axis measure handling and realized-container clearing order for virtualizing panels.
 - Updated WinUI paint/cache mapping and documented Uno, MAUI, and gallery composition limitations.
+- Unified MAUI, Uno, and WinUI gallery shells with the Avalonia reference header, metric cards, scenario tabs, and left-controls/right-viewport layout.

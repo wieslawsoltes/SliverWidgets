@@ -59,9 +59,12 @@ flowchart TD
     - `MixedSliverPreviewPanel` clips direct children to the active pinned-header obstruction when composing multiple slivers in one panel.
     - `SliverScenarioStackPanel` supports configurable stacked and push sticky section header modes. Stacked is the gallery default and clips rows only below the active leading-edge header run.
   - `samples/MauiGallery`
+    - Uses the Avalonia gallery as the reference shell: top metric cards, short scenario tabs, and left controls/right native viewport per scenario.
   - `samples/UnoGallery`
+    - Uses the Avalonia gallery as the reference shell: top metric cards, short scenario tabs, and left controls/right native viewport per scenario.
   - `samples/UnoGalleryApp`
   - `samples/WinUIGallery`
+    - Uses the Avalonia gallery as the reference shell: top metric cards, short scenario tabs, and left controls/right native viewport per scenario.
 
 ## Framework Integration Strategy
 
@@ -98,9 +101,9 @@ flowchart TD
 6. Gallery Samples
    - shared deterministic large data source.
    - Avalonia desktop app.
-   - MAUI gallery surface.
-   - Uno `ItemsRepeater` gallery surface.
-   - WinUI gallery surface with Windows runtime validation.
+   - MAUI gallery surface matched to the Avalonia shell and scenario tab order.
+   - Uno `ItemsRepeater` gallery surface matched to the Avalonia shell and scenario tab order.
+   - WinUI gallery surface matched to the Avalonia shell and scenario tab order, with Windows runtime validation.
 7. Flutter Parity Remediation
    - viewport `PaintOrigin`/`LayoutExtent`/cache composition.
    - pinned header, padding, fill remaining, and max-cross-axis grid parity fixes.

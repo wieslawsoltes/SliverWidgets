@@ -2,6 +2,10 @@
 
 WinUI gallery for SliverWidgets.
 
+The shell matches the Avalonia gallery: top metric cards, short scenario tabs
+(`Fixed`, `Variable`, `Grid`, `Header`, `Mixed`, `Sections`, `Fill`, `Cache`),
+left-side controls/notes, and a right-side WinUI-native viewport.
+
 ## Build
 
 Build from any configured host:

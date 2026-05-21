@@ -8,6 +8,7 @@ window.Content = new SliverWidgets.Samples.UnoGallery.UnoGalleryPage();
 
 The gallery demonstrates:
 
+- The same Avalonia-derived shell used by the other samples: top metrics, short scenario tabs, left controls/notes, and a right native viewport.
 - Fixed large list virtualization through `SliverFixedExtentVirtualizingLayout`.
 - Variable/non-uniform rows using native Uno `StackLayout` virtualization until a sliver variable-extent adapter is available.
 - Adaptive max-cross-axis grid virtualization through `SliverGridVirtualizingLayout`.
