@@ -111,4 +111,37 @@ public sealed class FrameworkParityTests
             Assert.True(slot.CrossAxisExtent <= constraints.CrossAxisExtent);
         });
     }
+
+    [Theory]
+    [InlineData(SliverAxis.Vertical)]
+    [InlineData(SliverAxis.Horizontal)]
+    public void StackVirtualizedAdaptersShareCoreRealizationWindow(SliverAxis axis)
+    {
+        var layout = new SliverStackLayout(new SliverStackLayoutOptions(
+            new SliverDeterministicStackExtentList(100_000),
+            Spacing: 4d,
+            CrossAxisAlignment: SliverCrossAxisAlignment.Center));
+        var constraints = new SliverConstraints(
+            axis,
+            ScrollOffset: 3_600d,
+            PrecedingScrollExtent: 0d,
+            Overlap: 0d,
+            RemainingPaintExtent: 360d,
+            CrossAxisExtent: 840d,
+            ViewportMainAxisExtent: 360d,
+            CacheOrigin: -180d,
+            RemainingCacheExtent: 720d);
+
+        var result = layout.Layout(constraints);
+
+        Assert.True(result.Slots.Count < 40);
+        Assert.Contains(result.Slots, slot => !slot.IsCacheOnly);
+        Assert.Contains(result.Slots, slot => slot.IsCacheOnly);
+        Assert.All(result.Slots, slot =>
+        {
+            Assert.True(slot.MainAxisExtent > 0d);
+            Assert.True(slot.CrossAxisExtent > 0d);
+            Assert.True(slot.CrossAxisExtent <= constraints.CrossAxisExtent);
+        });
+    }
 }
