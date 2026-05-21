@@ -16,6 +16,7 @@ description: Avalonia panels, decorators, and virtualizing panels.
 | `SliverGridPanel` | Non-virtual sliver grid panel. |
 | `SliverPersistentHeader` | Single-child persistent header decorator. |
 | `SliverVirtualizingStackPanel` | Fixed-extent virtualizing items panel. |
+| `SliverVirtualizingStackLayoutPanel` | Variable-width/height stack virtualizing items panel. |
 | `SliverVirtualizingGridPanel` | Fixed-count or max-cross-axis-extent virtualizing grid items panel. |
 | `SliverVirtualizingListPanel` | Variable-height virtualizing items panel with observed extent cache. |
 | `SliverVirtualizingWrapPanel` | Variable-width/height wrap virtualizing items panel. |
@@ -67,6 +68,27 @@ Use `SliverVirtualizingListPanel` when row heights vary:
       <slivers:SliverVirtualizingListPanel
           EstimatedItemExtent="56"
           Spacing="4"
+          CacheExtent="600" />
+    </ItemsPanelTemplate>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
+```
+
+Use `SliverVirtualizingStackLayoutPanel` when both row height and row width vary:
+
+```xml
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding Cards}">
+  <slivers:SliverItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <slivers:SliverVirtualizingStackLayoutPanel
+          MinItemMainAxisExtent="52"
+          MaxItemMainAxisExtent="128"
+          MinItemCrossAxisExtent="160"
+          MaxItemCrossAxisExtent="640"
+          CrossAxisAlignment="Center"
+          Spacing="8"
           CacheExtent="600" />
     </ItemsPanelTemplate>
   </slivers:SliverItemsControl.ItemsPanel>

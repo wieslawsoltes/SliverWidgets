@@ -32,6 +32,20 @@ Use this for large uniform lists.
 
 When `MainAxisExtent` is `NaN` or infinity, the layout derives tile main-axis extent from cross-axis size and `ChildAspectRatio`.
 
+## SliverStackVirtualizingLayout
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `MinItemMainAxisExtent` | `double` | `52` |
+| `MaxItemMainAxisExtent` | `double` | `128` |
+| `MinItemCrossAxisExtent` | `double` | `160` |
+| `MaxItemCrossAxisExtent` | `double` | `640` |
+| `Spacing` | `double` | `0` |
+| `CrossAxisAlignment` | `SliverCrossAxisAlignment` | `Start` |
+
+Use this for large variable-width/height cards that remain in one linear stack.
+
 ## SliverWrapVirtualizingLayout
 
 | Property | Type | Default |

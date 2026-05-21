@@ -43,6 +43,18 @@ description: Public API guide for SliverWidgets.Core.
 
 Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts and `SliverGridLayoutOptions.WithMaxCrossAxisExtent` for responsive tile sizes. Max-extent mode uses a ceiling count so generated tiles do not exceed the configured maximum cross-axis extent.
 
+## Stack APIs
+
+| API | Purpose |
+|---|---|
+| `SliverCrossAxisAlignment` | Start, center, end, or stretch cross-axis alignment. |
+| `SliverStackItemExtent` | Main-axis and cross-axis extent for one variable-size stack item. |
+| `SliverStackLayoutOptions` | Stack item extents, spacing, and cross-axis alignment. |
+| `SliverDeterministicStackExtentList` | Allocation-light deterministic extent source for large repeatable stack samples. |
+| `SliverStackLayout` | Variable-size linear stack layout with cache-aware slot realization. |
+
+`SliverStackLayout` is for feeds where both item height and item width vary but children remain in one linear scroll sequence.
+
 ## Wrap APIs
 
 | API | Purpose |

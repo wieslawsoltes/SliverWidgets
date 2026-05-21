@@ -3,7 +3,7 @@
 WinUI gallery for SliverWidgets.
 
 The shell matches the Avalonia gallery: top metric cards, short scenario tabs
-(`Fixed`, `Variable`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
+(`Fixed`, `Variable`, `Stack`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
 left-side controls/notes, and a right-side WinUI-native viewport.
 
 ## Build
@@ -20,6 +20,7 @@ Run and validate the app on Windows with Windows App SDK support. Non-Windows bu
 
 - Fixed large list `ItemsRepeater` virtualization using `SliverFixedExtentVirtualizingLayout`.
 - Variable/non-uniform rows using native WinUI `StackLayout` virtualization until a sliver variable-extent adapter is available.
+- Variable-size stack virtualization using `SliverStackVirtualizingLayout` over 100,000 deterministic cards.
 - Adaptive max-cross-axis grid virtualization using `SliverGridVirtualizingLayout`.
 - Variable-size wrap virtualization using `SliverWrapVirtualizingLayout` over 100,000 deterministic chips.
 - Pinned/collapsible header, tabbed nested-scroll projection, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.

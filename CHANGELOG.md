@@ -12,3 +12,4 @@
 - Unified MAUI, Uno, and WinUI gallery shells with the Avalonia reference header, metric cards, scenario tabs, and left-controls/right-viewport layout.
 - Added a shared `Tabs` gallery scenario based on Flutter `NestedScrollView`/`SliverOverlapAbsorber`/`SliverAppBar` tabbed usage and projected it across Avalonia, MAUI, Uno, and WinUI samples.
 - Added `SliverWrapLayout`, deterministic 100,000-item wrap extents, Avalonia/Uno/WinUI virtualizing wrap adapters, and a shared `Wrap` gallery scenario across all framework samples.
+- Added `SliverStackLayout`, deterministic 100,000-item variable stack extents, Avalonia/Uno/WinUI virtualizing stack adapters, and a shared `Stack` gallery scenario across all framework samples.

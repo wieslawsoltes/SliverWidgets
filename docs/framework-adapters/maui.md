@@ -76,6 +76,8 @@ MAUI custom layouts do not provide a general item container virtualization proto
 
 `SliverCollectionView.CacheExtent` is a cross-platform hint for API symmetry with other adapters. MAUI does not expose a portable per-view cache extent equivalent to Flutter's viewport cache, so platform prefetch behavior remains owned by the native `CollectionView` implementation.
 
+The gallery demonstrates the shared 100,000-card variable stack scenario with native `CollectionView` rows. Each row is a normal MAUI control with deterministic width and height from shared gallery data, while native `CollectionView` owns realization.
+
 MAUI does not expose a portable variable-size wrap `CollectionView` layout. The gallery keeps the shared 100,000-chip wrap scenario honest by pre-packing deterministic wrap lines and virtualizing those lines with native `CollectionView`; each realized row contains normal MAUI chip controls with variable width and height.
 
 Mixed `CustomScrollView` composition and variable-extent dead-reckoning are represented conceptually in the MAUI gallery rather than by a single MAUI sliver viewport adapter.

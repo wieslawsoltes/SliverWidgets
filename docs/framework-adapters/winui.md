@@ -39,6 +39,23 @@ The layout uses `VirtualizingLayoutContext.VisibleRect` as the paint window and 
 </ItemsRepeater>
 ```
 
+## Stack Layout
+
+```xml
+<ItemsRepeater ItemsSource="{x:Bind Cards}">
+  <ItemsRepeater.Layout>
+    <slivers:SliverStackVirtualizingLayout
+        xmlns:slivers="using:SliverWidgets.WinUI"
+        MinItemMainAxisExtent="52"
+        MaxItemMainAxisExtent="128"
+        MinItemCrossAxisExtent="160"
+        MaxItemCrossAxisExtent="640"
+        CrossAxisAlignment="Center"
+        Spacing="8" />
+  </ItemsRepeater.Layout>
+</ItemsRepeater>
+```
+
 ## Wrap Layout
 
 ```xml
@@ -73,4 +90,4 @@ The portable docs build uses human-written API pages. WinUI is documented manual
 
 ## Limitations
 
-The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline.
+The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, variable-size stacks, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline.

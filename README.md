@@ -47,6 +47,7 @@ Use `SliverVirtualizingListPanel` when row heights vary and the panel should cac
 ## WinUI / Uno
 
 Use `SliverFixedExtentVirtualizingLayout` as an `ItemsRepeater.Layout`.
+Use `SliverStackVirtualizingLayout` for variable-width/height linear stacks.
 Use `SliverGridVirtualizingLayout` for fixed-count or max-cross-axis-extent grids.
 Use `SliverWrapVirtualizingLayout` for variable-size wrap/flow chips.
 
@@ -81,11 +82,11 @@ WinUI projects compile on non-Windows hosts with PRI generation disabled. Runtim
 
 The repository includes gallery-style samples that mirror Flutter sliver examples with native controls and shared deterministic data:
 
-- `samples/AvaloniaGallery`: desktop app showing `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingWrapPanel`, and mixed viewport composition.
-- `samples/MauiGallery`: Mac Catalyst MAUI app showing `SliverStackLayout`, native-backed `SliverCollectionView`, grid mode, row-virtualized wrap projection, section headers, and live controls.
-- `samples/UnoGallery`: reusable Uno/WinUI-style page showing `ItemsRepeater` fixed list/grid/wrap virtualization and 100,000 item realization counters.
+- `samples/AvaloniaGallery`: desktop app showing `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingWrapPanel`, and mixed viewport composition.
+- `samples/MauiGallery`: Mac Catalyst MAUI app showing `SliverStackLayout`, native-backed `SliverCollectionView`, grid mode, variable stack projection, row-virtualized wrap projection, section headers, and live controls.
+- `samples/UnoGallery`: reusable Uno/WinUI-style page showing `ItemsRepeater` fixed list/stack/grid/wrap virtualization and 100,000 item realization counters.
 - `samples/UnoGalleryApp`: Uno desktop app host for the reusable gallery page.
-- `samples/WinUIGallery`: WinUI app showing `ItemsRepeater` fixed list/grid/wrap virtualization and pinned/floating header concepts.
+- `samples/WinUIGallery`: WinUI app showing `ItemsRepeater` fixed list/stack/grid/wrap virtualization and pinned/floating header concepts.
 
 Build the macOS-supported galleries with:
 

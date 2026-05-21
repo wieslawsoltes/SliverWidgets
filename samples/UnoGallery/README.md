@@ -11,6 +11,7 @@ The gallery demonstrates:
 - The same Avalonia-derived shell used by the other samples: top metrics, short scenario tabs, left controls/notes, and a right native viewport.
 - Fixed large list virtualization through `SliverFixedExtentVirtualizingLayout`.
 - Variable/non-uniform rows using native Uno `StackLayout` virtualization until a sliver variable-extent adapter is available.
+- Variable-size stack virtualization through `SliverStackVirtualizingLayout` over 100,000 deterministic cards.
 - Adaptive max-cross-axis grid virtualization through `SliverGridVirtualizingLayout`.
 - Variable-size wrap virtualization through `SliverWrapVirtualizingLayout` over 100,000 deterministic chips.
 - Pinned/collapsible header, tabbed nested-scroll projection, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.

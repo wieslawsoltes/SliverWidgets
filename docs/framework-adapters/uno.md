@@ -39,6 +39,23 @@ The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.Rea
 </ItemsRepeater>
 ```
 
+## Stack Layout
+
+```xml
+<ItemsRepeater ItemsSource="{x:Bind Cards}">
+  <ItemsRepeater.Layout>
+    <slivers:SliverStackVirtualizingLayout
+        xmlns:slivers="using:SliverWidgets.Uno"
+        MinItemMainAxisExtent="52"
+        MaxItemMainAxisExtent="128"
+        MinItemCrossAxisExtent="160"
+        MaxItemCrossAxisExtent="640"
+        CrossAxisAlignment="Center"
+        Spacing="8" />
+  </ItemsRepeater.Layout>
+</ItemsRepeater>
+```
+
 ## Wrap Layout
 
 ```xml
@@ -61,6 +78,7 @@ The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.Rea
 | Layout | Properties |
 |---|---|
 | `SliverFixedExtentVirtualizingLayout` | `Axis`, `ItemExtent`, `Spacing` |
+| `SliverStackVirtualizingLayout` | `Axis`, `MinItemMainAxisExtent`, `MaxItemMainAxisExtent`, `MinItemCrossAxisExtent`, `MaxItemCrossAxisExtent`, `Spacing`, `CrossAxisAlignment` |
 | `SliverGridVirtualizingLayout` | `Axis`, `SizingMode`, `CrossAxisCount`, `MaxCrossAxisExtent`, `MainAxisSpacing`, `CrossAxisSpacing`, `ChildAspectRatio`, `MainAxisExtent` |
 | `SliverWrapVirtualizingLayout` | `Axis`, `MinItemMainAxisExtent`, `MaxItemMainAxisExtent`, `MinItemCrossAxisExtent`, `MaxItemCrossAxisExtent`, `MainAxisSpacing`, `CrossAxisSpacing` |
 

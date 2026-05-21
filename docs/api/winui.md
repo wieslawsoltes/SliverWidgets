@@ -28,6 +28,18 @@ description: Public API guide for SliverWidgets.WinUI.
 | `ChildAspectRatio` | `double` | `1` |
 | `MainAxisExtent` | `double` | `NaN` |
 
+## SliverStackVirtualizingLayout
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `MinItemMainAxisExtent` | `double` | `52` |
+| `MaxItemMainAxisExtent` | `double` | `128` |
+| `MinItemCrossAxisExtent` | `double` | `160` |
+| `MaxItemCrossAxisExtent` | `double` | `640` |
+| `Spacing` | `double` | `0` |
+| `CrossAxisAlignment` | `SliverCrossAxisAlignment` | `Start` |
+
 ## SliverWrapVirtualizingLayout
 
 | Property | Type | Default |

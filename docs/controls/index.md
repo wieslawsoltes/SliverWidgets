@@ -19,6 +19,7 @@ The core layer is the source of behavior. Framework packages map that behavior t
 | `SliverFixedExtentListLayout` | Every item has the same main-axis extent. |
 | `SliverListLayout` | You already know every item extent. |
 | `SliverVariableExtentListLayout` | Item extents are discovered as children are measured. |
+| `SliverStackLayout` | Non-uniform width/height items are stacked in one linear scroll sequence. |
 | `SliverGridLayout` | Items are arranged in rows or columns with a fixed count or max cross-axis extent. |
 | `SliverWrapLayout` | Non-uniform width/height items flow into wrap lines. |
 | `SliverPersistentHeaderLayout` | A header should collapse and optionally pin. |
@@ -32,10 +33,10 @@ The core layer is the source of behavior. Framework packages map that behavior t
 
 | Framework | Controls |
 |---|---|
-| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
+| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
 | MAUI | `SliverStackLayout`, `SliverCollectionView`, `SliverItemsLayoutFactory` |
-| Uno | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
-| WinUI | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| Uno | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| WinUI | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
 
 ## Choosing the Right Layout
 
@@ -45,6 +46,7 @@ Use this decision table for the first implementation:
 |---|---|
 | 100,000 uniform rows | fixed extent list |
 | cards with measured text height | variable extent list |
+| cards with variable width and height in one column | stack layout |
 | responsive image/content tiles | grid with max cross-axis extent |
 | chip clouds with different widths and heights | wrap layout |
 | section header that remains visible | persistent header with `Pinned = true` |

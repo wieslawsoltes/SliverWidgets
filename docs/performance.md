@@ -10,6 +10,7 @@ SliverWidgets is optimized around a simple rule: layout work should be proportio
 ## Hot Path Principles
 
 - Fixed-extent lists compute the first realized index with arithmetic.
+- Stack layouts cache prefix offsets and use binary search into the cache range.
 - Grids compute row ranges rather than scanning every item.
 - Wrap layouts cache line metrics by cross-axis extent and realize only lines intersecting the paint/cache window.
 - Cache windows are explicit and bounded.
@@ -67,6 +68,7 @@ Sliver layout can reduce how many children are measured, but each realized child
 Avalonia:
 
 - `SliverVirtualizingStackPanel` is the fixed-row high-volume path.
+- `SliverVirtualizingStackLayoutPanel` handles variable-width/height linear card stacks.
 - `SliverVirtualizingListPanel` handles variable row heights through observed measurements.
 - `SliverVirtualizingWrapPanel` handles large variable-size chip/card flows with deterministic extents.
 - Non-virtual `SliverStackPanel` and `SliverGridPanel` are useful for bounded child counts and custom composition.

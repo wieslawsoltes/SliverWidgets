@@ -11,10 +11,10 @@ Avalonia, Uno, MAUI, and WinUI adapters preserve native controls and use the cor
 
 | Framework | Package | Integration surface | Best high-volume path |
 |---|---|---|---|
-| Avalonia | `SliverWidgets.Avalonia` | `Panel`, `Decorator`, `VirtualizingPanel` | `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
+| Avalonia | `SliverWidgets.Avalonia` | `Panel`, `Decorator`, `VirtualizingPanel` | `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
 | MAUI | `SliverWidgets.Maui` | `Layout`, `ILayoutManager`, `CollectionView` | `SliverCollectionView` |
-| Uno | `SliverWidgets.Uno` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
-| WinUI | `SliverWidgets.WinUI` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| Uno | `SliverWidgets.Uno` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| WinUI | `SliverWidgets.WinUI` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
 
 ## Framework Guides
 
