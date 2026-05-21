@@ -144,4 +144,47 @@ public sealed class FrameworkParityTests
             Assert.True(slot.CrossAxisExtent <= constraints.CrossAxisExtent);
         });
     }
+
+    [Fact]
+    public void DataGridAdaptersShareCoreRowAndColumnRealizationWindow()
+    {
+        var layout = new SliverDataGridLayout(new SliverDataGridLayoutOptions(
+            new SliverDeterministicDataGridRowExtentList(100_000),
+            Enumerable.Range(0, 32)
+                .Select(index => new SliverDataGridColumnDefinition(
+                    $"c{index}",
+                    $"Column {index}",
+                    index % 3 == 0 ? SliverDataGridColumnWidthMode.SizeToCells : SliverDataGridColumnWidthMode.Fixed,
+                    Width: 112d,
+                    CellWidth: 128d + (index % 4 * 18d)))
+                .ToArray(),
+            HeaderExtent: 44d,
+            RowSpacing: 2d,
+            ColumnSpacing: 4d,
+            HorizontalScrollOffset: 900d,
+            HorizontalCacheOrigin: -240d,
+            RemainingHorizontalCacheExtent: 960d,
+            FrozenColumnCount: 1));
+        var constraints = new SliverConstraints(
+            SliverAxis.Vertical,
+            ScrollOffset: 7_200d,
+            PrecedingScrollExtent: 0d,
+            Overlap: 0d,
+            RemainingPaintExtent: 360d,
+            CrossAxisExtent: 760d,
+            ViewportMainAxisExtent: 360d,
+            CacheOrigin: -180d,
+            RemainingCacheExtent: 720d);
+
+        var result = layout.LayoutDataGrid(constraints);
+
+        Assert.True(result.Rows.Count < 40);
+        Assert.True(result.Columns.Count < 16);
+        Assert.True(result.Cells.Count < 600);
+        Assert.Contains(result.Rows, row => !row.IsCacheOnly);
+        Assert.Contains(result.Rows, row => row.IsCacheOnly);
+        Assert.Contains(result.Columns, column => column.IsFrozen);
+        Assert.Contains(result.Columns, column => column.IsCacheOnly);
+        Assert.Contains(result.Cells, cell => cell.IsHeader);
+    }
 }
