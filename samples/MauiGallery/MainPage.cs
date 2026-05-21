@@ -28,6 +28,8 @@ public sealed class MainPage : ContentPage
     private readonly SliverCollectionView _adaptiveGrid;
     private readonly SliverCollectionView _sectionList;
     private readonly SliverCollectionView _stressList;
+    private readonly ContentView _scenarioHost = new();
+    private readonly List<Button> _tabButtons = [];
     private readonly Label _extentValue;
     private readonly Label _spacingValue;
     private readonly Label _cacheValue;
@@ -50,84 +52,208 @@ public sealed class MainPage : ContentPage
         _sectionList = CreateSectionList();
         _stressList = CreateStressList();
 
-        Content = new ScrollView
-        {
-            Content = new VerticalStackLayout
-            {
-                Spacing = 28,
-                Padding = new Thickness(24, 22),
-                Children =
-                {
-                    CreateHeader(),
-                    CreateMetrics(),
-                    CreateControls(),
-                    CreateScenarioCatalog(),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.FixedExtentList).Title,
-                        Scenario(GalleryScenarioKind.FixedExtentList).Summary,
-                        _largeList),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.VariableExtentList).Title,
-                        $"{Scenario(GalleryScenarioKind.VariableExtentList).Summary} Native MAUI CollectionView measures each preview row.",
-                        _variableList),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.AdaptiveGrid).Title,
-                        $"{Scenario(GalleryScenarioKind.AdaptiveGrid).Summary} The MAUI sample recalculates fixed column count from width.",
-                        _adaptiveGrid),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.PinnedHeader).Title,
-                        $"{Scenario(GalleryScenarioKind.PinnedHeader).Summary} A native overlay drives the visual header.",
-                        CreatePinnedHeaderDemo()),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.MixedComposition).Title,
-                        Scenario(GalleryScenarioKind.MixedComposition).Summary,
-                        CreateMixedComposition()),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.SectionedHeaders).Title,
-                        $"{Scenario(GalleryScenarioKind.SectionedHeaders).Summary} Native MAUI handlers decide whether group headers pin on each platform.",
-                        _sectionList),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.FillPaddingVisibility).Title,
-                        $"{Scenario(GalleryScenarioKind.FillPaddingVisibility).Summary} Native MAUI layout primitives model the utility sliver behavior.",
-                        CreateFillPaddingVisibilityDemo()),
-                    CreateSection(
-                        Scenario(GalleryScenarioKind.CacheStress).Title,
-                        $"{Scenario(GalleryScenarioKind.CacheStress).Summary} SliverCollectionView keeps MAUI's native recycling path.",
-                        CreateStressDemo())
-                }
-            }
-        };
+        var pages = CreateGalleryPages();
+        Content = CreateShell(pages);
+        ShowScenario(pages[0]);
     }
 
     private View CreateHeader()
     {
         return new Grid
         {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            },
+            Children =
+            {
+                new VerticalStackLayout
+                {
+                    Spacing = 4,
+                    Children =
+                    {
+                        CreateLabel("SliverWidgets MAUI Gallery", 30, FontAttributes.Bold, "#111827"),
+                        CreateLabel(
+                            "Unified Flutter-inspired sliver scenario catalog using native MAUI controls.",
+                            15,
+                            FontAttributes.None,
+                            "#4B5563")
+                    }
+                },
+                WithColumn(CreateMetrics(), 1)
+            }
+        };
+    }
+
+    private View CreateShell(IReadOnlyList<MauiGalleryPage> pages)
+    {
+        var root = new Grid
+        {
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Auto),
                 new RowDefinition(GridLength.Auto),
-                new RowDefinition(GridLength.Auto)
-            },
-            Children =
-            {
-                CreateLabel("SliverWidgets MAUI", 30, FontAttributes.Bold, "#111827"),
-                CreateLabel(
-                    "Code-only catalog for the shared Flutter-inspired sliver scenarios projected onto native MAUI controls.",
-                    15,
-                    FontAttributes.None,
-                    "#4B5563",
-                    margin: new Thickness(0, 8, 0, 0),
-                    row: 1),
-                CreateLabel(
-                    "The MAUI adapter stays thin: CollectionView owns recycling, ScrollView owns mixed composition, and sliver metadata records extent, spacing, and cache intent.",
-                    13,
-                    FontAttributes.None,
-                    "#6B7280",
-                    margin: new Thickness(0, 6, 0, 0),
-                    row: 2)
+                new RowDefinition(GridLength.Star)
             }
         };
+
+        root.Add(new Border
+        {
+            Padding = new Thickness(20, 16),
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#D8E0EC"),
+            StrokeThickness = 1,
+            Content = CreateHeader()
+        }, 0, 0);
+
+        root.Add(CreateTabs(pages), 0, 1);
+        root.Add(new Grid
+        {
+            Padding = new Thickness(24, 20),
+            Children = { _scenarioHost }
+        }, 0, 2);
+
+        return root;
+    }
+
+    private View CreateTabs(IReadOnlyList<MauiGalleryPage> pages)
+    {
+        var tabs = new HorizontalStackLayout
+        {
+            Spacing = 18,
+            Padding = new Thickness(24, 18, 24, 14)
+        };
+
+        foreach (var page in pages)
+        {
+            var button = new Button
+            {
+                Text = page.Scenario.TabLabel,
+                FontSize = 18,
+                Padding = new Thickness(10, 6),
+                BackgroundColor = Colors.Transparent,
+                TextColor = Color.FromArgb("#6B7280"),
+                BorderColor = Colors.Transparent,
+                BorderWidth = 0
+            };
+
+            button.Clicked += (_, _) => ShowScenario(page);
+            _tabButtons.Add(button);
+            tabs.Children.Add(button);
+        }
+
+        return new ScrollView
+        {
+            Orientation = ScrollOrientation.Horizontal,
+            BackgroundColor = Color.FromArgb("#F3F6FA"),
+            Content = tabs
+        };
+    }
+
+    private IReadOnlyList<MauiGalleryPage> CreateGalleryPages()
+    {
+        return
+        [
+            CreatePage(GalleryScenarioKind.FixedExtentList, CreateFixedControls(), _largeList),
+            CreatePage(
+                GalleryScenarioKind.VariableExtentList,
+                CreateNote("Native MAUI CollectionView measures each preview row for this non-uniform sample."),
+                _variableList),
+            CreatePage(
+                GalleryScenarioKind.AdaptiveGrid,
+                CreateGridControls(),
+                _adaptiveGrid),
+            CreatePage(
+                GalleryScenarioKind.PinnedHeader,
+                CreateNote("A native overlay follows CollectionView.Scrolled offsets while the adapter surface stays thin."),
+                CreatePinnedHeaderDemo()),
+            CreatePage(
+                GalleryScenarioKind.MixedComposition,
+                CreateNote("Ordinary MAUI controls, fixed rows, grid tiles, and fill content are composed in one native ScrollView."),
+                CreateMixedComposition()),
+            CreatePage(
+                GalleryScenarioKind.SectionedHeaders,
+                CreateNote("Grouped SliverCollectionView rows use native handler behavior for platform-specific header stickiness."),
+                _sectionList),
+            CreatePage(
+                GalleryScenarioKind.FillPaddingVisibility,
+                CreateNote("MAUI layout primitives model utility sliver behavior for padding, replacement content, and fill remaining."),
+                CreateFillPaddingVisibilityDemo()),
+            CreatePage(
+                GalleryScenarioKind.CacheStress,
+                CreateCacheControls(),
+                CreateStressDemo())
+        ];
+    }
+
+    private MauiGalleryPage CreatePage(GalleryScenarioKind kind, View controls, View viewport)
+    {
+        var scenario = Scenario(kind);
+        return new MauiGalleryPage(scenario, CreateScenarioPage(scenario, controls, viewport));
+    }
+
+    private View CreateScenarioPage(GalleryScenario scenario, View controls, View viewport)
+    {
+        var layout = new Grid
+        {
+            ColumnSpacing = 20,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(300)),
+                new ColumnDefinition(GridLength.Star)
+            },
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Star)
+            }
+        };
+
+        layout.Add(CreateScenarioPanel(scenario, controls), 0, 0);
+        layout.Add(new Border
+        {
+            BackgroundColor = Color.FromArgb("#E8EEF7"),
+            Stroke = Color.FromArgb("#CBD5E1"),
+            StrokeThickness = 1,
+            Content = viewport
+        }, 1, 0);
+
+        return layout;
+    }
+
+    private View CreateScenarioPanel(GalleryScenario scenario, View controls)
+    {
+        return new Border
+        {
+            Padding = new Thickness(18),
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#CBD5E1"),
+            StrokeThickness = 1,
+            Content = new VerticalStackLayout
+            {
+                Spacing = 14,
+                Children =
+                {
+                    CreateLabel(scenario.Title, 20, FontAttributes.Bold, "#111827"),
+                    CreateLabel(scenario.Summary, 13, FontAttributes.None, "#4B5563"),
+                    controls
+                }
+            }
+        };
+    }
+
+    private void ShowScenario(MauiGalleryPage page)
+    {
+        for (var index = 0; index < _tabButtons.Count; index++)
+        {
+            var button = _tabButtons[index];
+            var selected = string.Equals(button.Text, page.Scenario.TabLabel, StringComparison.Ordinal);
+            button.TextColor = selected ? Color.FromArgb("#111827") : Color.FromArgb("#6B7280");
+            button.BorderWidth = selected ? 2 : 0;
+            button.BorderColor = selected ? Color.FromArgb("#2563EB") : Colors.Transparent;
+        }
+
+        _scenarioHost.Content = page.Content;
     }
 
     private View CreateMetrics()
@@ -152,7 +278,7 @@ public sealed class MainPage : ContentPage
         return grid;
     }
 
-    private View CreateControls()
+    private View CreateFixedControls()
     {
         var extentSlider = CreateSlider(44, 96, InitialExtent);
         extentSlider.ValueChanged += (_, args) =>
@@ -189,26 +315,89 @@ public sealed class MainPage : ContentPage
             _cacheValue.Text = $"{value:0}px";
         };
 
-        return CreatePanel(
-            "Sliver controls",
-            "The sliders update the live MAUI sliver controls. Cache extent remains metadata because MAUI handlers own the realization window.",
-            new Grid
+        return new VerticalStackLayout
+        {
+            Spacing = 12,
+            Children =
             {
-                RowDefinitions =
+                CreateNote("The sliders update live MAUI sliver controls. Cache extent remains metadata because MAUI handlers own the realization window."),
+                new Grid
                 {
-                    new RowDefinition(GridLength.Auto),
-                    new RowDefinition(GridLength.Auto),
-                    new RowDefinition(GridLength.Auto),
-                    new RowDefinition(GridLength.Auto)
-                },
-                Children =
-                {
-                    CreateControlRow("Extent", _extentValue, extentSlider, 0),
-                    CreateControlRow("Spacing", _spacingValue, spacingSlider, 1),
-                    CreateControlRow("Cache", _cacheValue, cacheSlider, 2),
-                    CreateReadOnlyRow("Grid columns", _gridColumnsValue, 3)
+                    RowDefinitions =
+                    {
+                        new RowDefinition(GridLength.Auto),
+                        new RowDefinition(GridLength.Auto),
+                        new RowDefinition(GridLength.Auto)
+                    },
+                    Children =
+                    {
+                        CreateControlRow("Extent", _extentValue, extentSlider, 0),
+                        CreateControlRow("Spacing", _spacingValue, spacingSlider, 1),
+                        CreateControlRow("Cache", _cacheValue, cacheSlider, 2)
+                    }
                 }
-            });
+            }
+        };
+    }
+
+    private View CreateGridControls()
+    {
+        return new VerticalStackLayout
+        {
+            Spacing = 12,
+            Children =
+            {
+                CreateNote("The MAUI sample recalculates fixed column count from available width while keeping the shared adaptive-grid scenario data."),
+                new Grid
+                {
+                    RowDefinitions =
+                    {
+                        new RowDefinition(GridLength.Auto)
+                    },
+                    Children =
+                    {
+                        CreateReadOnlyRow("Grid columns", _gridColumnsValue, 0)
+                    }
+                }
+            }
+        };
+    }
+
+    private View CreateCacheControls()
+    {
+        var cacheValue = CreateValueLabel($"{InitialCacheExtent:0}px");
+        var cacheSlider = CreateSlider(0, 640, InitialCacheExtent);
+        cacheSlider.ValueChanged += (_, args) =>
+        {
+            var value = Math.Round(args.NewValue);
+            _stressList.CacheExtent = value;
+            cacheValue.Text = $"{value:0}px";
+        };
+
+        return new VerticalStackLayout
+        {
+            Spacing = 12,
+            Children =
+            {
+                CreateNote("SliverCollectionView keeps MAUI's native recycling path while exposing sliver cache intent for parity."),
+                new Grid
+                {
+                    RowDefinitions =
+                    {
+                        new RowDefinition(GridLength.Auto)
+                    },
+                    Children =
+                    {
+                        CreateControlRow("Cache", cacheValue, cacheSlider, 0)
+                    }
+                }
+            }
+        };
+    }
+
+    private static View CreateNote(string text)
+    {
+        return CreateLabel(text, 13, FontAttributes.None, "#4B5563");
     }
 
     private View CreateScenarioCatalog()
@@ -1019,6 +1208,8 @@ public sealed class MainPage : ContentPage
     {
         return _scenarios.First(scenario => scenario.Kind == kind);
     }
+
+    private sealed record MauiGalleryPage(GalleryScenario Scenario, View Content);
 
     private sealed class MauiGallerySection : List<GalleryItem>
     {

@@ -18,6 +18,7 @@ public sealed class MainWindow : Window
     private static readonly IReadOnlyList<GalleryScenario> Scenarios = SliverGalleryData.CreateScenarios();
 
     private readonly ContentControl _contentHost = new();
+    private readonly List<Button> _tabButtons = [];
     private readonly List<GalleryPage> _pages;
 
     public MainWindow()
@@ -36,7 +37,7 @@ public sealed class MainWindow : Window
         ];
 
         Content = CreateShell();
-        _contentHost.Content = _pages[0].Create();
+        ShowPage(_pages[0]);
     }
 
     private Grid CreateShell()
@@ -45,60 +46,138 @@ public sealed class MainWindow : Window
         {
             Background = Brush(Color.FromArgb(255, 246, 247, 249))
         };
-        shell.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(280) });
-        shell.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        shell.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        shell.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        shell.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        var navigation = new StackPanel
+        var header = new Border
         {
-            Padding = new Thickness(20, 18, 16, 18),
-            Spacing = 14,
-            Background = Brush(Colors.White)
+            Padding = new Thickness(20, 16, 20, 16),
+            Background = Brush(Colors.White),
+            BorderBrush = Brush(Color.FromArgb(255, 216, 224, 236)),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = CreateHeader()
         };
+        shell.Children.Add(header);
 
-        navigation.Children.Add(Text("SliverWidgets", 24, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)));
-        navigation.Children.Add(Text("WinUI gallery", 13, FontWeights.Normal, Color.FromArgb(255, 96, 112, 132)));
-
-        var list = new ListView
+        var tabScroller = new ScrollViewer
         {
-            SelectionMode = ListViewSelectionMode.Single,
-            IsItemClickEnabled = true,
-            Margin = new Thickness(0, 10, 0, 0)
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            HorizontalScrollMode = ScrollMode.Enabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollMode = ScrollMode.Disabled,
+            Content = CreateTabs()
         };
+        Grid.SetRow(tabScroller, 1);
+        shell.Children.Add(tabScroller);
 
-        foreach (var page in _pages)
+        _contentHost.Margin = new Thickness(24, 20, 24, 20);
+        Grid.SetRow(_contentHost, 2);
+        shell.Children.Add(_contentHost);
+        return shell;
+    }
+
+    private FrameworkElement CreateHeader()
+    {
+        var root = new Grid { ColumnSpacing = 24 };
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        root.Children.Add(new StackPanel
         {
-            list.Items.Add(new ListViewItem
+            Spacing = 4,
+            Children =
             {
-                Tag = page,
-                Content = new StackPanel
+                Text("SliverWidgets WinUI Gallery", 30, FontWeights.SemiBold, Color.FromArgb(255, 17, 24, 39)),
+                Text("Unified Flutter-inspired sliver scenario catalog using native WinUI controls.", 15, FontWeights.Normal, Color.FromArgb(255, 75, 85, 99))
+            }
+        });
+
+        var metrics = CreateMetrics();
+        Grid.SetColumn(metrics, 1);
+        root.Children.Add(metrics);
+        return root;
+    }
+
+    private static FrameworkElement CreateMetrics()
+    {
+        var row = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 10
+        };
+
+        foreach (var metric in SliverGalleryData.CreateMetrics())
+        {
+            row.Children.Add(new Border
+            {
+                MinWidth = 132,
+                Padding = new Thickness(10),
+                CornerRadius = new CornerRadius(6),
+                Background = Brush(Color.FromArgb(255, 248, 250, 252)),
+                BorderBrush = Brush(ColorFromHex(metric.AccentColor)),
+                BorderThickness = new Thickness(2, 0, 0, 0),
+                Child = new StackPanel
                 {
-                    Spacing = 2,
                     Children =
                     {
-                        Text(page.Title, 15, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)),
-                        Text(page.Description, 12, FontWeights.Normal, Color.FromArgb(255, 107, 114, 128))
+                        Text(metric.Label, 12, FontWeights.Normal, Color.FromArgb(255, 100, 116, 139)),
+                        Text(metric.Value, 18, FontWeights.SemiBold, Color.FromArgb(255, 15, 23, 42)),
+                        Text(metric.Detail, 12, FontWeights.Normal, Color.FromArgb(255, 100, 116, 139))
                     }
                 }
             });
         }
 
-        list.SelectionChanged += (_, args) =>
+        return row;
+    }
+
+    private FrameworkElement CreateTabs()
+    {
+        var tabs = new StackPanel
         {
-            if (args.AddedItems.FirstOrDefault() is ListViewItem { Tag: GalleryPage selected })
-            {
-                _contentHost.Content = selected.Create();
-            }
+            Orientation = Orientation.Horizontal,
+            Spacing = 18,
+            Padding = new Thickness(24, 18, 24, 14),
+            Background = Brush(Color.FromArgb(255, 243, 246, 250))
         };
-        list.SelectedIndex = 0;
-        navigation.Children.Add(list);
 
-        Grid.SetColumn(navigation, 0);
-        shell.Children.Add(navigation);
+        foreach (var page in _pages)
+        {
+            var button = new Button
+            {
+                Content = page.TabLabel,
+                Tag = page,
+                Padding = new Thickness(10, 6, 10, 6),
+                Background = Brush(Colors.Transparent),
+                Foreground = Brush(Color.FromArgb(255, 107, 114, 128)),
+                BorderBrush = Brush(Colors.Transparent),
+                BorderThickness = new Thickness(0),
+                FontSize = 18
+            };
+            button.Click += (_, _) => ShowPage(page);
+            _tabButtons.Add(button);
+            tabs.Children.Add(button);
+        }
 
-        _contentHost.Margin = new Thickness(24);
-        Grid.SetColumn(_contentHost, 1);
-        shell.Children.Add(_contentHost);
-        return shell;
+        return tabs;
+    }
+
+    private void ShowPage(GalleryPage page)
+    {
+        foreach (var button in _tabButtons)
+        {
+            var selected = ReferenceEquals(button.Tag, page);
+            button.Foreground = selected
+                ? Brush(Color.FromArgb(255, 17, 24, 39))
+                : Brush(Color.FromArgb(255, 107, 114, 128));
+            button.BorderBrush = selected
+                ? Brush(Color.FromArgb(255, 37, 99, 235))
+                : Brush(Colors.Transparent);
+            button.BorderThickness = selected ? new Thickness(0, 0, 0, 2) : new Thickness(0);
+        }
+
+        _contentHost.Content = page.Create();
     }
 
     private static FrameworkElement CreateFixedLargeListPage()
@@ -522,17 +601,35 @@ public sealed class MainWindow : Window
         layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300) });
         layout.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
-        Grid.SetColumn(controls, 0);
-        Grid.SetColumn(viewport, 1);
-        layout.Children.Add(controls);
-        layout.Children.Add(viewport);
+        var controlFrame = new Border
+        {
+            Background = Brush(Colors.White),
+            BorderBrush = Brush(Color.FromArgb(255, 203, 213, 225)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = controls
+        };
+
+        var viewportFrame = new Border
+        {
+            Background = Brush(Color.FromArgb(255, 232, 238, 247)),
+            BorderBrush = Brush(Color.FromArgb(255, 203, 213, 225)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = viewport
+        };
+
+        Grid.SetColumn(controlFrame, 0);
+        Grid.SetColumn(viewportFrame, 1);
+        layout.Children.Add(controlFrame);
+        layout.Children.Add(viewportFrame);
         return layout;
     }
 
     private static GalleryPage CreatePage(GalleryScenarioKind kind, Func<FrameworkElement> create)
     {
         var scenario = Scenario(kind);
-        return new GalleryPage(scenario.Title, scenario.SupportedFeature, create);
+        return new GalleryPage(scenario.TabLabel, scenario.Title, scenario.SupportedFeature, create);
     }
 
     private static GalleryScenario Scenario(GalleryScenarioKind kind)
@@ -637,12 +734,22 @@ public sealed class MainWindow : Window
 
     private static SolidColorBrush Brush(Color color) => new(color);
 
+    private static Color ColorFromHex(string hex)
+    {
+        var value = Convert.ToUInt32(hex.TrimStart('#'), 16);
+        return Color.FromArgb(
+            255,
+            (byte)(value >> 16),
+            (byte)(value >> 8),
+            (byte)value);
+    }
+
     private static string FormatSliderValue(double value)
     {
         return Math.Abs(value - Math.Round(value)) < 0.01 ? value.ToString("0") : value.ToString("0.0");
     }
 
-    private sealed record GalleryPage(string Title, string Description, Func<FrameworkElement> Create);
+    private sealed record GalleryPage(string TabLabel, string Title, string Description, Func<FrameworkElement> Create);
 }
 
 internal enum GalleryItemVisualMode

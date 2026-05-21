@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -17,103 +16,192 @@ public sealed class UnoGalleryPage : Page
     private readonly IReadOnlyList<GallerySection> _sections = SliverGalleryData.CreateSections(6, 90);
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly ContentControl _scenarioHost = new();
-    private readonly ObservableCollection<Button> _navigationButtons = new();
+    private readonly List<Button> _navigationButtons = [];
+    private readonly List<GalleryPage> _pages;
 
     public UnoGalleryPage()
     {
         Background = Brush(0xFFF6F8FB);
+        _pages =
+        [
+            CreatePage(GalleryScenarioKind.FixedExtentList, BuildFixedLargeListScenario),
+            CreatePage(GalleryScenarioKind.VariableExtentList, BuildVariableListScenario),
+            CreatePage(GalleryScenarioKind.AdaptiveGrid, BuildAdaptiveGridScenario),
+            CreatePage(GalleryScenarioKind.PinnedHeader, BuildPinnedHeaderScenario),
+            CreatePage(GalleryScenarioKind.MixedComposition, BuildMixedCompositionScenario),
+            CreatePage(GalleryScenarioKind.SectionedHeaders, BuildSectionedHeaderScenario),
+            CreatePage(GalleryScenarioKind.FillPaddingVisibility, BuildFillVisibilityScenario),
+            CreatePage(GalleryScenarioKind.CacheStress, BuildCacheStressScenario)
+        ];
         Content = BuildShell();
-        ShowScenario(Scenario(GalleryScenarioKind.FixedExtentList).Title, BuildFixedLargeListScenario);
+        ShowScenario(_pages[0]);
     }
 
     private UIElement BuildShell()
     {
         var root = new Grid
         {
-            ColumnSpacing = 0,
+            Background = Brush(0xFFF3F6FA),
             RowSpacing = 0
         };
 
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(260) });
-        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
 
-        var nav = new StackPanel
+        var header = new Border
         {
-            Padding = new Thickness(20),
-            Spacing = 10,
-            Background = Brush(0xFF101827)
+            Padding = new Thickness(20, 16, 20, 16),
+            Background = Brush(0xFFFFFFFF),
+            BorderBrush = Brush(0xFFD8E0EC),
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = CreateHeader()
         };
+        root.Children.Add(header);
 
-        nav.Children.Add(new TextBlock
+        var tabScroller = new ScrollViewer
         {
-            Text = "SliverWidgets",
-            Foreground = Brush(0xFFFFFFFF),
-            FontSize = 26,
-            FontWeight = FontWeights.SemiBold,
-            Margin = new Thickness(0, 0, 0, 2)
-        });
-
-        nav.Children.Add(new TextBlock
-        {
-            Text = "Uno gallery",
-            Foreground = Brush(0xFFA7B0C3),
-            FontSize = 14,
-            Margin = new Thickness(0, 0, 0, 18)
-        });
-
-        AddNavigation(nav, Scenario(GalleryScenarioKind.FixedExtentList).Title, BuildFixedLargeListScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.VariableExtentList).Title, BuildVariableListScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.AdaptiveGrid).Title, BuildAdaptiveGridScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.PinnedHeader).Title, BuildPinnedHeaderScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.MixedComposition).Title, BuildMixedCompositionScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.SectionedHeaders).Title, BuildSectionedHeaderScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.FillPaddingVisibility).Title, BuildFillVisibilityScenario);
-        AddNavigation(nav, Scenario(GalleryScenarioKind.CacheStress).Title, BuildCacheStressScenario);
-
-        Grid.SetColumn(nav, 0);
-        root.Children.Add(nav);
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Content = CreateTabs()
+        };
+        Grid.SetRow(tabScroller, 1);
+        root.Children.Add(tabScroller);
 
         var contentFrame = new Border
         {
-            Padding = new Thickness(24),
+            Padding = new Thickness(24, 20, 24, 20),
             Background = Brush(0xFFF6F8FB),
             Child = _scenarioHost
         };
 
-        Grid.SetColumn(contentFrame, 1);
+        Grid.SetRow(contentFrame, 2);
         root.Children.Add(contentFrame);
 
         return root;
     }
 
-    private void AddNavigation(StackPanel nav, string label, Func<UIElement> create)
+    private UIElement CreateHeader()
+    {
+        var root = new Grid { ColumnSpacing = 24 };
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+        var title = new StackPanel { Spacing = 4 };
+        title.Children.Add(new TextBlock
+        {
+            Text = "SliverWidgets Uno Gallery",
+            Foreground = Brush(0xFF111827),
+            FontSize = 30,
+            FontWeight = FontWeights.SemiBold
+        });
+        title.Children.Add(new TextBlock
+        {
+            Text = "Unified Flutter-inspired sliver scenario catalog using native Uno controls.",
+            Foreground = Brush(0xFF4B5563),
+            FontSize = 15,
+            TextWrapping = TextWrapping.Wrap
+        });
+        root.Children.Add(title);
+
+        var metrics = CreateMetrics();
+        Grid.SetColumn(metrics, 1);
+        root.Children.Add(metrics);
+        return root;
+    }
+
+    private UIElement CreateMetrics()
+    {
+        var metrics = SliverGalleryData.CreateMetrics();
+        var row = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 10
+        };
+
+        foreach (var metric in metrics)
+        {
+            row.Children.Add(MetricCard(metric));
+        }
+
+        return row;
+    }
+
+    private static UIElement MetricCard(GalleryMetric metric)
+    {
+        return new Border
+        {
+            MinWidth = 132,
+            Padding = new Thickness(10),
+            CornerRadius = new CornerRadius(6),
+            Background = Brush(0xFFF8FAFC),
+            BorderBrush = BrushFromHex(metric.AccentColor),
+            BorderThickness = new Thickness(2, 0, 0, 0),
+            Child = new StackPanel
+            {
+                Children =
+                {
+                    new TextBlock { Text = metric.Label, Foreground = Brush(0xFF64748B), FontSize = 12 },
+                    new TextBlock { Text = metric.Value, Foreground = Brush(0xFF0F172A), FontSize = 18, FontWeight = FontWeights.SemiBold },
+                    new TextBlock { Text = metric.Detail, Foreground = Brush(0xFF64748B), FontSize = 12, TextWrapping = TextWrapping.Wrap }
+                }
+            }
+        };
+    }
+
+    private UIElement CreateTabs()
+    {
+        var tabs = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 18,
+            Padding = new Thickness(24, 18, 24, 14),
+            Background = Brush(0xFFF3F6FA)
+        };
+
+        foreach (var page in _pages)
+        {
+            AddNavigation(tabs, page);
+        }
+
+        return tabs;
+    }
+
+    private void AddNavigation(StackPanel nav, GalleryPage page)
     {
         var button = new Button
         {
-            Content = label,
-            HorizontalAlignment = HorizontalAlignment.Stretch,
-            Padding = new Thickness(14, 10, 14, 10),
-            HorizontalContentAlignment = HorizontalAlignment.Left,
-            Background = Brush(0x00101827),
-            Foreground = Brush(0xFFE9EEF7),
-            BorderBrush = Brush(0x00263244)
+            Content = page.Scenario.TabLabel,
+            Tag = page,
+            Padding = new Thickness(10, 6, 10, 6),
+            Background = Brush(0x00FFFFFF),
+            Foreground = Brush(0xFF6B7280),
+            BorderBrush = Brush(0x00FFFFFF),
+            BorderThickness = new Thickness(0),
+            FontSize = 18
         };
 
-        button.Click += (_, _) => ShowScenario(label, create);
+        button.Click += (_, _) => ShowScenario(page);
         _navigationButtons.Add(button);
         nav.Children.Add(button);
     }
 
-    private void ShowScenario(string label, Func<UIElement> create)
+    private void ShowScenario(GalleryPage page)
     {
         foreach (var button in _navigationButtons)
         {
-            var selected = string.Equals(button.Content?.ToString(), label, StringComparison.Ordinal);
-            button.Background = selected ? Brush(0xFF263244) : Brush(0x00101827);
-            button.BorderBrush = selected ? Brush(0xFF3B82F6) : Brush(0x00263244);
+            var selected = ReferenceEquals(button.Tag, page);
+            button.Foreground = selected ? Brush(0xFF111827) : Brush(0xFF6B7280);
+            button.BorderBrush = selected ? Brush(0xFF2563EB) : Brush(0x00FFFFFF);
+            button.BorderThickness = selected ? new Thickness(0, 0, 0, 2) : new Thickness(0);
         }
 
-        _scenarioHost.Content = create();
+        _scenarioHost.Content = page.Create();
+    }
+
+    private GalleryPage CreatePage(GalleryScenarioKind kind, Func<UIElement> create)
+    {
+        return new GalleryPage(Scenario(kind), create);
     }
 
     private GalleryScenario Scenario(GalleryScenarioKind kind)
@@ -552,24 +640,17 @@ public sealed class UnoGalleryPage : Page
     {
         var root = new Grid
         {
-            RowSpacing = 16
+            ColumnSpacing = 20
         };
 
-        root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-        root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-
-        var header = new Grid
-        {
-            ColumnSpacing = 24
-        };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(320) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(300) });
+        root.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
 
         var titleStack = new StackPanel { Spacing = 6 };
         titleStack.Children.Add(new TextBlock
         {
             Text = title,
-            FontSize = 30,
+            FontSize = 22,
             FontWeight = FontWeights.SemiBold,
             Foreground = Brush(0xFF111827)
         });
@@ -580,36 +661,30 @@ public sealed class UnoGalleryPage : Page
             TextWrapping = TextWrapping.Wrap,
             Foreground = Brush(0xFF475467)
         });
-
-        Grid.SetColumn(titleStack, 0);
-        header.Children.Add(titleStack);
+        titleStack.Children.Add(controls);
 
         var controlPanel = new Border
         {
-            Padding = new Thickness(16),
+            Padding = new Thickness(18),
             CornerRadius = new CornerRadius(8),
             Background = Brush(0xFFFFFFFF),
             BorderBrush = Brush(0xFFD0D5DD),
             BorderThickness = new Thickness(1),
-            Child = controls
+            Child = titleStack
         };
 
-        Grid.SetColumn(controlPanel, 1);
-        header.Children.Add(controlPanel);
-
-        Grid.SetRow(header, 0);
-        root.Children.Add(header);
+        root.Children.Add(controlPanel);
 
         var viewportFrame = new Border
         {
             CornerRadius = new CornerRadius(8),
             BorderBrush = Brush(0xFFD0D5DD),
             BorderThickness = new Thickness(1),
-            Background = Brush(0xFFFFFFFF),
+            Background = Brush(0xFFE8EEF7),
             Child = viewport
         };
 
-        Grid.SetRow(viewportFrame, 1);
+        Grid.SetColumn(viewportFrame, 1);
         root.Children.Add(viewportFrame);
 
         return root;
@@ -826,6 +901,14 @@ public sealed class UnoGalleryPage : Page
             (byte)(argb >> 8),
             (byte)argb));
     }
+
+    private static SolidColorBrush BrushFromHex(string hex)
+    {
+        var value = Convert.ToUInt32(hex.TrimStart('#'), 16);
+        return Brush(0xFF000000 | value);
+    }
+
+    private sealed record GalleryPage(GalleryScenario Scenario, Func<UIElement> Create);
 }
 
 internal sealed class GalleryItemElementFactory : ElementFactory
