@@ -32,6 +32,7 @@ flowchart TD
   - `src/SliverWidgets.Core/SliverPrimitives.cs`
   - `src/SliverWidgets.Core/SliverLayouts.cs`
     - Includes `SliverWrapLayout` for variable-width/height line packing and `SliverDeterministicWrapExtentList` for deterministic large wrap feeds.
+    - Includes `SliverStackLayout` for variable-width/height linear stacking and `SliverDeterministicStackExtentList` for deterministic large stack feeds.
   - `src/SliverWidgets.Core/SliverViewportLayoutEngine.cs`
     - Honors finite `ScrollOffsetCorrection` values by restarting the viewport pass from the corrected offset.
     - Honors Flutter-style `PaintOrigin`, `LayoutExtent`, `Overlap`, cache-origin correction, and per-sliver cache consumption.
@@ -41,6 +42,7 @@ flowchart TD
   - `src/SliverWidgets.Avalonia/SliverGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverPersistentHeader.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingStackPanel.cs`
+  - `src/SliverWidgets.Avalonia/SliverVirtualizingStackLayoutPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingListPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingWrapPanel.cs`
@@ -48,9 +50,11 @@ flowchart TD
     - Preserves measured cross-axis size when MAUI gives an unconstrained cross-axis.
   - `src/SliverWidgets.Maui/SliverCollectionView.cs`
   - `src/SliverWidgets.Uno/SliverFixedExtentVirtualizingLayout.cs`
+  - `src/SliverWidgets.Uno/SliverStackVirtualizingLayout.cs`
   - `src/SliverWidgets.Uno/SliverGridVirtualizingLayout.cs`
   - `src/SliverWidgets.Uno/SliverWrapVirtualizingLayout.cs`
   - `src/SliverWidgets.WinUI/SliverFixedExtentVirtualizingLayout.cs`
+  - `src/SliverWidgets.WinUI/SliverStackVirtualizingLayout.cs`
   - `src/SliverWidgets.WinUI/SliverGridVirtualizingLayout.cs`
   - `src/SliverWidgets.WinUI/SliverWrapVirtualizingLayout.cs`
 - Tests:
@@ -74,10 +78,10 @@ flowchart TD
 
 | Framework | Implemented Track | Next Track |
 |---|---|---|
-| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent/wrap `VirtualizingPanel` | deeper platform gesture/device validation |
-| WinUI | `VirtualizingLayout` for fixed rows, grids, and wrap, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
-| Uno | WinUI-style row, grid, and wrap `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
-| MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView`, and native row-virtualized wrap projection | device validation |
+| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent/variable-size stack/wrap `VirtualizingPanel` | deeper platform gesture/device validation |
+| WinUI | `VirtualizingLayout` for fixed rows, variable-size stacks, grids, and wrap, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
+| Uno | WinUI-style row, variable-size stack, grid, and wrap `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
+| MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView`, native variable-size stack projection, and native row-virtualized wrap projection | device validation |
 
 ## Milestones
 
@@ -118,6 +122,11 @@ flowchart TD
    - Avalonia/Uno/WinUI virtualizing adapters.
    - shared `Wrap` gallery scenario with 100,000 deterministic items.
    - MAUI native row-virtualized wrap projection with limitations documented.
+9. Variable Stack Sliver
+   - core variable-size linear stacking with cross-axis alignment.
+   - Avalonia/Uno/WinUI virtualizing adapters.
+   - shared `Stack` gallery scenario with 100,000 deterministic items.
+   - MAUI native variable-size stack projection with limitations documented.
 
 ## Validation Matrix
 
