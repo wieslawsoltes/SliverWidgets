@@ -18,6 +18,7 @@ public sealed class SliverFixedExtentListLayout : ISliverLayout
 {
     public SliverFixedExtentListLayout(SliverFixedExtentListOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
     }
@@ -104,8 +105,8 @@ public sealed class SliverFixedExtentListLayout : ISliverLayout
 
     internal static SliverGeometry BuildGeometry(double scrollExtent, in SliverConstraints constraints)
     {
-        var paintExtent = SliverMath.ClampPaintExtent(scrollExtent, constraints.ScrollOffset, constraints.RemainingPaintExtent);
-        var cacheExtent = SliverMath.Clamp(scrollExtent - constraints.ScrollOffset - constraints.CacheOrigin, 0d, constraints.RemainingCacheExtent);
+        var paintExtent = SliverMath.CalculatePaintOffset(constraints, 0d, scrollExtent);
+        var cacheExtent = SliverMath.CalculateCacheOffset(constraints, 0d, scrollExtent);
 
         return new SliverGeometry
         {
@@ -141,6 +142,7 @@ public sealed class SliverListLayout : ISliverLayout
 {
     public SliverListLayout(SliverListOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
     }
@@ -325,6 +327,7 @@ public sealed class SliverGridLayout : ISliverLayout
 {
     public SliverGridLayout(SliverGridLayoutOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
     }
 
@@ -410,7 +413,7 @@ public sealed class SliverGridLayout : ISliverLayout
             return Options.CrossAxisCount;
         }
 
-        var candidate = (int)Math.Floor((crossAxisExtent + Options.CrossAxisSpacing) / (Options.MaxCrossAxisExtent + Options.CrossAxisSpacing));
+        var candidate = (int)Math.Ceiling(crossAxisExtent / (Options.MaxCrossAxisExtent + Options.CrossAxisSpacing));
         return Math.Max(1, candidate);
     }
 }
@@ -433,6 +436,7 @@ public sealed class SliverPersistentHeaderLayout : ISliverLayout
 {
     public SliverPersistentHeaderLayout(SliverPersistentHeaderOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
     }
@@ -445,26 +449,36 @@ public sealed class SliverPersistentHeaderLayout : ISliverLayout
 
         var shrinkOffset = SliverMath.Clamp(constraints.ScrollOffset, 0d, Options.MaxExtent - Options.MinExtent);
         var currentExtent = SliverMath.Clamp(Options.MaxExtent - shrinkOffset, Options.MinExtent, Options.MaxExtent);
-        var remainingNaturalPaint = SliverMath.ClampPaintExtent(Options.MaxExtent, constraints.ScrollOffset, constraints.RemainingPaintExtent);
-        var paintExtent = Options.Pinned
-            ? Math.Min(currentExtent, constraints.RemainingPaintExtent)
+        var remainingNaturalPaint = SliverMath.CalculatePaintOffset(constraints, 0d, Options.MaxExtent);
+        var effectiveRemainingPaintExtent = Options.Pinned
+            ? Math.Max(0d, constraints.RemainingPaintExtent - constraints.Overlap)
+            : constraints.RemainingPaintExtent;
+        var layoutExtent = Options.Pinned
+            ? SliverMath.Clamp(Options.MaxExtent - constraints.ScrollOffset, 0d, effectiveRemainingPaintExtent)
             : remainingNaturalPaint;
-        var mainAxisOffset = Options.Pinned && constraints.ScrollOffset > Options.MaxExtent - Options.MinExtent
+        var paintExtent = Options.Pinned
+            ? Math.Min(currentExtent, effectiveRemainingPaintExtent)
+            : remainingNaturalPaint;
+        var mainAxisOffset = Options.Pinned
             ? 0d
-            : -constraints.ScrollOffset;
+            : Math.Min(0d, remainingNaturalPaint - currentExtent);
+        var cacheExtent = Options.Pinned && layoutExtent > SliverMath.Epsilon
+            ? SliverMath.Clamp(-constraints.CacheOrigin + layoutExtent, 0d, constraints.RemainingCacheExtent)
+            : SliverMath.CalculateCacheOffset(constraints, 0d, Options.MaxExtent);
 
         var geometry = new SliverGeometry
         {
             ScrollExtent = Options.MaxExtent,
+            PaintOrigin = Options.Pinned ? constraints.Overlap : Math.Min(constraints.Overlap, 0d),
             PaintExtent = paintExtent,
-            LayoutExtent = paintExtent,
+            LayoutExtent = layoutExtent,
             MaxPaintExtent = Options.MaxExtent,
             MaxScrollObstructionExtent = Options.Pinned ? Options.MinExtent : 0d,
             HitTestExtent = paintExtent,
             Visible = paintExtent > SliverMath.Epsilon,
             HasVisualOverflow = Options.MaxExtent > constraints.RemainingPaintExtent ||
                                 constraints.ScrollOffset > SliverMath.Epsilon,
-            CacheExtent = SliverMath.ClampPaintExtent(Options.MaxExtent, constraints.ScrollOffset + constraints.CacheOrigin, constraints.RemainingCacheExtent),
+            CacheExtent = cacheExtent,
             CrossAxisExtent = constraints.CrossAxisExtent
         };
 
@@ -500,6 +514,7 @@ public sealed class SliverFillRemainingLayout : ISliverLayout
 {
     public SliverFillRemainingLayout(SliverFillRemainingOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
     }
@@ -512,10 +527,8 @@ public sealed class SliverFillRemainingLayout : ISliverLayout
         var remainingViewport = Math.Max(0d, constraints.ViewportMainAxisExtent - constraints.PrecedingScrollExtent);
         var naturalExtent = Options.ChildExtent ?? remainingViewport;
         var extent = Options.HasScrollBody
-            ? Math.Max(remainingViewport, naturalExtent)
-            : (constraints.PrecedingScrollExtent <= constraints.ViewportMainAxisExtent
-                ? Math.Max(remainingViewport, naturalExtent)
-                : naturalExtent);
+            ? constraints.ViewportMainAxisExtent
+            : Math.Max(remainingViewport, naturalExtent);
 
         var geometry = SliverFixedExtentListLayout.BuildGeometry(extent, constraints);
         var slots = geometry.Visible
@@ -557,30 +570,65 @@ public sealed class SliverPaddingLayout : ISliverLayout
     {
         constraints.Validate();
 
+        var beforePaddingPaintExtent = SliverMath.CalculatePaintOffset(constraints, 0d, Padding.Before);
+        var beforePaddingCacheExtent = SliverMath.CalculateCacheOffset(constraints, 0d, Padding.Before);
+        var overlap = constraints.Overlap > 0d
+            ? Math.Max(0d, constraints.Overlap - beforePaddingPaintExtent)
+            : constraints.Overlap;
         var childScrollOffset = Math.Max(0d, constraints.ScrollOffset - Padding.Before);
-        var childCacheOrigin = constraints.ScrollOffset +
-                               constraints.CacheOrigin -
-                               Padding.Before -
-                               childScrollOffset;
         var childConstraints = constraints with
         {
             ScrollOffset = childScrollOffset,
             PrecedingScrollExtent = constraints.PrecedingScrollExtent + Padding.Before,
+            Overlap = overlap,
             CrossAxisExtent = Math.Max(0d, constraints.CrossAxisExtent - Padding.CrossBefore - Padding.CrossAfter),
-            RemainingPaintExtent = Math.Max(0d, constraints.RemainingPaintExtent - Math.Max(0d, Padding.Before - constraints.ScrollOffset)),
-            CacheOrigin = childCacheOrigin,
-            RemainingCacheExtent = constraints.RemainingCacheExtent
+            RemainingPaintExtent = Math.Max(0d, constraints.RemainingPaintExtent - beforePaddingPaintExtent),
+            CacheOrigin = Math.Min(0d, constraints.CacheOrigin + Padding.Before),
+            RemainingCacheExtent = Math.Max(0d, constraints.RemainingCacheExtent - beforePaddingCacheExtent)
         };
 
         var childResult = Child.Layout(childConstraints);
-        var scrollExtent = Padding.Before + childResult.Geometry.ScrollExtent + Padding.After;
-        var geometry = SliverFixedExtentListLayout.BuildGeometry(scrollExtent, constraints) with
+
+        if (childResult.Geometry.ScrollOffsetCorrection is { } correction)
         {
+            return new SliverLayoutResult(
+                new SliverGeometry
+                {
+                    ScrollOffsetCorrection = correction,
+                    CrossAxisExtent = constraints.CrossAxisExtent
+                },
+                Array.Empty<SliverLayoutSlot>());
+        }
+
+        var scrollExtent = Padding.Before + childResult.Geometry.ScrollExtent + Padding.After;
+        var afterPaddingStart = Padding.Before + childResult.Geometry.ScrollExtent;
+        var afterPaddingEnd = afterPaddingStart + Padding.After;
+        var afterPaddingPaintExtent = SliverMath.CalculatePaintOffset(constraints, afterPaddingStart, afterPaddingEnd);
+        var afterPaddingCacheExtent = SliverMath.CalculateCacheOffset(constraints, afterPaddingStart, afterPaddingEnd);
+        var mainAxisPaddingPaintExtent = beforePaddingPaintExtent + afterPaddingPaintExtent;
+        var mainAxisPaddingCacheExtent = beforePaddingCacheExtent + afterPaddingCacheExtent;
+        var paintExtent = Math.Min(
+            beforePaddingPaintExtent + Math.Max(
+                childResult.Geometry.PaintExtent,
+                childResult.Geometry.LayoutExtent + afterPaddingPaintExtent),
+            constraints.RemainingPaintExtent);
+        var geometry = new SliverGeometry
+        {
+            PaintOrigin = childResult.Geometry.PaintOrigin,
+            ScrollExtent = scrollExtent,
+            PaintExtent = paintExtent,
+            LayoutExtent = Math.Min(mainAxisPaddingPaintExtent + childResult.Geometry.LayoutExtent, paintExtent),
+            CacheExtent = Math.Min(mainAxisPaddingCacheExtent + childResult.Geometry.CacheExtent, constraints.RemainingCacheExtent),
             MaxPaintExtent = Padding.Before + childResult.Geometry.MaxPaintExtent + Padding.After,
             MaxScrollObstructionExtent = childResult.Geometry.MaxScrollObstructionExtent,
+            HitTestExtent = Math.Max(
+                mainAxisPaddingPaintExtent + childResult.Geometry.PaintExtent,
+                beforePaddingPaintExtent + childResult.Geometry.HitTestExtent),
+            Visible = paintExtent > SliverMath.Epsilon,
+            HasVisualOverflow = childResult.Geometry.HasVisualOverflow,
             CrossAxisExtent = constraints.CrossAxisExtent
         };
-        var leadingOffset = Math.Max(0d, Padding.Before - constraints.ScrollOffset);
+        var leadingOffset = beforePaddingPaintExtent;
         var slots = childResult.Slots
             .Select(slot => slot with
             {

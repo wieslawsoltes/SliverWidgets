@@ -40,7 +40,7 @@ var layout = new SliverGridLayout(
         childAspectRatio: 1.4));
 ```
 
-The core chooses the largest count that keeps tiles within the configured maximum.
+The core uses Flutter-style ceiling count selection so tile cross-axis extent stays within the configured maximum.
 
 ## Main-Axis Extent
 
@@ -57,7 +57,7 @@ var options = SliverGridLayoutOptions.FixedCrossAxisCount(
 
 | Framework | Grid adapter |
 |---|---|
-| Avalonia | `SliverGridPanel` |
+| Avalonia | `SliverGridPanel` for bounded direct children; `SliverVirtualizingGridPanel` for large `ItemsControl` sources |
 | MAUI | `SliverCollectionView` with `LayoutMode = FixedExtentGrid` |
 | Uno | `SliverGridVirtualizingLayout` |
 | WinUI | `SliverGridVirtualizingLayout` |

@@ -33,6 +33,8 @@ var fill = new SliverFillRemainingLayout(
 
 Common examples are empty states, detail panes, and footer regions.
 
+When `HasScrollBody` is `true`, the layout follows Flutter's scrollable fill-remaining path and reports the viewport main-axis extent as its scroll extent. When `HasScrollBody` is `false`, it uses the larger of the remaining viewport space and the child extent.
+
 ## SliverPaddingLayout
 
 `SliverPaddingLayout` transforms child constraints and offsets returned slots:
@@ -47,7 +49,7 @@ var padded = new SliverPaddingLayout(
     child);
 ```
 
-Padding contributes to total scroll extent and reduces the child cross-axis extent.
+Padding contributes to total scroll extent, reduces the child cross-axis extent, consumes leading/trailing paint and cache, and propagates child scroll-offset corrections to the viewport.
 
 ## SliverVisibilityLayout
 

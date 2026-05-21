@@ -8,12 +8,13 @@ public sealed class SliverLayoutTests
         double scrollOffset = 0d,
         double remainingPaintExtent = 300d,
         double crossAxisExtent = 100d,
-        double remainingCacheExtent = 300d)
+        double remainingCacheExtent = 300d,
+        double precedingScrollExtent = 0d)
     {
         return new SliverConstraints(
             SliverAxis.Vertical,
             scrollOffset,
-            0d,
+            precedingScrollExtent,
             0d,
             remainingPaintExtent,
             crossAxisExtent,
@@ -132,6 +133,23 @@ public sealed class SliverLayoutTests
     }
 
     [Fact]
+    public void GridWithMaxCrossAxisExtentUsesCeilingColumnCount()
+    {
+        var layout = new SliverGridLayout(
+            SliverGridLayoutOptions.WithMaxCrossAxisExtent(itemCount: 4, maxCrossAxisExtent: 200d));
+
+        var result = layout.Layout(Constraints(
+            remainingPaintExtent: 400d,
+            crossAxisExtent: 300d,
+            remainingCacheExtent: 400d));
+
+        Assert.Equal(2, layout.ResolveCrossAxisCount(300d));
+        Assert.Equal(300d, result.Geometry.ScrollExtent);
+        Assert.Equal(150d, result.Slots[0].CrossAxisExtent);
+        Assert.Equal(150d, result.Slots[1].CrossAxisOffset);
+    }
+
+    [Fact]
     public void GridHonorsNegativeCacheOrigin()
     {
         var layout = new SliverGridLayout(
@@ -170,10 +188,51 @@ public sealed class SliverLayoutTests
         var result = layout.Layout(Constraints(scrollOffset: 90d, remainingPaintExtent: 100d));
 
         Assert.Equal(120d, result.Geometry.ScrollExtent);
+        Assert.Equal(30d, result.Geometry.LayoutExtent);
         Assert.Equal(40d, result.Geometry.MaxScrollObstructionExtent);
         Assert.Equal(40d, result.Slots[0].MainAxisExtent);
         Assert.True(result.Slots[0].IsPinned);
         Assert.Equal(0d, result.Slots[0].MainAxisOffset);
+    }
+
+    [Fact]
+    public void ScrollingHeaderShrinksBeforeScrollingOffWithoutGap()
+    {
+        var layout = new SliverPersistentHeaderLayout(
+            new SliverPersistentHeaderOptions(MinExtent: 56d, MaxExtent: 160d));
+
+        var shrinking = layout.Layout(Constraints(scrollOffset: 50d, remainingPaintExtent: 300d));
+        var scrollingOff = layout.Layout(Constraints(scrollOffset: 130d, remainingPaintExtent: 300d));
+
+        Assert.Equal(110d, shrinking.Geometry.PaintExtent);
+        Assert.Equal(110d, shrinking.Geometry.LayoutExtent);
+        Assert.Equal(110d, shrinking.Slots[0].MainAxisExtent);
+        Assert.Equal(0d, shrinking.Slots[0].MainAxisOffset);
+
+        Assert.Equal(30d, scrollingOff.Geometry.PaintExtent);
+        Assert.Equal(30d, scrollingOff.Geometry.LayoutExtent);
+        Assert.Equal(56d, scrollingOff.Slots[0].MainAxisExtent);
+        Assert.Equal(-26d, scrollingOff.Slots[0].MainAxisOffset);
+    }
+
+    [Fact]
+    public void ViewportComposesScrollingHeaderAndRowsWithoutReservedGap()
+    {
+        var engine = new SliverViewportLayoutEngine();
+        var slivers = new ISliverLayout[]
+        {
+            new SliverPersistentHeaderLayout(new SliverPersistentHeaderOptions(56d, 160d)),
+            new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(10, 54d, 6d))
+        };
+
+        var result = engine.Layout(slivers, new SliverViewport(300d, 500d), scrollOffset: 130d);
+
+        var header = result.Slots.Single(slot => slot.SliverIndex == 0);
+        var firstRow = result.Slots.Single(slot => slot.SliverIndex == 1 && slot.ItemIndex == 0);
+
+        Assert.Equal(-26d, header.MainAxisOffset);
+        Assert.Equal(56d, header.MainAxisExtent);
+        Assert.Equal(30d, firstRow.MainAxisOffset);
     }
 
     [Fact]
@@ -195,7 +254,7 @@ public sealed class SliverLayoutTests
     }
 
     [Fact]
-    public void ViewportOffsetsLaterSliversBelowPinnedObstructions()
+    public void ViewportPassesPinnedOverlapWithoutPushingNormalSlivers()
     {
         var engine = new SliverViewportLayoutEngine();
         var recordingSliver = new RecordingSliver();
@@ -215,8 +274,50 @@ public sealed class SliverLayoutTests
         Assert.Equal(0d, firstHeader.MainAxisOffset);
         Assert.Equal(40d, secondHeader.MainAxisOffset);
         Assert.Equal(70d, recordingSliver.LastConstraints.Overlap);
-        Assert.Equal(130d, recordingSliver.LastConstraints.RemainingPaintExtent);
-        Assert.Equal(70d, followingSlot.MainAxisOffset);
+        Assert.Equal(200d, recordingSliver.LastConstraints.RemainingPaintExtent);
+        Assert.Equal(0d, followingSlot.MainAxisOffset);
+    }
+
+    [Fact]
+    public void ViewportConsumesCacheExtentAcrossSlivers()
+    {
+        var engine = new SliverViewportLayoutEngine();
+        var slivers = new ISliverLayout[]
+        {
+            new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(100, 20d)),
+            new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(100, 20d))
+        };
+
+        var result = engine.Layout(slivers, new SliverViewport(100d, 300d), scrollOffset: 0d);
+
+        Assert.Contains(result.Slots, slot => slot.SliverIndex == 0);
+        Assert.DoesNotContain(result.Slots, slot => slot.SliverIndex == 1);
+    }
+
+    [Fact]
+    public void FillRemainingWithScrollBodyReportsViewportScrollExtent()
+    {
+        var layout = new SliverFillRemainingLayout(new SliverFillRemainingOptions(800d));
+
+        var result = layout.Layout(Constraints(
+            remainingPaintExtent: 500d,
+            remainingCacheExtent: 500d,
+            precedingScrollExtent: 600d));
+
+        Assert.Equal(500d, result.Geometry.ScrollExtent);
+    }
+
+    [Fact]
+    public void FillRemainingWithoutScrollBodyUsesChildWhenPrecedingExceedsViewport()
+    {
+        var layout = new SliverFillRemainingLayout(new SliverFillRemainingOptions(220d, HasScrollBody: false));
+
+        var result = layout.Layout(Constraints(
+            remainingPaintExtent: 500d,
+            remainingCacheExtent: 500d,
+            precedingScrollExtent: 600d));
+
+        Assert.Equal(220d, result.Geometry.ScrollExtent);
     }
 
     [Fact]
@@ -251,6 +352,31 @@ public sealed class SliverLayoutTests
     {
         Assert.Throws<ArgumentOutOfRangeException>(() => SliverMath.ThrowIfNegative(double.PositiveInfinity, "value"));
         Assert.Throws<ArgumentOutOfRangeException>(() => SliverMath.ThrowIfNegative(double.NegativeInfinity, "value"));
+    }
+
+    [Fact]
+    public void ConstraintsRejectPositiveCacheOrigin()
+    {
+        var constraints = Constraints() with { CacheOrigin = 1d };
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => constraints.Validate());
+    }
+
+    [Fact]
+    public void GeometryRejectsPaintExtentBeyondMaxPaintExtent()
+    {
+        var geometry = new SliverGeometry
+        {
+            ScrollExtent = 100d,
+            PaintExtent = 40d,
+            LayoutExtent = 40d,
+            MaxPaintExtent = 20d,
+            HitTestExtent = 40d,
+            CacheExtent = 40d,
+            CrossAxisExtent = 100d
+        };
+
+        Assert.Throws<InvalidOperationException>(() => geometry.Validate(Constraints()));
     }
 
     private sealed class RecordingSliver : ISliverLayout

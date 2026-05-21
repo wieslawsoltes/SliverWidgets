@@ -78,6 +78,7 @@ public sealed class SliverToBoxAdapterLayout : ISliverLayout
 {
     public SliverToBoxAdapterLayout(SliverToBoxAdapterOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
     }
@@ -253,6 +254,7 @@ public sealed class SliverAdvancedPersistentHeaderLayout : ISliverLayout
         SliverPersistentHeaderState? state = null,
         ISliverHeaderSnapAnimationService? snapAnimationService = null)
     {
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         Options.Validate();
         State = state ?? new SliverPersistentHeaderState();
@@ -300,30 +302,40 @@ public sealed class SliverAdvancedPersistentHeaderLayout : ISliverLayout
 
         State.SetCurrentExtent(currentExtent);
 
-        var remainingNaturalPaint = SliverMath.ClampPaintExtent(Options.MaxExtent, constraints.ScrollOffset, constraints.RemainingPaintExtent);
+        var remainingNaturalPaint = SliverMath.CalculatePaintOffset(constraints, 0d, Options.MaxExtent);
         var canFloatIntoView = Options.Floating && currentExtent > Options.MinExtent;
+        var paintOrigin = Options.Pinned && !Options.Floating
+            ? constraints.Overlap
+            : Math.Min(constraints.Overlap, 0d);
+        var effectiveRemainingPaintExtent = Options.Pinned
+            ? Math.Max(0d, constraints.RemainingPaintExtent - paintOrigin)
+            : constraints.RemainingPaintExtent;
         var paintExtent = Options.Pinned || canFloatIntoView
-            ? Math.Min(currentExtent, constraints.RemainingPaintExtent)
+            ? Math.Min(currentExtent, effectiveRemainingPaintExtent)
             : remainingNaturalPaint;
-        var shouldPin = canFloatIntoView
-            ? constraints.ScrollOffset > SliverMath.Epsilon
-            : Options.Pinned && constraints.ScrollOffset > shrinkRange + SliverMath.Epsilon;
-        var mainAxisOffset = shouldPin
+        var layoutExtent = Options.Pinned || canFloatIntoView
+            ? SliverMath.Clamp(Options.MaxExtent - constraints.ScrollOffset, 0d, paintExtent)
+            : remainingNaturalPaint;
+        var mainAxisOffset = Options.Pinned || canFloatIntoView
             ? 0d
-            : -constraints.ScrollOffset;
+            : Math.Min(0d, remainingNaturalPaint - currentExtent);
+        var cacheExtent = Options.Pinned && layoutExtent > SliverMath.Epsilon
+            ? SliverMath.Clamp(-constraints.CacheOrigin + layoutExtent, 0d, constraints.RemainingCacheExtent)
+            : SliverMath.CalculateCacheOffset(constraints, 0d, Options.MaxExtent);
 
         var geometry = new SliverGeometry
         {
             ScrollExtent = Options.MaxExtent,
+            PaintOrigin = paintOrigin,
             PaintExtent = paintExtent,
-            LayoutExtent = paintExtent,
+            LayoutExtent = layoutExtent,
             MaxPaintExtent = Options.MaxExtent,
             MaxScrollObstructionExtent = Options.Pinned ? Options.MinExtent : 0d,
             HitTestExtent = paintExtent,
             Visible = paintExtent > SliverMath.Epsilon,
             HasVisualOverflow = Options.MaxExtent > constraints.RemainingPaintExtent ||
                                 constraints.ScrollOffset > SliverMath.Epsilon,
-            CacheExtent = SliverMath.ClampPaintExtent(Options.MaxExtent, constraints.ScrollOffset + constraints.CacheOrigin, constraints.RemainingCacheExtent),
+            CacheExtent = cacheExtent,
             CrossAxisExtent = constraints.CrossAxisExtent
         };
 

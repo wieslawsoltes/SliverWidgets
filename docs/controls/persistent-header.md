@@ -17,7 +17,9 @@ var layout = new SliverPersistentHeaderLayout(
         Pinned: true));
 ```
 
-When `Pinned` is `true`, the header contributes `MaxScrollObstructionExtent` equal to its minimum extent and remains arranged at the leading edge once collapsed.
+When `Pinned` is `true`, the header contributes `MaxScrollObstructionExtent` equal to its minimum extent, paints at the leading edge, and reports a `LayoutExtent` that shrinks from `MaxExtent` to zero as the header scrolls through the viewport.
+
+When `Pinned` is `false`, the header follows Flutter's scrolling persistent-header behavior: it shrinks at the leading edge until it reaches `MinExtent`, then scrolls away while its `LayoutExtent` follows only the visible paint extent. Following slivers therefore move up continuously instead of waiting behind an empty minimum-size header slot.
 
 ## Advanced Header
 

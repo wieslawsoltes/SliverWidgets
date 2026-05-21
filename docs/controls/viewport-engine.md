@@ -50,3 +50,9 @@ var result = new SliverViewportLayoutEngine().Layout(
 The engine validates each sliver's geometry against its constraints. Invalid negative or infinite values, excessive paint extents, or layout extents larger than paint extents fail early.
 
 If a sliver returns a finite `ScrollOffsetCorrection`, the engine adjusts the effective scroll offset and restarts the viewport pass so estimated or corrected slivers can converge before slots are returned. Non-converging corrections fail fast instead of producing persistent jitter.
+
+## Flutter-Style Sequencing
+
+The viewport advances each sliver sequence by `SliverGeometry.LayoutExtent`, not by painted size or pinned obstruction. It computes the next sliver's `Overlap` from the difference between painted and laid-out extent, applies `PaintOrigin` to viewport slot offsets, and consumes `CacheExtent` so later slivers do not realize outside the remaining cache budget.
+
+Pinned headers can therefore paint over following content while following slots still keep their natural layout positions. Adapters that want content clipped below pinned headers should clip at the pinned obstruction boundary instead of asking the core viewport to push normal slivers down.

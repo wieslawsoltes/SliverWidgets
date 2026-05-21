@@ -50,3 +50,5 @@ When porting a Flutter sliver composition:
 ## Differences to Expect
 
 `SliverWidgets.Core` can model mixed sliver layout directly, but each framework has different public hooks for scroll owner integration. Avalonia exposes custom panels and virtualizing panels. Uno and WinUI expose `ItemsRepeater` layouts. MAUI's high-volume path is native `CollectionView`.
+
+Core viewport composition follows Flutter's render-sliver sequencing for `PaintOrigin`, `LayoutExtent`, `Overlap`, cache-origin correction, cache consumption, and scroll-offset correction retries. Framework adapters may still differ where the native platform does not expose the same hooks; those limitations are documented in the adapter pages and in `plan/FLUTTER_SLIVER_COMPARISON.md`.

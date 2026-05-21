@@ -40,27 +40,29 @@ public sealed class SliverViewportLayoutEngine
             var slots = new List<SliverViewportSlot>();
             var geometries = new List<SliverGeometry>(slivers.Count);
             var precedingScrollExtent = 0d;
-            var activeScrollObstructionExtent = 0d;
+            var scrollOffsetRemaining = effectiveScrollOffset;
+            var layoutOffset = 0d;
+            var maxPaintOffset = 0d;
+            var cacheOrigin = -cacheExtent;
+            var remainingCacheExtent = viewport.MainAxisExtent + (cacheExtent * 2d);
             var corrected = false;
 
             for (var sliverIndex = 0; sliverIndex < slivers.Count; sliverIndex++)
             {
-                var localScrollOffset = Math.Max(0d, effectiveScrollOffset - precedingScrollExtent);
-                var naturalLeadingViewportOffset = Math.Max(0d, precedingScrollExtent - effectiveScrollOffset);
-                var sliverLeadingViewportOffset = Math.Max(activeScrollObstructionExtent, naturalLeadingViewportOffset);
-                var remainingPaintExtent = Math.Max(
-                    0d,
-                    viewport.MainAxisExtent - Math.Min(viewport.MainAxisExtent, sliverLeadingViewportOffset));
+                var localScrollOffset = Math.Max(0d, scrollOffsetRemaining);
+                var correctedCacheOrigin = Math.Max(cacheOrigin, -localScrollOffset);
+                var cacheExtentCorrection = cacheOrigin - correctedCacheOrigin;
+                var remainingPaintExtent = Math.Max(0d, viewport.MainAxisExtent - layoutOffset);
                 var constraints = new SliverConstraints(
                     viewport.Axis,
                     localScrollOffset,
                     precedingScrollExtent,
-                    activeScrollObstructionExtent,
+                    maxPaintOffset - layoutOffset,
                     remainingPaintExtent,
                     viewport.CrossAxisExtent,
                     viewport.MainAxisExtent,
-                    -cacheExtent,
-                    viewport.MainAxisExtent + (cacheExtent * 2d),
+                    correctedCacheOrigin,
+                    Math.Max(0d, remainingCacheExtent + cacheExtentCorrection),
                     UserScrollDirection: userScrollDirection);
 
                 var result = slivers[sliverIndex].Layout(constraints);
@@ -85,13 +87,14 @@ public sealed class SliverViewportLayoutEngine
                 }
 
                 geometries.Add(result.Geometry);
+                var effectiveLayoutOffset = layoutOffset + result.Geometry.PaintOrigin;
 
                 foreach (var slot in result.Slots)
                 {
                     slots.Add(new SliverViewportSlot(
                         sliverIndex,
                         slot.Index,
-                        sliverLeadingViewportOffset + slot.MainAxisOffset,
+                        effectiveLayoutOffset + slot.MainAxisOffset,
                         slot.CrossAxisOffset,
                         slot.MainAxisExtent,
                         slot.CrossAxisExtent,
@@ -99,8 +102,20 @@ public sealed class SliverViewportLayoutEngine
                         slot.IsCacheOnly));
                 }
 
+                maxPaintOffset = Math.Max(
+                    maxPaintOffset,
+                    effectiveLayoutOffset + result.Geometry.PaintExtent);
+                scrollOffsetRemaining -= result.Geometry.ScrollExtent;
                 precedingScrollExtent += result.Geometry.ScrollExtent;
-                activeScrollObstructionExtent += result.Geometry.MaxScrollObstructionExtent;
+                layoutOffset += result.Geometry.LayoutExtent;
+
+                if (result.Geometry.CacheExtent > SliverMath.Epsilon)
+                {
+                    remainingCacheExtent = Math.Max(
+                        0d,
+                        remainingCacheExtent - (result.Geometry.CacheExtent - cacheExtentCorrection));
+                    cacheOrigin = Math.Min(correctedCacheOrigin + result.Geometry.CacheExtent, 0d);
+                }
             }
 
             if (corrected)

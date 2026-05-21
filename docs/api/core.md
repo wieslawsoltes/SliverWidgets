@@ -41,7 +41,7 @@ description: Public API guide for SliverWidgets.Core.
 | `SliverGridLayoutOptions` | Factory-based grid options. |
 | `SliverGridLayout` | Grid layout implementation. |
 
-Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts and `SliverGridLayoutOptions.WithMaxCrossAxisExtent` for responsive tile sizes.
+Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts and `SliverGridLayoutOptions.WithMaxCrossAxisExtent` for responsive tile sizes. Max-extent mode uses a ceiling count so generated tiles do not exceed the configured maximum cross-axis extent.
 
 ## Header APIs
 
@@ -79,6 +79,8 @@ Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts an
 | `SliverViewportLayoutEngine` | Mixed sliver composition engine. |
 
 `SliverViewportLayoutEngine` restarts layout when a sliver reports a finite `SliverGeometry.ScrollOffsetCorrection`. This lets variable or estimated slivers request a corrected scroll position and prevents stale viewport offsets from being returned.
+
+The engine also follows Flutter-style sliver sequencing: slots are offset by `PaintOrigin`, later slivers advance by `LayoutExtent`, overlap is derived from painted versus laid-out extent, and the cache window is consumed as each sliver reports `CacheExtent`.
 
 ## Example
 

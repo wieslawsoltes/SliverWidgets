@@ -21,7 +21,7 @@ public sealed class SliverAdvancedLayoutTests
             crossAxisExtent,
             remainingPaintExtent,
             cacheOrigin,
-            remainingCacheExtent,
+            Math.Max(remainingCacheExtent, remainingPaintExtent),
             UserScrollDirection: userScrollDirection);
     }
 
@@ -131,11 +131,10 @@ public sealed class SliverAdvancedLayoutTests
             cacheOrigin: -10d,
             remainingCacheExtent: 100d));
 
-        Assert.Equal(new[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, result.Slots.Select(slot => slot.Index));
-        Assert.DoesNotContain(result.Slots, slot => slot.Index == 10);
-        Assert.True(result.Slots.Single(slot => slot.Index == 0).IsCacheOnly);
+        Assert.Equal(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 }, result.Slots.Select(slot => slot.Index));
+        Assert.DoesNotContain(result.Slots, slot => slot.Index == 0);
         Assert.False(result.Slots.Single(slot => slot.Index == 1).IsCacheOnly);
-        Assert.True(result.Slots.Single(slot => slot.Index == 9).IsCacheOnly);
+        Assert.True(result.Slots.Single(slot => slot.Index == 10).IsCacheOnly);
     }
 
     [Fact]
@@ -151,6 +150,19 @@ public sealed class SliverAdvancedLayoutTests
         Assert.Equal(40d, result.Geometry.MaxScrollObstructionExtent);
         Assert.Equal(0d, result.Slots[0].MainAxisOffset);
         Assert.True(result.Slots[0].IsPinned);
+    }
+
+    [Fact]
+    public void PaddingPropagatesChildScrollOffsetCorrection()
+    {
+        var layout = new SliverPaddingLayout(
+            new SliverEdgeInsets(Before: 10d, After: 5d),
+            new CorrectingSliver(12d));
+
+        var result = layout.Layout(Constraints(scrollOffset: 40d, remainingPaintExtent: 100d));
+
+        Assert.Equal(12d, result.Geometry.ScrollOffsetCorrection);
+        Assert.Empty(result.Slots);
     }
 
     [Fact]
@@ -218,7 +230,7 @@ public sealed class SliverAdvancedLayoutTests
         var pinned = layout.Layout(Constraints(scrollOffset: 90d, remainingPaintExtent: 120d));
 
         Assert.Equal(88d, partiallyCollapsed.Slots[0].MainAxisExtent);
-        Assert.Equal(-32d, partiallyCollapsed.Slots[0].MainAxisOffset);
+        Assert.Equal(0d, partiallyCollapsed.Slots[0].MainAxisOffset);
         Assert.Equal(40d, pinned.Slots[0].MainAxisExtent);
         Assert.Equal(0d, pinned.Slots[0].MainAxisOffset);
     }
@@ -240,5 +252,26 @@ public sealed class SliverAdvancedLayoutTests
         Assert.Equal(110d, snapped.Slots[0].MainAxisExtent);
         Assert.Equal(120d, state.SnapTargetExtent);
         Assert.Equal(SliverHeaderSnapStatus.SnappingToMax, state.SnapStatus);
+    }
+
+    private sealed class CorrectingSliver : ISliverLayout
+    {
+        private readonly double _correction;
+
+        public CorrectingSliver(double correction)
+        {
+            _correction = correction;
+        }
+
+        public SliverLayoutResult Layout(in SliverConstraints constraints)
+        {
+            return new SliverLayoutResult(
+                new SliverGeometry
+                {
+                    ScrollOffsetCorrection = _correction,
+                    CrossAxisExtent = constraints.CrossAxisExtent
+                },
+                Array.Empty<SliverLayoutSlot>());
+        }
     }
 }
