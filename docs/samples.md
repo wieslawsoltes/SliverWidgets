@@ -5,9 +5,9 @@ description: Framework sample galleries and validation commands.
 
 # Sample Galleries
 
-The repository includes gallery-style samples for each supported framework. They mirror Flutter's sliver teaching examples with native .NET controls: expanded or persistent headers, adaptive grids, fixed-extent lists, variable-size content, and mixed scroll compositions.
+The repository includes gallery-style samples for each supported framework. They mirror Flutter's sliver teaching examples with native .NET controls: expanded or persistent headers, adaptive grids, fixed-extent lists, variable-size wrap content, and mixed scroll compositions.
 
-The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, tiles, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI. The galleries also share the Avalonia reference shell: a top metrics header, short scenario tabs (`Fixed`, `Variable`, `Grid`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right framework-native viewport.
+The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, tiles, wrap chips, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI. The galleries also share the Avalonia reference shell: a top metrics header, short scenario tabs (`Fixed`, `Variable`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right framework-native viewport.
 
 ## Coverage Matrix
 
@@ -17,6 +17,7 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 | `SliverAppBar` / persistent header | Avalonia `SliverPersistentHeader` and configurable stacked or push section headers, WinUI pinned/floating header concept, MAUI grouped headers |
 | `NestedScrollView` with tabs and overlap | Avalonia native `TabControl` with sliver-backed tab bodies, MAUI segmented tab buttons with native `CollectionView` bodies, Uno/WinUI segmented tab buttons with `ItemsRepeater` bodies |
 | `SliverGrid` | Avalonia `SliverVirtualizingGridPanel` for large grids and `SliverGridPanel` for bounded direct children, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
+| Variable-size wrap / flow sliver | Avalonia `SliverVirtualizingWrapPanel`, Uno/WinUI `SliverWrapVirtualizingLayout`, MAUI native row-virtualized wrap projection over the same 100,000-chip source |
 | `SliverFixedExtentList` | Core fixed extent layout plus Avalonia, MAUI, Uno, and WinUI fixed list samples |
 | Lazy child lifecycle and cache windows | Avalonia virtualizing panel, MAUI native `CollectionView`, Uno/WinUI `ItemsRepeater` realization windows |
 

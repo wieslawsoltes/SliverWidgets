@@ -20,6 +20,7 @@ The core layer is the source of behavior. Framework packages map that behavior t
 | `SliverListLayout` | You already know every item extent. |
 | `SliverVariableExtentListLayout` | Item extents are discovered as children are measured. |
 | `SliverGridLayout` | Items are arranged in rows or columns with a fixed count or max cross-axis extent. |
+| `SliverWrapLayout` | Non-uniform width/height items flow into wrap lines. |
 | `SliverPersistentHeaderLayout` | A header should collapse and optionally pin. |
 | `SliverAdvancedPersistentHeaderLayout` | A header needs pinned, floating, and snap behavior. |
 | `SliverFillRemainingLayout` | A child should occupy the rest of the viewport. |
@@ -31,10 +32,10 @@ The core layer is the source of behavior. Framework packages map that behavior t
 
 | Framework | Controls |
 |---|---|
-| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel` |
+| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
 | MAUI | `SliverStackLayout`, `SliverCollectionView`, `SliverItemsLayoutFactory` |
-| Uno | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout` |
-| WinUI | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout` |
+| Uno | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| WinUI | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
 
 ## Choosing the Right Layout
 
@@ -45,6 +46,7 @@ Use this decision table for the first implementation:
 | 100,000 uniform rows | fixed extent list |
 | cards with measured text height | variable extent list |
 | responsive image/content tiles | grid with max cross-axis extent |
+| chip clouds with different widths and heights | wrap layout |
 | section header that remains visible | persistent header with `Pinned = true` |
 | dashboard page that ends with an empty-state region | fill remaining |
 | optional filter panel in a scroll sequence | visibility with replacement |

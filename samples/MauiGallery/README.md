@@ -5,7 +5,7 @@ Flutter-inspired scenario catalog onto MAUI-native controls without duplicating 
 shared gallery data.
 
 The shell matches the Avalonia gallery: top metric cards, short scenario tabs
-(`Fixed`, `Variable`, `Grid`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
+(`Fixed`, `Variable`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
 left-side controls/notes, and a right-side MAUI-native viewport.
 
 ## Build
@@ -19,6 +19,7 @@ dotnet build samples/MauiGallery/MauiGallery.csproj
 - Fixed large list through native-backed `SliverCollectionView` fixed-list virtualization.
 - Variable/non-uniform list through native MAUI `CollectionView` measured row templates.
 - Adaptive grid through `SliverCollectionView` grid mode with width-derived column count.
+- Variable wrap layout through native row-virtualized `CollectionView` rows containing 100,000 deterministic variable-size chips.
 - Pinned/collapsible header concept driven by native `CollectionView.Scrolled` offsets.
 - Tabbed nested-scroll concept through segmented native tabs and separate `CollectionView` scroll bodies.
 - Mixed `CustomScrollView`-style composition with MAUI `ScrollView`, fixed rows, grid tiles, and fill content.
@@ -26,4 +27,4 @@ dotnet build samples/MauiGallery/MauiGallery.csproj
 - Fill remaining, padding, and visibility composition through native MAUI layout primitives.
 - Cache/performance stress with a 100,000-row source and live cache metadata.
 
-MAUI owns the actual native realization window through `CollectionView`; `CacheExtent` is exposed as SliverWidgets metadata for parity with the other samples. Group header stickiness and exact cache realization remain platform-handler behavior, so the gallery labels those surfaces as concepts instead of hiding the limitation.
+MAUI owns the actual native realization window through `CollectionView`; `CacheExtent` is exposed as SliverWidgets metadata for parity with the other samples. Group header stickiness, exact cache realization, and portable item-level wrap virtualization remain platform-handler behavior, so the gallery labels those surfaces as concepts instead of hiding the limitation.

@@ -32,6 +32,20 @@ Use this for large uniform lists.
 
 When `MainAxisExtent` is `NaN` or infinity, the layout derives tile main-axis extent from cross-axis size and `ChildAspectRatio`.
 
+## SliverWrapVirtualizingLayout
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `MinItemMainAxisExtent` | `double` | `56` |
+| `MaxItemMainAxisExtent` | `double` | `132` |
+| `MinItemCrossAxisExtent` | `double` | `120` |
+| `MaxItemCrossAxisExtent` | `double` | `280` |
+| `MainAxisSpacing` | `double` | `0` |
+| `CrossAxisSpacing` | `double` | `0` |
+
+Use this for large variable-size chip or card flows where each item receives deterministic main/cross-axis extents.
+
 ## Example
 
 ```xml

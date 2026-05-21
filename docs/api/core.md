@@ -43,6 +43,17 @@ description: Public API guide for SliverWidgets.Core.
 
 Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts and `SliverGridLayoutOptions.WithMaxCrossAxisExtent` for responsive tile sizes. Max-extent mode uses a ceiling count so generated tiles do not exceed the configured maximum cross-axis extent.
 
+## Wrap APIs
+
+| API | Purpose |
+|---|---|
+| `SliverWrapItemExtent` | Main-axis and cross-axis extent for one variable-size wrap item. |
+| `SliverWrapLayoutOptions` | Wrap item extents and main/cross-axis spacing. |
+| `SliverDeterministicWrapExtentList` | Allocation-light deterministic extent source for large repeatable samples. |
+| `SliverWrapLayout` | Variable-size wrap layout that packs items into cache-aware lines. |
+
+`SliverWrapLayout` is for chip clouds, tag pickers, non-uniform cards, and other wrap/flow surfaces. It computes line breaks from the current cross-axis extent, reports total scroll extent, and returns only slots whose line intersects the paint plus cache window.
+
 ## Header APIs
 
 | API | Purpose |

@@ -44,10 +44,10 @@ dotnet build SliverWidgets.Galleries.CI.slnx
 | Framework | Package | Typical entry point |
 |---|---|---|
 | Core-only layout engine | `SliverWidgets.Core` | `SliverViewportLayoutEngine` |
-| Avalonia | `SliverWidgets.Avalonia` | `SliverStackPanel`, `SliverGridPanel`, `SliverVirtualizingStackPanel` |
+| Avalonia | `SliverWidgets.Avalonia` | `SliverStackPanel`, `SliverGridPanel`, `SliverVirtualizingStackPanel`, `SliverVirtualizingWrapPanel` |
 | MAUI | `SliverWidgets.Maui` | `SliverStackLayout`, `SliverCollectionView` |
-| Uno | `SliverWidgets.Uno` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout` |
-| WinUI | `SliverWidgets.WinUI` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout` |
+| Uno | `SliverWidgets.Uno` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| WinUI | `SliverWidgets.WinUI` | `SliverFixedExtentVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
 
 ## Core Layout Example
 
@@ -91,7 +91,7 @@ The returned slots identify which items should exist and where they should be ar
 </slivers:SliverStackPanel>
 ```
 
-For large `ItemsControl` sources, use `SliverVirtualizingStackPanel` or `SliverVirtualizingListPanel` as the items panel.
+For large `ItemsControl` sources, use `SliverVirtualizingStackPanel`, `SliverVirtualizingListPanel`, or `SliverVirtualizingWrapPanel` as the items panel.
 
 ## Uno and WinUI Example
 
@@ -105,7 +105,7 @@ For large `ItemsControl` sources, use `SliverVirtualizingStackPanel` or `SliverV
 </ItemsRepeater>
 ```
 
-Use `SliverGridVirtualizingLayout` for adaptive tile views.
+Use `SliverGridVirtualizingLayout` for adaptive tile views and `SliverWrapVirtualizingLayout` for variable-size chip flows.
 
 ## MAUI Example
 

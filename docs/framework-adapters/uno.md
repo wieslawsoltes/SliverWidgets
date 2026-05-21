@@ -39,12 +39,30 @@ The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.Rea
 </ItemsRepeater>
 ```
 
+## Wrap Layout
+
+```xml
+<ItemsRepeater ItemsSource="{x:Bind Chips}">
+  <ItemsRepeater.Layout>
+    <slivers:SliverWrapVirtualizingLayout
+        xmlns:slivers="using:SliverWidgets.Uno"
+        MinItemMainAxisExtent="72"
+        MaxItemMainAxisExtent="150"
+        MinItemCrossAxisExtent="120"
+        MaxItemCrossAxisExtent="280"
+        MainAxisSpacing="10"
+        CrossAxisSpacing="10" />
+  </ItemsRepeater.Layout>
+</ItemsRepeater>
+```
+
 ## Properties
 
 | Layout | Properties |
 |---|---|
 | `SliverFixedExtentVirtualizingLayout` | `Axis`, `ItemExtent`, `Spacing` |
 | `SliverGridVirtualizingLayout` | `Axis`, `SizingMode`, `CrossAxisCount`, `MaxCrossAxisExtent`, `MainAxisSpacing`, `CrossAxisSpacing`, `ChildAspectRatio`, `MainAxisExtent` |
+| `SliverWrapVirtualizingLayout` | `Axis`, `MinItemMainAxisExtent`, `MaxItemMainAxisExtent`, `MinItemCrossAxisExtent`, `MaxItemCrossAxisExtent`, `MainAxisSpacing`, `CrossAxisSpacing` |
 
 ## Validation
 

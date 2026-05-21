@@ -11,6 +11,7 @@ SliverWidgets is optimized around a simple rule: layout work should be proportio
 
 - Fixed-extent lists compute the first realized index with arithmetic.
 - Grids compute row ranges rather than scanning every item.
+- Wrap layouts cache line metrics by cross-axis extent and realize only lines intersecting the paint/cache window.
 - Cache windows are explicit and bounded.
 - Variable-extent lists use observed measurements and estimates instead of forcing complete pre-measurement.
 - Framework adapters keep native control creation inside framework-supported realization APIs where possible.
@@ -67,6 +68,7 @@ Avalonia:
 
 - `SliverVirtualizingStackPanel` is the fixed-row high-volume path.
 - `SliverVirtualizingListPanel` handles variable row heights through observed measurements.
+- `SliverVirtualizingWrapPanel` handles large variable-size chip/card flows with deterministic extents.
 - Non-virtual `SliverStackPanel` and `SliverGridPanel` are useful for bounded child counts and custom composition.
 
 MAUI:

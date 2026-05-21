@@ -18,7 +18,8 @@ dotnet build samples/AvaloniaGallery/AvaloniaGallery.csproj
 
 - Fixed large list: `SliverVirtualizingStackPanel` with adjustable fixed item extent and cache extent.
 - Variable/non-uniform list: `SliverVirtualizingListPanel` measuring native item templates and estimating unobserved rows.
-- Adaptive grid: `SliverGridPanel` using max cross-axis extent sizing.
+- Adaptive grid: `SliverVirtualizingGridPanel` using max cross-axis extent sizing.
+- Variable wrap layout: `SliverVirtualizingWrapPanel` over 100,000 deterministic non-uniform chips.
 - Pinned/collapsible header: `SliverPersistentHeader` showing pinned min/max extent behavior.
 - Tabbed nested scroll: native `TabControl` projection of Flutter's `NestedScrollView` + `SliverOverlapAbsorber` + `SliverAppBar` + `TabBar` pattern with sliver-backed tab bodies.
 - Mixed sliver composition: a sample-only `MixedSliverPreviewPanel` using `SliverViewportLayoutEngine` to compose a pinned header, fixed rows, padded grid, and fill-remaining region in one viewport. Direct children are clipped below the active pinned-header obstruction so partially visible slots do not render through the header.

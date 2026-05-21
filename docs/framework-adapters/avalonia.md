@@ -18,6 +18,7 @@ description: Avalonia panels, decorators, and virtualizing panels.
 | `SliverVirtualizingStackPanel` | Fixed-extent virtualizing items panel. |
 | `SliverVirtualizingGridPanel` | Fixed-count or max-cross-axis-extent virtualizing grid items panel. |
 | `SliverVirtualizingListPanel` | Variable-height virtualizing items panel with observed extent cache. |
+| `SliverVirtualizingWrapPanel` | Variable-width/height wrap virtualizing items panel. |
 
 ## Fixed Stack Panel
 
@@ -104,6 +105,29 @@ Use `SliverVirtualizingGridPanel` for large item sources:
     MainAxisSpacing="12"
     CrossAxisSpacing="12"
     ChildAspectRatio="1.4" />
+```
+
+## Wrap Panel
+
+Use `SliverVirtualizingWrapPanel` for large non-uniform chip or card sources:
+
+```xml
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding Chips}">
+  <slivers:SliverItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <slivers:SliverVirtualizingWrapPanel
+          MinItemMainAxisExtent="72"
+          MaxItemMainAxisExtent="150"
+          MinItemCrossAxisExtent="120"
+          MaxItemCrossAxisExtent="280"
+          MainAxisSpacing="10"
+          CrossAxisSpacing="10"
+          CacheExtent="600" />
+    </ItemsPanelTemplate>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
 ```
 
 ## Persistent Header

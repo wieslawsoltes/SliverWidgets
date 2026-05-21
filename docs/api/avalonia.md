@@ -9,7 +9,7 @@ description: Public API guide for SliverWidgets.Avalonia.
 
 ## SliverItemsControl
 
-`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingGridPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
+`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingGridPanel`, `SliverVirtualizingWrapPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
 
 ## SliverStackPanel
 
@@ -89,6 +89,22 @@ Variable-height `VirtualizingPanel` for `ItemsControl`.
 | `Axis` | `SliverAxis` | `Vertical` |
 | `EstimatedItemExtent` | `double` | `48` |
 | `Spacing` | `double` | `0` |
+| `ScrollOffset` | `double` | `0` |
+| `CacheExtent` | `double` | `250` |
+
+## SliverVirtualizingWrapPanel
+
+Variable-width/height wrap `VirtualizingPanel` for large `ItemsControl` sources.
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `MinItemMainAxisExtent` | `double` | `56` |
+| `MaxItemMainAxisExtent` | `double` | `132` |
+| `MinItemCrossAxisExtent` | `double` | `120` |
+| `MaxItemCrossAxisExtent` | `double` | `280` |
+| `MainAxisSpacing` | `double` | `0` |
+| `CrossAxisSpacing` | `double` | `0` |
 | `ScrollOffset` | `double` | `0` |
 | `CacheExtent` | `double` | `250` |
 
