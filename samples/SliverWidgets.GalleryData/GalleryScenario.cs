@@ -9,7 +9,21 @@ public sealed record GalleryScenario(
     GalleryScenarioKind Kind,
     int ItemCount,
     bool UsesVirtualization,
-    bool UsesVariableExtents);
+    bool UsesVariableExtents)
+{
+    public string TabLabel => Kind switch
+    {
+        GalleryScenarioKind.FixedExtentList => "Fixed",
+        GalleryScenarioKind.VariableExtentList => "Variable",
+        GalleryScenarioKind.AdaptiveGrid => "Grid",
+        GalleryScenarioKind.PinnedHeader => "Header",
+        GalleryScenarioKind.MixedComposition => "Mixed",
+        GalleryScenarioKind.SectionedHeaders => "Sections",
+        GalleryScenarioKind.FillPaddingVisibility => "Fill",
+        GalleryScenarioKind.CacheStress => "Cache",
+        _ => Title
+    };
+}
 
 public enum GalleryScenarioKind
 {

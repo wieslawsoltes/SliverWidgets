@@ -178,16 +178,6 @@ public static class SliverGalleryData
                 UsesVirtualization: true,
                 UsesVariableExtents: false),
             new GalleryScenario(
-                "sectioned-headers",
-                "Sectioned list with sticky headers",
-                "Grouped content alternates header regions and list regions to model catalog, settings, and feed layouts.",
-                "SliverPersistentHeader + SliverList",
-                "Section header composition",
-                GalleryScenarioKind.SectionedHeaders,
-                1_000,
-                UsesVirtualization: true,
-                UsesVariableExtents: false),
-            new GalleryScenario(
                 "mixed-composition",
                 "Mixed CustomScrollView composition",
                 "Box adapters, pinned header content, fixed rows, grid tiles, and fill regions share one scrollable surface.",
@@ -195,6 +185,16 @@ public static class SliverGalleryData
                 "Shared viewport composition",
                 GalleryScenarioKind.MixedComposition,
                 600,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
+                "sectioned-headers",
+                "Sectioned list with sticky headers",
+                "Grouped content alternates header regions and list regions to model catalog, settings, and feed layouts.",
+                "SliverPersistentHeader + SliverList",
+                "Section header composition",
+                GalleryScenarioKind.SectionedHeaders,
+                1_000,
                 UsesVirtualization: true,
                 UsesVariableExtents: false),
             new GalleryScenario(

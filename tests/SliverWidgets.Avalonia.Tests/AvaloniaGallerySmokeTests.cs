@@ -19,8 +19,11 @@ public sealed class AvaloniaGallerySmokeTests
         var viewModel = new GalleryViewModel();
         var scenarioTitles = viewModel.ScenarioCatalog.Select(scenario => scenario.Title).ToArray();
         var expectedTitles = SliverGalleryData.CreateScenarios().Select(scenario => scenario.Title).ToArray();
+        var scenarioTabs = viewModel.ScenarioCatalog.Select(scenario => scenario.TabLabel).ToArray();
+        var expectedTabs = new[] { "Fixed", "Variable", "Grid", "Header", "Mixed", "Sections", "Fill", "Cache" };
 
         Assert.Equal(expectedTitles, scenarioTitles);
+        Assert.Equal(expectedTabs, scenarioTabs);
         Assert.NotEmpty(viewModel.SectionedBlocks);
         Assert.NotEmpty(viewModel.CompositionBlocks);
     }
