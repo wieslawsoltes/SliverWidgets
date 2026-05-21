@@ -92,25 +92,15 @@ internal sealed class SliverStackLayoutManager : ILayoutManager
         var itemExtent = Math.Max(0d, _layout.ItemExtent);
         var spacing = Math.Max(0d, _layout.Spacing);
         var crossAxisExtent = axis == SliverAxis.Vertical ? bounds.Width : bounds.Height;
-        var viewportMainAxisExtent = axis == SliverAxis.Vertical ? bounds.Height : bounds.Width;
-        var layout = new SliverFixedExtentListLayout(new SliverFixedExtentListOptions(_layout.Count, itemExtent, spacing));
-        var result = layout.Layout(new SliverConstraints(
-            axis,
-            0d,
-            0d,
-            0d,
-            viewportMainAxisExtent,
-            crossAxisExtent,
-            viewportMainAxisExtent,
-            0d,
-            viewportMainAxisExtent));
+        var interval = itemExtent + spacing;
 
-        foreach (var slot in result.Slots)
+        for (var index = 0; index < _layout.Count; index++)
         {
-            var child = _layout[slot.Index];
+            var mainAxisOffset = index * interval;
             var rect = axis == SliverAxis.Vertical
-                ? new Rect(bounds.X + slot.CrossAxisOffset, bounds.Y + slot.MainAxisOffset, slot.CrossAxisExtent, slot.MainAxisExtent)
-                : new Rect(bounds.X + slot.MainAxisOffset, bounds.Y + slot.CrossAxisOffset, slot.MainAxisExtent, slot.CrossAxisExtent);
+                ? new Rect(bounds.X, bounds.Y + mainAxisOffset, crossAxisExtent, itemExtent)
+                : new Rect(bounds.X + mainAxisOffset, bounds.Y, itemExtent, crossAxisExtent);
+            var child = _layout[index];
             child.Arrange(rect);
         }
 

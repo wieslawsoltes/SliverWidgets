@@ -235,6 +235,7 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
         var result = layout.Layout(constraints);
         var extent = SliverAvaloniaPrimitives.ToSize(axis, result.Geometry.ScrollExtent, finalSize.Cross(axis));
         var viewport = SliverAvaloniaPrimitives.ToSize(axis, finalSize.Main(axis), finalSize.Cross(axis));
+        var arranged = new HashSet<int>();
 
         UpdateScrollInfo(extent, viewport);
 
@@ -243,6 +244,15 @@ public class SliverVirtualizingStackPanel : VirtualizingPanel, ILogicalScrollabl
             if (ContainerFromIndex(slot.Index) is { } container)
             {
                 SliverAvaloniaPrimitives.ArrangeSlot(container, axis, slot, finalSize.Main(axis));
+                arranged.Add(slot.Index);
+            }
+        }
+
+        foreach (var pair in _containersByIndex)
+        {
+            if (!arranged.Contains(pair.Key))
+            {
+                SliverAvaloniaPrimitives.HideArrangedChild(pair.Value);
             }
         }
 
