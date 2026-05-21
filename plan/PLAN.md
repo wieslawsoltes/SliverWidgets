@@ -33,6 +33,8 @@ flowchart TD
   - `src/SliverWidgets.Core/SliverLayouts.cs`
     - Includes `SliverWrapLayout` for variable-width/height line packing and `SliverDeterministicWrapExtentList` for deterministic large wrap feeds.
     - Includes `SliverStackLayout` for variable-width/height linear stacking and `SliverDeterministicStackExtentList` for deterministic large stack feeds.
+  - `src/SliverWidgets.Core/SliverDataGrid.cs`
+    - Includes DataGrid column sizing, row extent, cell-slot windowing, and sort/filter projection helpers.
   - `src/SliverWidgets.Core/SliverViewportLayoutEngine.cs`
     - Honors finite `ScrollOffsetCorrection` values by restarting the viewport pass from the corrected offset.
     - Honors Flutter-style `PaintOrigin`, `LayoutExtent`, `Overlap`, cache-origin correction, and per-sliver cache consumption.
@@ -45,6 +47,7 @@ flowchart TD
   - `src/SliverWidgets.Avalonia/SliverVirtualizingStackLayoutPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingListPanel.cs`
+  - `src/SliverWidgets.Avalonia/SliverVirtualizingDataGridRowsPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingWrapPanel.cs`
   - `src/SliverWidgets.Maui/SliverStackLayout.cs`
     - Preserves measured cross-axis size when MAUI gives an unconstrained cross-axis.
@@ -78,7 +81,7 @@ flowchart TD
 
 | Framework | Implemented Track | Next Track |
 |---|---|---|
-| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent/variable-size stack/wrap `VirtualizingPanel` | deeper platform gesture/device validation |
+| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent/variable-size stack/DataGrid-row/wrap `VirtualizingPanel` | deeper platform gesture/device validation |
 | WinUI | `VirtualizingLayout` for fixed rows, variable-size stacks, grids, and wrap, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
 | Uno | WinUI-style row, variable-size stack, grid, and wrap `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
 | MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView`, native variable-size stack projection, and native row-virtualized wrap projection | device validation |
@@ -127,6 +130,11 @@ flowchart TD
    - Avalonia/Uno/WinUI virtualizing adapters.
    - shared `Stack` gallery scenario with 100,000 deterministic items.
    - MAUI native variable-size stack projection with limitations documented.
+10. DataGrid Sliver
+   - Flutter `DataTable`, first-party `TableView`, and `SfDataGrid` research documented.
+   - core DataGrid row/column cell-slot layout with horizontal and vertical cache windows.
+   - core query projection for sorting/filtering outside the layout hot path.
+   - shared `DataGrid` gallery scenario with 100,000 deterministic rows across Avalonia, MAUI, Uno, and WinUI.
 
 ## Validation Matrix
 
@@ -146,4 +154,5 @@ flowchart TD
 - Uno renderer/platform behavior must be validated before claiming full parity.
 - MAUI `ScrollView` and custom layout APIs do not provide item realization; large-data virtualization uses `CollectionView`.
 - MAUI does not expose a portable variable-size wrap `CollectionView` layout; the gallery projects wrap lines as virtualized native rows containing variable-size chip controls.
+- Portable two-axis DataGrid cell virtualization is implemented in core layout results; MAUI, Uno, and WinUI gallery pages use native row-virtualized projections until framework-specific two-axis host controls are added.
 - Flutter pinned/floating/snap semantics are represented by a deterministic core service; framework animation clocks still need deeper sample coverage.
