@@ -5,7 +5,7 @@ Flutter-inspired scenario catalog onto MAUI-native controls without duplicating 
 shared gallery data.
 
 The shell matches the Avalonia gallery: top metric cards, short scenario tabs
-(`Fixed`, `Variable`, `Stack`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
+(`Fixed`, `Variable`, `Stack`, `Grid`, `DataGrid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
 left-side controls/notes, and a right-side MAUI-native viewport.
 
 ## Build
@@ -20,6 +20,7 @@ dotnet build samples/MauiGallery/MauiGallery.csproj
 - Variable/non-uniform list through native MAUI `CollectionView` measured row templates.
 - Variable stack layout through native `CollectionView` rows over 100,000 deterministic variable-width/height cards.
 - Adaptive grid through `SliverCollectionView` grid mode with width-derived column count.
+- DataGrid rows through native `CollectionView` virtualization over 100,000 shared records with variable heights, dynamic text, sorting, filtering, and horizontal column scrolling.
 - Variable wrap layout through native row-virtualized `CollectionView` rows containing 100,000 deterministic variable-size chips.
 - Pinned/collapsible header concept driven by native `CollectionView.Scrolled` offsets.
 - Tabbed nested-scroll concept through segmented native tabs and separate `CollectionView` scroll bodies.
@@ -28,4 +29,4 @@ dotnet build samples/MauiGallery/MauiGallery.csproj
 - Fill remaining, padding, and visibility composition through native MAUI layout primitives.
 - Cache/performance stress with a 100,000-row source and live cache metadata.
 
-MAUI owns the actual native realization window through `CollectionView`; `CacheExtent` is exposed as SliverWidgets metadata for parity with the other samples. Group header stickiness, exact cache realization, and portable item-level wrap virtualization remain platform-handler behavior, so the gallery labels those surfaces as concepts instead of hiding the limitation.
+MAUI owns the actual native realization window through `CollectionView`; `CacheExtent` is exposed as SliverWidgets metadata for parity with the other samples. Group header stickiness, exact cache realization, portable item-level wrap virtualization, and portable two-axis DataGrid cell recycling remain platform-handler behavior, so the gallery labels those surfaces as concepts instead of hiding the limitation.

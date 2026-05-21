@@ -20,6 +20,7 @@ public sealed class MainPage : ContentPage
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _stackItems = SliverGalleryData.CreateStackItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
+    private readonly IReadOnlyList<GalleryDataGridRow> _dataGridRows = SliverGalleryData.CreateDataGridRows(100_000);
     private readonly IReadOnlyList<GalleryItem> _stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
     private readonly IReadOnlyList<MauiGallerySection> _sections = SliverGalleryData
         .CreateSections(8, 60)
@@ -30,6 +31,8 @@ public sealed class MainPage : ContentPage
     private readonly CollectionView _variableList;
     private readonly CollectionView _stackList;
     private readonly SliverCollectionView _adaptiveGrid;
+    private readonly CollectionView _dataGridRowsView;
+    private readonly View _dataGridViewport;
     private readonly CollectionView _wrapList;
     private readonly SliverCollectionView _sectionList;
     private readonly SliverCollectionView _stressList;
@@ -55,6 +58,8 @@ public sealed class MainPage : ContentPage
         _variableList = CreateVariableList();
         _stackList = CreateStackList();
         _adaptiveGrid = CreateAdaptiveGrid();
+        _dataGridRowsView = CreateDataGridRowsView();
+        _dataGridViewport = CreateDataGridViewport(_dataGridRowsView);
         _wrapList = CreateWrapList();
         _sectionList = CreateSectionList();
         _stressList = CreateStressList();
@@ -175,6 +180,10 @@ public sealed class MainPage : ContentPage
                 GalleryScenarioKind.AdaptiveGrid,
                 CreateGridControls(),
                 _adaptiveGrid),
+            CreatePage(
+                GalleryScenarioKind.DataGrid,
+                CreateDataGridControls(),
+                _dataGridViewport),
             CreatePage(
                 GalleryScenarioKind.VariableWrap,
                 CreateNote("MAUI projects the same 100,000-item wrap feed as virtualized native rows; each row contains variable-size chip controls produced from shared deterministic extents."),
@@ -382,6 +391,63 @@ public sealed class MainPage : ContentPage
         };
     }
 
+    private View CreateDataGridControls()
+    {
+        var filter = new Entry
+        {
+            Placeholder = "Filter account, status, owner..."
+        };
+        var sort = new Picker
+        {
+            ItemsSource = new List<string> { "amount", "updated", "account", "status", "region", "progress" },
+            SelectedItem = "amount"
+        };
+        var descending = new CheckBox
+        {
+            IsChecked = true
+        };
+        var visible = CreateValueLabel("0");
+
+        void Refresh()
+        {
+            var projected = ApplyDataGridQuery(
+                _dataGridRows,
+                filter.Text ?? string.Empty,
+                Convert.ToString(sort.SelectedItem, CultureInfo.InvariantCulture) ?? "amount",
+                descending.IsChecked);
+            _dataGridRowsView.ItemsSource = projected;
+            visible.Text = projected.Count.ToString("N0", CultureInfo.InvariantCulture);
+        }
+
+        filter.TextChanged += (_, _) => Refresh();
+        sort.SelectedIndexChanged += (_, _) => Refresh();
+        descending.CheckedChanged += (_, _) => Refresh();
+        Refresh();
+
+        return new VerticalStackLayout
+        {
+            Spacing = 12,
+            Children =
+            {
+                CreateNote("Rows use native CollectionView virtualization with variable heights. Core DataGrid query projection supplies sorting/filtering over the shared 100,000-row source."),
+                CreateLabel("Filter", 12, FontAttributes.None, "#4B5563"),
+                filter,
+                CreateLabel("Sort column", 12, FontAttributes.None, "#4B5563"),
+                sort,
+                new HorizontalStackLayout
+                {
+                    Spacing = 8,
+                    Children =
+                    {
+                        descending,
+                        CreateLabel("Descending", 13, FontAttributes.None, "#111827")
+                    }
+                },
+                CreateReadOnlyRow("Visible rows", visible, 0)
+            }
+        };
+    }
+
     private View CreateCacheControls()
     {
         var cacheValue = CreateValueLabel($"{InitialCacheExtent:0}px");
@@ -539,6 +605,78 @@ public sealed class MainPage : ContentPage
 
             grid.CrossAxisCount = columns;
             _gridColumnsValue.Text = columns.ToString(CultureInfo.InvariantCulture);
+        };
+
+        return grid;
+    }
+
+    private CollectionView CreateDataGridRowsView()
+    {
+        return new CollectionView
+        {
+            HeightRequest = 520,
+            ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
+            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+            ItemsSource = ApplyDataGridQuery(_dataGridRows, string.Empty, "amount", descending: true),
+            ItemTemplate = new DataTemplate(CreateDataGridRowCell)
+        };
+    }
+
+    private static View CreateDataGridViewport(CollectionView rows)
+    {
+        return new ScrollView
+        {
+            Orientation = ScrollOrientation.Horizontal,
+            Content = new Grid
+            {
+                WidthRequest = 1580,
+                RowDefinitions =
+                {
+                    new RowDefinition(GridLength.Auto),
+                    new RowDefinition(GridLength.Star)
+                },
+                Children =
+                {
+                    CreateDataGridHeader(),
+                    WithRow(rows, 1)
+                }
+            }
+        };
+    }
+
+    private static Grid CreateDataGridHeader()
+    {
+        var grid = CreateDataGridColumns();
+        grid.Padding = new Thickness(10, 8);
+        grid.BackgroundColor = Color.FromArgb("#E2E8F0");
+
+        var headers = new[] { "ID", "Account", "Region", "Category", "Status", "Owner", "Amount", "Progress", "Updated", "Notes" };
+        for (var index = 0; index < headers.Length; index++)
+        {
+            grid.Add(CreateLabel(headers[index], 12, FontAttributes.Bold, "#334155", column: index));
+        }
+
+        return grid;
+    }
+
+    private static Grid CreateDataGridColumns()
+    {
+        var grid = new Grid
+        {
+            ColumnSpacing = 10,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(84)),
+                new ColumnDefinition(new GridLength(180)),
+                new ColumnDefinition(new GridLength(118)),
+                new ColumnDefinition(new GridLength(168)),
+                new ColumnDefinition(new GridLength(118)),
+                new ColumnDefinition(new GridLength(150)),
+                new ColumnDefinition(new GridLength(120)),
+                new ColumnDefinition(new GridLength(130)),
+                new ColumnDefinition(new GridLength(132)),
+                new ColumnDefinition(new GridLength(360))
+            }
         };
 
         return grid;
@@ -1028,6 +1166,49 @@ public sealed class MainPage : ContentPage
         return frame;
     }
 
+    private View CreateDataGridRowCell()
+    {
+        var border = new Border
+        {
+            Padding = new Thickness(10, 6),
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#E2E8F0"),
+            StrokeThickness = 1
+        };
+        border.SetBinding(VisualElement.HeightRequestProperty, nameof(GalleryDataGridRow.Extent));
+
+        var grid = CreateDataGridColumns();
+        AddDataGridCell(grid, 0, nameof(GalleryDataGridRow.Id), "{0:N0}", FontAttributes.Bold, "#111827");
+        AddDataGridCell(grid, 1, nameof(GalleryDataGridRow.Account), null, FontAttributes.Bold, "#111827");
+        AddDataGridCell(grid, 2, nameof(GalleryDataGridRow.Region));
+        AddDataGridCell(grid, 3, nameof(GalleryDataGridRow.Category));
+        AddDataGridCell(grid, 4, nameof(GalleryDataGridRow.Status));
+        AddDataGridCell(grid, 5, nameof(GalleryDataGridRow.Owner));
+        AddDataGridCell(grid, 6, nameof(GalleryDataGridRow.Amount), "{0:C0}", FontAttributes.Bold, "#111827");
+        AddDataGridCell(grid, 7, nameof(GalleryDataGridRow.Progress), "{0}%");
+        AddDataGridCell(grid, 8, nameof(GalleryDataGridRow.Updated), "{0:yyyy-MM-dd}");
+        AddDataGridCell(grid, 9, nameof(GalleryDataGridRow.Notes), null, FontAttributes.None, "#475569", LineBreakMode.WordWrap);
+
+        border.Content = grid;
+        return border;
+    }
+
+    private static void AddDataGridCell(
+        Grid grid,
+        int column,
+        string path,
+        string? stringFormat = null,
+        FontAttributes attributes = FontAttributes.None,
+        string color = "#475569",
+        LineBreakMode lineBreakMode = LineBreakMode.TailTruncation)
+    {
+        var label = CreateLabel(string.Empty, 12, attributes, color, column: column);
+        label.VerticalOptions = LayoutOptions.Center;
+        label.LineBreakMode = lineBreakMode;
+        label.SetBinding(Label.TextProperty, stringFormat is null ? new Binding(path) : new Binding(path, stringFormat: stringFormat));
+        grid.Add(label);
+    }
+
     private View CreateGridCell()
     {
         var grid = new Grid
@@ -1435,6 +1616,37 @@ public sealed class MainPage : ContentPage
     private sealed record MauiGalleryPage(GalleryScenario Scenario, View Content);
 
     private sealed record MauiWrapRow(IReadOnlyList<GalleryItem> Items, double Height);
+
+    private static IReadOnlyList<GalleryDataGridRow> ApplyDataGridQuery(
+        IReadOnlyList<GalleryDataGridRow> rows,
+        string filter,
+        string sortKey,
+        bool descending)
+    {
+        var filters = string.IsNullOrWhiteSpace(filter)
+            ? Array.Empty<SliverDataGridFilterDescriptor>()
+            : new[] { new SliverDataGridFilterDescriptor("search", SliverDataGridFilterOperator.Contains, filter) };
+        var projected = SliverDataGridQueryEngine.ProjectRows(
+            rows,
+            DataGridBindings,
+            new SliverDataGridQuery(
+                new[] { new SliverDataGridSortDescriptor(sortKey, descending ? SliverDataGridSortDirection.Descending : SliverDataGridSortDirection.Ascending) },
+                filters));
+        return projected.Select(index => rows[index]).ToArray();
+    }
+
+    private static readonly IReadOnlyList<SliverDataGridColumnBinding<GalleryDataGridRow>> DataGridBindings =
+    [
+        new("account", row => row.Account),
+        new("region", row => row.Region),
+        new("category", row => row.Category),
+        new("status", row => row.Status),
+        new("owner", row => row.Owner),
+        new("amount", row => row.Amount),
+        new("progress", row => row.Progress),
+        new("updated", row => row.Updated),
+        new("search", row => $"{row.Account} {row.Region} {row.Category} {row.Status} {row.Owner} {row.Notes}")
+    ];
 
     private sealed class WrapRowView : HorizontalStackLayout
     {

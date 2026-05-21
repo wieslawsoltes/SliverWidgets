@@ -13,6 +13,7 @@ The gallery demonstrates:
 - Variable/non-uniform rows using native Uno `StackLayout` virtualization until a sliver variable-extent adapter is available.
 - Variable-size stack virtualization through `SliverStackVirtualizingLayout` over 100,000 deterministic cards.
 - Adaptive max-cross-axis grid virtualization through `SliverGridVirtualizingLayout`.
+- DataGrid row virtualization through native `ItemsRepeater` rows over 100,000 shared records with variable heights, dynamic text, sorting, filtering, and horizontal column scrolling.
 - Variable-size wrap virtualization through `SliverWrapVirtualizingLayout` over 100,000 deterministic chips.
 - Pinned/collapsible header, tabbed nested-scroll projection, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.
 - Runtime controls for extent, spacing, aspect ratio, adaptive tile width, and `ItemsRepeater.VerticalCacheLength`.

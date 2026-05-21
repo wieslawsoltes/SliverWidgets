@@ -15,6 +15,7 @@ public sealed class UnoGalleryPage : Page
     private readonly IReadOnlyList<GalleryItem> _largeItems = SliverGalleryData.CreateItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _stackItems = SliverGalleryData.CreateStackItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
+    private readonly IReadOnlyList<GalleryDataGridRow> _dataGridRows = SliverGalleryData.CreateDataGridRows(100_000);
     private readonly IReadOnlyList<GallerySection> _sections = SliverGalleryData.CreateSections(6, 90);
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly ContentControl _scenarioHost = new();
@@ -30,6 +31,7 @@ public sealed class UnoGalleryPage : Page
             CreatePage(GalleryScenarioKind.VariableExtentList, BuildVariableListScenario),
             CreatePage(GalleryScenarioKind.VariableStack, BuildStackScenario),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, BuildAdaptiveGridScenario),
+            CreatePage(GalleryScenarioKind.DataGrid, BuildDataGridScenario),
             CreatePage(GalleryScenarioKind.VariableWrap, BuildWrapScenario),
             CreatePage(GalleryScenarioKind.PinnedHeader, BuildPinnedHeaderScenario),
             CreatePage(GalleryScenarioKind.TabbedNestedScroll, BuildTabbedNestedScenario),
@@ -326,6 +328,67 @@ public sealed class UnoGalleryPage : Page
             scenario.Summary,
             controls,
             Viewport(repeater));
+    }
+
+    private UIElement BuildDataGridScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.DataGrid);
+        var layout = new StackLayout { Orientation = Orientation.Vertical, Spacing = 0 };
+        var repeater = new ItemsRepeater
+        {
+            Layout = layout,
+            ItemTemplate = new DataGridRowElementFactory()
+        };
+        var filter = new TextBox
+        {
+            PlaceholderText = "Filter account, owner, status...",
+            Text = string.Empty
+        };
+        var sort = new ComboBox
+        {
+            ItemsSource = new[] { "amount", "updated", "account", "status", "region", "progress" },
+            SelectedItem = "amount"
+        };
+        var descending = new CheckBox
+        {
+            Content = "Descending",
+            IsChecked = true
+        };
+        var visible = new TextBlock
+        {
+            Foreground = Brush(0xFF344054),
+            FontWeight = FontWeights.SemiBold
+        };
+
+        void Refresh()
+        {
+            var projected = ApplyDataGridQuery(
+                _dataGridRows,
+                filter.Text ?? string.Empty,
+                Convert.ToString(sort.SelectedItem) ?? "amount",
+                descending.IsChecked == true);
+            repeater.ItemsSource = projected;
+            visible.Text = $"Visible rows: {projected.Count:N0}";
+        }
+
+        filter.TextChanged += (_, _) => Refresh();
+        sort.SelectionChanged += (_, _) => Refresh();
+        descending.Checked += (_, _) => Refresh();
+        descending.Unchecked += (_, _) => Refresh();
+        Refresh();
+
+        var controls = new StackPanel { Spacing = 14 };
+        controls.Children.Add(ScenarioNote("Rows are native controls with variable heights. Core DataGrid query projection supplies sorting/filtering over the shared 100,000-row source."));
+        controls.Children.Add(filter);
+        controls.Children.Add(sort);
+        controls.Children.Add(descending);
+        controls.Children.Add(visible);
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            controls,
+            DataGridViewport(repeater));
     }
 
     private UIElement BuildWrapScenario()
@@ -723,6 +786,100 @@ public sealed class UnoGalleryPage : Page
             ItemTemplate = new GalleryItemElementFactory(kind)
         };
     }
+
+    private static IReadOnlyList<GalleryDataGridRow> ApplyDataGridQuery(
+        IReadOnlyList<GalleryDataGridRow> rows,
+        string filter,
+        string sortKey,
+        bool descending)
+    {
+        var filters = string.IsNullOrWhiteSpace(filter)
+            ? Array.Empty<SliverDataGridFilterDescriptor>()
+            : new[] { new SliverDataGridFilterDescriptor("search", SliverDataGridFilterOperator.Contains, filter) };
+        var projected = SliverDataGridQueryEngine.ProjectRows(
+            rows,
+            DataGridBindings,
+            new SliverDataGridQuery(
+                new[] { new SliverDataGridSortDescriptor(sortKey, descending ? SliverDataGridSortDirection.Descending : SliverDataGridSortDirection.Ascending) },
+                filters));
+        return projected.Select(index => rows[index]).ToArray();
+    }
+
+    private static UIElement DataGridViewport(ItemsRepeater repeater)
+    {
+        var table = new Grid
+        {
+            MinWidth = 1580
+        };
+        table.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        table.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        table.Children.Add(DataGridHeader());
+
+        var vertical = new ScrollViewer
+        {
+            Content = repeater,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            Background = Brush(0xFFFFFFFF)
+        };
+        Grid.SetRow(vertical, 1);
+        table.Children.Add(vertical);
+
+        return new ScrollViewer
+        {
+            Content = table,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Background = Brush(0xFFFFFFFF)
+        };
+    }
+
+    private static UIElement DataGridHeader()
+    {
+        var grid = CreateDataGridColumns();
+        grid.Background = Brush(0xFFE2E8F0);
+        grid.Padding = new Thickness(10, 8, 10, 8);
+
+        var headers = new[] { "ID", "Account", "Region", "Category", "Status", "Owner", "Amount", "Progress", "Updated", "Notes" };
+        for (var index = 0; index < headers.Length; index++)
+        {
+            var text = new TextBlock
+            {
+                Text = headers[index],
+                Foreground = Brush(0xFF334155),
+                FontWeight = FontWeights.SemiBold,
+                FontSize = 13
+            };
+            Grid.SetColumn(text, index);
+            grid.Children.Add(text);
+        }
+
+        return grid;
+    }
+
+    private static Grid CreateDataGridColumns()
+    {
+        var grid = new Grid { ColumnSpacing = 10 };
+        foreach (var width in new[] { 84d, 180d, 118d, 168d, 118d, 150d, 120d, 130d, 132d, 360d })
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(width) });
+        }
+
+        return grid;
+    }
+
+    private static readonly IReadOnlyList<SliverDataGridColumnBinding<GalleryDataGridRow>> DataGridBindings =
+    [
+        new("account", row => row.Account),
+        new("region", row => row.Region),
+        new("category", row => row.Category),
+        new("status", row => row.Status),
+        new("owner", row => row.Owner),
+        new("amount", row => row.Amount),
+        new("progress", row => row.Progress),
+        new("updated", row => row.Updated),
+        new("search", row => $"{row.Account} {row.Region} {row.Category} {row.Status} {row.Owner} {row.Notes}")
+    ];
 
     private static UIElement FixedHeightRepeater(IReadOnlyList<GalleryItem> items, double height, VirtualizingLayout layout, GalleryItemFactoryKind kind)
     {
@@ -1376,6 +1533,121 @@ internal sealed class GalleryItemElementFactory : ElementFactory
         if (FindByName<TextBlock>(element, "MetricText") is { } metric)
         {
             metric.Text = $"{item.Extent:0}px";
+        }
+    }
+
+    private static T? FindByName<T>(DependencyObject root, string name)
+        where T : FrameworkElement
+    {
+        if (root is T element && element.Name == name)
+        {
+            return element;
+        }
+
+        var count = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+            var match = FindByName<T>(child, name);
+            if (match is not null)
+            {
+                return match;
+            }
+        }
+
+        return null;
+    }
+}
+
+internal sealed class DataGridRowElementFactory : ElementFactory
+{
+    private readonly Stack<UIElement> _recyclePool = new();
+
+    protected override UIElement GetElementCore(Microsoft.UI.Xaml.Controls.ElementFactoryGetArgs args)
+    {
+        var element = _recyclePool.Count > 0 ? _recyclePool.Pop() : CreateRow();
+        if (args.Data is GalleryDataGridRow row)
+        {
+            UpdateRow(element, row);
+        }
+
+        return element;
+    }
+
+    protected override void RecycleElementCore(Microsoft.UI.Xaml.Controls.ElementFactoryRecycleArgs args)
+    {
+        if (args.Element is not null)
+        {
+            _recyclePool.Push(args.Element);
+        }
+    }
+
+    private static UIElement CreateRow()
+    {
+        var border = new Border
+        {
+            Padding = new Thickness(10, 6, 10, 6),
+            Background = UnoGalleryPageBrushes.White,
+            BorderBrush = UnoGalleryPageBrushes.Border,
+            BorderThickness = new Thickness(0, 0, 0, 1),
+            Child = CreateGrid()
+        };
+        return border;
+    }
+
+    private static Grid CreateGrid()
+    {
+        var grid = new Grid { ColumnSpacing = 10 };
+        foreach (var width in new[] { 84d, 180d, 118d, 168d, 118d, 150d, 120d, 130d, 132d, 360d })
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(width) });
+        }
+
+        var names = new[] { "Id", "Account", "Region", "Category", "Status", "Owner", "Amount", "Progress", "Updated", "Notes" };
+        for (var index = 0; index < names.Length; index++)
+        {
+            var text = new TextBlock
+            {
+                Name = names[index],
+                Foreground = index is 1 or 6 ? UnoGalleryPageBrushes.Title : UnoGalleryPageBrushes.Subtitle,
+                FontWeight = index is 1 or 6 ? FontWeights.SemiBold : FontWeights.Normal,
+                FontSize = 12,
+                VerticalAlignment = VerticalAlignment.Center,
+                TextWrapping = index == 9 ? TextWrapping.Wrap : TextWrapping.NoWrap,
+                TextTrimming = TextTrimming.CharacterEllipsis
+            };
+            Grid.SetColumn(text, index);
+            grid.Children.Add(text);
+        }
+
+        return grid;
+    }
+
+    private static void UpdateRow(UIElement element, GalleryDataGridRow row)
+    {
+        if (element is FrameworkElement frameworkElement)
+        {
+            frameworkElement.MinHeight = row.Extent;
+            frameworkElement.Tag = row;
+        }
+
+        SetText(element, "Id", row.Id.ToString("N0"));
+        SetText(element, "Account", row.Account);
+        SetText(element, "Region", row.Region);
+        SetText(element, "Category", row.Category);
+        SetText(element, "Status", row.Status);
+        SetText(element, "Owner", row.Owner);
+        SetText(element, "Amount", row.Amount.ToString("C0"));
+        SetText(element, "Progress", $"{row.Progress}%");
+        SetText(element, "Updated", row.Updated.ToString("yyyy-MM-dd"));
+        SetText(element, "Notes", row.Notes);
+    }
+
+    private static void SetText(UIElement element, string name, string value)
+    {
+        if (FindByName<TextBlock>(element, name) is { } text)
+        {
+            text.Text = value;
         }
     }
 
