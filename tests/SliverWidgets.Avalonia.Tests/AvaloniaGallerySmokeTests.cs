@@ -20,7 +20,7 @@ public sealed class AvaloniaGallerySmokeTests
         var scenarioTitles = viewModel.ScenarioCatalog.Select(scenario => scenario.Title).ToArray();
         var expectedTitles = SliverGalleryData.CreateScenarios().Select(scenario => scenario.Title).ToArray();
         var scenarioTabs = viewModel.ScenarioCatalog.Select(scenario => scenario.TabLabel).ToArray();
-        var expectedTabs = new[] { "Fixed", "Variable", "Grid", "Header", "Mixed", "Sections", "Fill", "Cache" };
+        var expectedTabs = new[] { "Fixed", "Variable", "Grid", "Header", "Tabs", "Mixed", "Sections", "Fill", "Cache" };
 
         Assert.Equal(expectedTitles, scenarioTitles);
         Assert.Equal(expectedTabs, scenarioTabs);
@@ -43,7 +43,7 @@ public sealed class AvaloniaGallerySmokeTests
         var tabs = window.FindControl<TabControl>("GalleryTabs")
                    ?? throw new InvalidOperationException("Gallery tab control was not found.");
 
-        Assert.Equal(8, tabs.ItemCount);
+        Assert.Equal(9, tabs.ItemCount);
 
         for (var index = 0; index < tabs.ItemCount; index++)
         {
@@ -60,7 +60,7 @@ public sealed class AvaloniaGallerySmokeTests
             Assert.Equal(ScrollBarVisibility.Visible, scrollViewer!.VerticalScrollBarVisibility);
             Assert.True(scrollViewer!.Extent.Height > scrollViewer.Viewport.Height, $"Tab {index} should expose a vertical scroll extent.");
             Assert.True(scrollViewer.Viewport.Height > 0, $"Tab {index} should have a measured viewport.");
-            if (index is 0 or 1 or 7)
+            if (index is 0 or 1 or 8)
             {
                 var visibleItemTextCount = window
                     .GetVisualDescendants()
@@ -95,7 +95,7 @@ public sealed class AvaloniaGallerySmokeTests
         var tabs = window.FindControl<TabControl>("GalleryTabs")
                    ?? throw new InvalidOperationException("Gallery tab control was not found.");
 
-        foreach (var tabIndex in new[] { 0, 1, 2, 7 })
+        foreach (var tabIndex in new[] { 0, 1, 2, 8 })
         {
             tabs.SelectedIndex = tabIndex;
             window.UpdateLayout();
@@ -359,7 +359,7 @@ public sealed class AvaloniaGallerySmokeTests
     {
         var actualOffset = tabIndex switch
         {
-            0 or 7 => window
+            0 or 8 => window
                 .GetVisualDescendants()
                 .OfType<AvaloniaSlivers.SliverVirtualizingStackPanel>()
                 .Single(panel => panel.IsEffectivelyVisible)

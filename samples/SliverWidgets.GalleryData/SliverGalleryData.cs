@@ -178,6 +178,16 @@ public static class SliverGalleryData
                 UsesVirtualization: true,
                 UsesVariableExtents: false),
             new GalleryScenario(
+                "nested-tabs",
+                "Tabbed nested scroll",
+                "A pinned header owns a tab strip while each tab keeps its own scroll body and overlap spacing.",
+                "NestedScrollView + SliverOverlapAbsorber + SliverAppBar + TabBar",
+                "Tabbed nested scroll and overlap coordination",
+                GalleryScenarioKind.TabbedNestedScroll,
+                900,
+                UsesVirtualization: true,
+                UsesVariableExtents: false),
+            new GalleryScenario(
                 "mixed-composition",
                 "Mixed CustomScrollView composition",
                 "Box adapters, pinned header content, fixed rows, grid tiles, and fill regions share one scrollable surface.",
