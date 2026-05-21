@@ -24,6 +24,37 @@ public static class SliverGalleryData
         "#7C3AED"
     ];
 
+    private static readonly string[] Regions =
+    [
+        "North",
+        "South",
+        "East",
+        "West",
+        "Central",
+        "International"
+    ];
+
+    private static readonly string[] Statuses =
+    [
+        "Open",
+        "Review",
+        "Blocked",
+        "Closed",
+        "Escalated"
+    ];
+
+    private static readonly string[] Owners =
+    [
+        "Avery",
+        "Blake",
+        "Casey",
+        "Devon",
+        "Emerson",
+        "Finley",
+        "Harper",
+        "Jordan"
+    ];
+
     public const double WrapMinMainAxisExtent = 72d;
 
     public const double WrapMaxMainAxisExtent = 150d;
@@ -39,6 +70,10 @@ public static class SliverGalleryData
     public const double StackMinCrossAxisExtent = 160d;
 
     public const double StackMaxCrossAxisExtent = 640d;
+
+    public const double DataGridMinRowExtent = 36d;
+
+    public const double DataGridMaxRowExtent = 96d;
 
     public static IReadOnlyList<GalleryItem> CreateItems(int count = 5000)
     {
@@ -152,6 +187,62 @@ public static class SliverGalleryData
         return items;
     }
 
+    public static IReadOnlyList<GalleryDataGridRow> CreateDataGridRows(int count = 100_000)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        var rows = new GalleryDataGridRow[count];
+        var start = new DateTime(2026, 1, 1);
+
+        for (var index = 0; index < count; index++)
+        {
+            var category = Categories[index % Categories.Length];
+            var region = Regions[(index * 7) % Regions.Length];
+            var status = Statuses[(index * 11) % Statuses.Length];
+            var owner = Owners[(index * 13) % Owners.Length];
+            var amount = 1_000d + (((index * 7919) % 250_000) / 10d);
+            var progress = (index * 17) % 101;
+            var extent = GetDataGridRowExtent(index);
+
+            rows[index] = new GalleryDataGridRow(
+                index,
+                $"Account {index:000000}",
+                region,
+                category,
+                status,
+                owner,
+                amount,
+                progress,
+                start.AddDays(index % 365),
+                $"{category} {status.ToLowerInvariant()} record with dynamic row content and deterministic height {extent:0}px.",
+                extent,
+                Palette[index % Palette.Length],
+                1 + (index % 1000));
+        }
+
+        return rows;
+    }
+
+    public static IReadOnlyList<GalleryDataGridColumn> CreateDataGridColumns()
+    {
+        return
+        [
+            new GalleryDataGridColumn("id", "ID", "Fixed", 84d, 64d, 110d, "Stable row identity."),
+            new GalleryDataGridColumn("account", "Account", "Auto", 180d, 140d, 280d, "Auto column using header and cell content."),
+            new GalleryDataGridColumn("region", "Region", "SizeToHeader", 118d, 96d, 160d, "Header-sized text column."),
+            new GalleryDataGridColumn("category", "Category", "SizeToCells", 168d, 128d, 240d, "Cell-sized category column."),
+            new GalleryDataGridColumn("status", "Status", "Fixed", 118d, 104d, 160d, "Filterable status column."),
+            new GalleryDataGridColumn("owner", "Owner", "Star", 150d, 120d, 260d, "Weighted star owner column."),
+            new GalleryDataGridColumn("amount", "Amount", "Fixed", 120d, 112d, 160d, "Sortable numeric column."),
+            new GalleryDataGridColumn("progress", "Progress", "Fill", 130d, 120d, 220d, "Fill column for progress."),
+            new GalleryDataGridColumn("updated", "Updated", "Fixed", 132d, 120d, 160d, "Sortable date column."),
+            new GalleryDataGridColumn("notes", "Notes", "LastColumnFill", 360d, 220d, 900d, "Dynamic text content column.")
+        ];
+    }
+
     public static double GetWrapMainAxisExtent(int index)
     {
         if (index < 0)
@@ -190,6 +281,16 @@ public static class SliverGalleryData
         }
 
         return Interpolate(StackMinCrossAxisExtent, StackMaxCrossAxisExtent, ((index * 61) + 23) % 101);
+    }
+
+    public static double GetDataGridRowExtent(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return Interpolate(DataGridMinRowExtent, DataGridMaxRowExtent, ((index * 47) + 19) % 101);
     }
 
     public static IReadOnlyList<GallerySection> CreateSections(int sectionCount = 8, int itemsPerSection = 80)
@@ -291,6 +392,16 @@ public static class SliverGalleryData
                 1_200,
                 UsesVirtualization: true,
                 UsesVariableExtents: false),
+            new GalleryScenario(
+                "data-grid",
+                "DataGrid sliver",
+                "A 100,000-row grid projects sorting, filtering, variable row heights, and mixed column sizing through native row controls.",
+                "TableView + DataTable + SfDataGrid patterns",
+                "DataGrid sliver layout and query projection",
+                GalleryScenarioKind.DataGrid,
+                100_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: true),
             new GalleryScenario(
                 "variable-wrap",
                 "Variable wrap layout",
