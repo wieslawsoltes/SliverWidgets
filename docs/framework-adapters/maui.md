@@ -9,6 +9,7 @@ description: MAUI layout and CollectionView integration.
 
 - `SliverStackLayout` for fixed-extent layout composition
 - `SliverCollectionView` for large-data native virtualization
+- `SliverDataGridCollectionView` for variable-height DataGrid row containers backed by native virtualization
 
 ## SliverStackLayout
 
@@ -70,6 +71,17 @@ var grid = SliverItemsLayoutFactory.CreateFixedExtentGrid(
     crossAxisSpacing: 12);
 ```
 
+## SliverDataGridCollectionView
+
+Use `SliverDataGridCollectionView` for DataGrid row containers whose heights vary by item. It uses native `CollectionView` realization with `ItemSizingStrategy.MeasureAllItems`.
+
+```xml
+<slivers:SliverDataGridCollectionView
+    xmlns:slivers="clr-namespace:SliverWidgets.Maui;assembly=SliverWidgets.Maui"
+    ItemsSource="{Binding Rows}"
+    CacheExtent="240" />
+```
+
 ## Limitations
 
 MAUI custom layouts do not provide a general item container virtualization protocol. `SliverStackLayout` is not the large-data path. Use `SliverCollectionView` when the data source can grow beyond a small bounded set.
@@ -78,7 +90,7 @@ MAUI custom layouts do not provide a general item container virtualization proto
 
 The gallery demonstrates the shared 100,000-card variable stack scenario with native `CollectionView` rows. Each row is a normal MAUI control with deterministic width and height from shared gallery data, while native `CollectionView` owns realization.
 
-The gallery demonstrates the shared 100,000-row DataGrid scenario with native `CollectionView` row virtualization, horizontal scrolling, dynamic text cells, variable row heights, and core sort/filter projection. Portable two-axis cell recycling still requires a handler-backed grid surface and is not claimed by the MAUI adapter.
+The gallery demonstrates the shared 100,000-row DataGrid scenario with `SliverDataGridCollectionView`, horizontal scrolling, dynamic text cells, variable row heights, real native grid columns from shared metadata, and core sort/filter projection. Portable two-axis cell recycling still requires a handler-backed grid surface and is not claimed by the MAUI adapter.
 
 MAUI does not expose a portable variable-size wrap `CollectionView` layout. The gallery keeps the shared 100,000-chip wrap scenario honest by pre-packing deterministic wrap lines and virtualizing those lines with native `CollectionView`; each realized row contains normal MAUI chip controls with variable width and height.
 

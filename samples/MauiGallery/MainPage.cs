@@ -26,7 +26,7 @@ public sealed class MainPage : ContentPage
     private CollectionView? _variableList;
     private CollectionView? _stackList;
     private SliverCollectionView? _adaptiveGrid;
-    private CollectionView? _dataGridRowsView;
+    private SliverDataGridCollectionView? _dataGridRowsView;
     private View? _dataGridViewport;
     private CollectionView? _wrapList;
     private SliverCollectionView? _sectionList;
@@ -37,6 +37,7 @@ public sealed class MainPage : ContentPage
     private readonly Label _spacingValue;
     private readonly Label _cacheValue;
     private readonly Label _gridColumnsValue;
+    private static readonly IReadOnlyList<GalleryDataGridColumn> DataGridColumns = SliverGalleryData.CreateDataGridColumns();
 
     public MainPage()
     {
@@ -77,7 +78,7 @@ public sealed class MainPage : ContentPage
 
     private SliverCollectionView AdaptiveGrid => _adaptiveGrid ??= CreateAdaptiveGrid();
 
-    private CollectionView DataGridRowsView => _dataGridRowsView ??= CreateDataGridRowsView();
+    private SliverDataGridCollectionView DataGridRowsView => _dataGridRowsView ??= CreateDataGridRowsView();
 
     private View DataGridViewport => _dataGridViewport ??= CreateDataGridViewport(DataGridRowsView);
 
@@ -489,7 +490,7 @@ public sealed class MainPage : ContentPage
             Spacing = 12,
             Children =
             {
-                CreateNote("Rows use native CollectionView virtualization with variable heights. Core DataGrid query projection supplies sorting/filtering over the shared 100,000-row source."),
+                CreateNote("Rows use the MAUI sliver DataGrid CollectionView adapter with variable-height native row containers. Core query projection supplies sorting/filtering over the shared 100,000-row source."),
                 CreateLabel("Filter", 12, FontAttributes.None, "#4B5563"),
                 filter,
                 CreateLabel("Sort column", 12, FontAttributes.None, "#4B5563"),
@@ -652,13 +653,12 @@ public sealed class MainPage : ContentPage
         return grid;
     }
 
-    private CollectionView CreateDataGridRowsView()
+    private SliverDataGridCollectionView CreateDataGridRowsView()
     {
-        return new CollectionView
+        return new SliverDataGridCollectionView
         {
             HeightRequest = 520,
-            ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
+            CacheExtent = InitialCacheExtent,
             ItemsSource = DataGridRows,
             ItemTemplate = new DataTemplate(CreateDataGridRowCell)
         };
@@ -671,7 +671,7 @@ public sealed class MainPage : ContentPage
             Orientation = ScrollOrientation.Horizontal,
             Content = new Grid
             {
-                WidthRequest = 1580,
+                WidthRequest = SliverGalleryData.DataGridTableWidth,
                 RowDefinitions =
                 {
                     new RowDefinition(GridLength.Auto),
@@ -692,10 +692,9 @@ public sealed class MainPage : ContentPage
         grid.Padding = new Thickness(10, 8);
         grid.BackgroundColor = Color.FromArgb("#E2E8F0");
 
-        var headers = new[] { "ID", "Account", "Region", "Category", "Status", "Owner", "Amount", "Progress", "Updated", "Notes" };
-        for (var index = 0; index < headers.Length; index++)
+        for (var index = 0; index < DataGridColumns.Count; index++)
         {
-            grid.Add(CreateLabel(headers[index], 12, FontAttributes.Bold, "#334155", column: index));
+            grid.Add(CreateLabel(DataGridColumns[index].Header, 12, FontAttributes.Bold, "#334155", column: index));
         }
 
         return grid;
@@ -705,21 +704,13 @@ public sealed class MainPage : ContentPage
     {
         var grid = new Grid
         {
-            ColumnSpacing = 10,
-            ColumnDefinitions =
-            {
-                new ColumnDefinition(new GridLength(84)),
-                new ColumnDefinition(new GridLength(180)),
-                new ColumnDefinition(new GridLength(118)),
-                new ColumnDefinition(new GridLength(168)),
-                new ColumnDefinition(new GridLength(118)),
-                new ColumnDefinition(new GridLength(150)),
-                new ColumnDefinition(new GridLength(120)),
-                new ColumnDefinition(new GridLength(130)),
-                new ColumnDefinition(new GridLength(132)),
-                new ColumnDefinition(new GridLength(360))
-            }
+            ColumnSpacing = SliverGalleryData.DataGridColumnSpacing
         };
+
+        foreach (var column in DataGridColumns)
+        {
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(column.EffectiveWidth)));
+        }
 
         return grid;
     }

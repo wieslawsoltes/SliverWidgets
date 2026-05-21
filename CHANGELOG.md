@@ -14,3 +14,4 @@
 - Added `SliverWrapLayout`, deterministic 100,000-item wrap extents, Avalonia/Uno/WinUI virtualizing wrap adapters, and a shared `Wrap` gallery scenario across all framework samples.
 - Added `SliverStackLayout`, deterministic 100,000-item variable stack extents, Avalonia/Uno/WinUI virtualizing stack adapters, and a shared `Stack` gallery scenario across all framework samples.
 - Added `SliverDataGridLayout`, DataGrid sort/filter query projection, Avalonia DataGrid row virtualization, and shared 100,000-row `DataGrid` gallery samples across all framework samples.
+- Added Uno/WinUI `SliverDataGridRowsVirtualizingLayout`, MAUI `SliverDataGridCollectionView`, and shared real DataGrid column metadata so gallery rows are native virtualized row containers instead of duplicated fixed-width sample grids.

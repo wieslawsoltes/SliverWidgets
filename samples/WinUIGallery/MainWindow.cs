@@ -15,7 +15,9 @@ namespace SliverWidgets.WinUIGallery;
 
 public sealed class MainWindow : Window
 {
-    private const double DataGridTableWidth = 1670d;
+    internal static double DataGridTableWidth => SliverGalleryData.DataGridTableWidth;
+
+    internal static readonly IReadOnlyList<GalleryDataGridColumn> DataGridColumns = SliverGalleryData.CreateDataGridColumns();
 
     private static readonly IReadOnlyList<GalleryScenario> Scenarios = SliverGalleryData.CreateScenarios();
 
@@ -292,9 +294,17 @@ public sealed class MainWindow : Window
     {
         var scenario = Scenario(GalleryScenarioKind.DataGrid);
         var rows = SliverGalleryData.CreateDataGridRows(100_000);
+        var layout = new SliverDataGridRowsVirtualizingLayout
+        {
+            TableWidth = DataGridTableWidth,
+            DefaultRowExtent = 64d,
+            MinRowExtent = SliverGalleryData.DataGridMinRowExtent,
+            MaxRowExtent = SliverGalleryData.DataGridMaxRowExtent,
+            RowExtentSelector = ResolveDataGridRowExtent
+        };
         var repeater = new ItemsRepeater
         {
-            Layout = new StackLayout { Orientation = Orientation.Vertical, Spacing = 0 },
+            Layout = layout,
             ItemTemplate = new DataGridRowElementFactory(),
             VerticalCacheLength = 2
         };
@@ -322,6 +332,7 @@ public sealed class MainWindow : Window
                 Convert.ToString(sort.SelectedItem) ?? "amount",
                 descending.IsChecked == true);
             repeater.ItemsSource = projected;
+            layout.InvalidateItems();
             visible.Text = $"Visible rows: {projected.Count:N0}";
         }
 
@@ -973,10 +984,9 @@ public sealed class MainWindow : Window
         grid.Background = Brush(Color.FromArgb(255, 226, 232, 240));
         grid.Padding = new Thickness(10, 8, 10, 8);
 
-        var headers = new[] { "ID", "Account", "Region", "Category", "Status", "Owner", "Amount", "Progress", "Updated", "Notes" };
-        for (var index = 0; index < headers.Length; index++)
+        for (var index = 0; index < DataGridColumns.Count; index++)
         {
-            var text = Text(headers[index], 13, FontWeights.SemiBold, Color.FromArgb(255, 51, 65, 85));
+            var text = Text(DataGridColumns[index].Header, 13, FontWeights.SemiBold, Color.FromArgb(255, 51, 65, 85));
             Grid.SetColumn(text, index);
             grid.Children.Add(text);
         }
@@ -986,13 +996,27 @@ public sealed class MainWindow : Window
 
     private static Grid CreateDataGridColumns()
     {
-        var grid = new Grid { ColumnSpacing = 10 };
-        foreach (var width in new[] { 84d, 180d, 118d, 168d, 118d, 150d, 120d, 130d, 132d, 360d })
+        var grid = new Grid { ColumnSpacing = SliverGalleryData.DataGridColumnSpacing };
+        foreach (var column in DataGridColumns)
         {
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(width) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(column.EffectiveWidth) });
         }
 
         return grid;
+    }
+
+    private static double ResolveDataGridRowExtent(object? item, int index)
+    {
+        var extent = item is GalleryDataGridRow row
+            ? row.Extent
+            : SliverGalleryData.GetDataGridRowExtent(index);
+
+        if (!double.IsFinite(extent))
+        {
+            return SliverGalleryData.DataGridMinRowExtent;
+        }
+
+        return Math.Clamp(extent, SliverGalleryData.DataGridMinRowExtent, SliverGalleryData.DataGridMaxRowExtent);
     }
 
     private static readonly IReadOnlyList<SliverDataGridColumnBinding<GalleryDataGridRow>> DataGridBindings =
@@ -1129,10 +1153,10 @@ internal sealed class DataGridRowElementFactory : IElementFactory
 
     private static Grid CreateDataGridColumns()
     {
-        var grid = new Grid { ColumnSpacing = 10 };
-        foreach (var width in new[] { 84d, 180d, 118d, 168d, 118d, 150d, 120d, 130d, 132d, 360d })
+        var grid = new Grid { ColumnSpacing = SliverGalleryData.DataGridColumnSpacing };
+        foreach (var column in MainWindow.DataGridColumns)
         {
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(width) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(column.EffectiveWidth) });
         }
 
         return grid;

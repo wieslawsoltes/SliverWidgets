@@ -60,6 +60,21 @@ Use this for large variable-width/height cards that remain in one linear stack.
 
 Use this for large variable-size chip or card flows where each item receives deterministic main/cross-axis extents.
 
+## SliverDataGridRowsVirtualizingLayout
+
+Native `ItemsRepeater` row virtualization for DataGrid row containers with variable heights.
+
+| Property | Type | Default |
+|---|---|---|
+| `DefaultRowExtent` | `double` | `64` |
+| `MinRowExtent` | `double` | `36` |
+| `MaxRowExtent` | `double` | `96` |
+| `RowSpacing` | `double` | `0` |
+| `TableWidth` | `double` | `800` |
+| `RowExtentSelector` | `Func<object?, int, double>?` | `null` |
+
+Call `InvalidateItems()` after replacing the projected row source or changing row extent behavior.
+
 ## Example
 
 ```xml

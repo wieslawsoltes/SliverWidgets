@@ -18,7 +18,7 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 | `NestedScrollView` with tabs and overlap | Avalonia native `TabControl` with sliver-backed tab bodies, MAUI segmented tab buttons with native `CollectionView` bodies, Uno/WinUI segmented tab buttons with `ItemsRepeater` bodies |
 | Variable-size stack sliver | Avalonia `SliverVirtualizingStackLayoutPanel`, Uno/WinUI `SliverStackVirtualizingLayout`, MAUI native `CollectionView` stack projection over the same 100,000-card source |
 | `SliverGrid` | Avalonia `SliverVirtualizingGridPanel` for large grids and `SliverGridPanel` for bounded direct children, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
-| `TableView` / DataGrid usage | Core `SliverDataGridLayout` and query projection, Avalonia `SliverVirtualizingDataGridRowsPanel`, MAUI/Uno/WinUI native row-virtualized DataGrid pages over the same 100,000-row source |
+| `TableView` / DataGrid usage | Core `SliverDataGridLayout` and query projection, Avalonia `SliverVirtualizingDataGridRowsPanel`, Uno/WinUI `SliverDataGridRowsVirtualizingLayout`, MAUI `SliverDataGridCollectionView`, and native row containers with shared real column metadata over the same 100,000-row source |
 | Variable-size wrap / flow sliver | Avalonia `SliverVirtualizingWrapPanel`, Uno/WinUI `SliverWrapVirtualizingLayout`, MAUI native row-virtualized wrap projection over the same 100,000-chip source |
 | `SliverFixedExtentList` | Core fixed extent layout plus Avalonia, MAUI, Uno, and WinUI fixed list samples |
 | Lazy child lifecycle and cache windows | Avalonia virtualizing panel, MAUI native `CollectionView`, Uno/WinUI `ItemsRepeater` realization windows |

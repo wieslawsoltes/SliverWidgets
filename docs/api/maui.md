@@ -47,6 +47,17 @@ Methods:
 |---|---|
 | `CreateItemsLayout()` | Creates the native `ItemsLayout` for the current sliver settings. |
 
+## SliverDataGridCollectionView
+
+Native-backed `CollectionView` for variable-height DataGrid row containers.
+
+| Property | Type | Default |
+|---|---|---|
+| `CacheExtent` | `double` | `0` |
+| `UsesNativeVirtualization` | `bool` | `true` |
+
+This adapter intentionally keeps MAUI's `CollectionView` realization path. It is the large-row-count DataGrid sample path because `ILayoutManager` does not expose arbitrary item container virtualization.
+
 ## SliverItemsLayoutFactory
 
 Static factory for native MAUI layout objects.

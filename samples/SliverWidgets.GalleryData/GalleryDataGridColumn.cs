@@ -7,4 +7,12 @@ public sealed record GalleryDataGridColumn(
     double Width,
     double MinWidth,
     double MaxWidth,
-    string Description);
+    string Description,
+    double ResolvedWidth = 0d,
+    double HeaderWidth = 0d,
+    double CellWidth = 0d,
+    double StarWeight = 1d,
+    bool IsVisible = true)
+{
+    public double EffectiveWidth => ResolvedWidth > 0d ? ResolvedWidth : Width;
+}

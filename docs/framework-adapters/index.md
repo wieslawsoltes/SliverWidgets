@@ -12,9 +12,9 @@ Avalonia, Uno, MAUI, and WinUI adapters preserve native controls and use the cor
 | Framework | Package | Integration surface | Best high-volume path |
 |---|---|---|---|
 | Avalonia | `SliverWidgets.Avalonia` | `Panel`, `Decorator`, `VirtualizingPanel` | `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingDataGridRowsPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
-| MAUI | `SliverWidgets.Maui` | `Layout`, `ILayoutManager`, `CollectionView` | `SliverCollectionView` |
-| Uno | `SliverWidgets.Uno` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
-| WinUI | `SliverWidgets.WinUI` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
+| MAUI | `SliverWidgets.Maui` | `Layout`, `ILayoutManager`, `CollectionView` | `SliverCollectionView`, `SliverDataGridCollectionView` |
+| Uno | `SliverWidgets.Uno` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout`, `SliverDataGridRowsVirtualizingLayout` |
+| WinUI | `SliverWidgets.WinUI` | `ItemsRepeater` `VirtualizingLayout` | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout`, `SliverDataGridRowsVirtualizingLayout` |
 
 ## Framework Guides
 
@@ -29,6 +29,6 @@ Adapters should not invent a new widget system. They should make existing contro
 
 ## Known Differences
 
-MAUI does not expose a direct arbitrary item virtualization protocol through `ILayoutManager`; large-data virtualization uses `SliverCollectionView`, which wraps native `CollectionView` recycling. The MAUI wrap gallery projects pre-packed wrap rows into native row virtualization because portable item-level variable wrap is not exposed by `CollectionView`. The DataGrid gallery likewise uses native row virtualization while core exposes the two-axis row/column cell-slot model.
+MAUI does not expose a direct arbitrary item virtualization protocol through `ILayoutManager`; large-data virtualization uses native `CollectionView` recycling through `SliverCollectionView` and `SliverDataGridCollectionView`. The MAUI wrap gallery projects pre-packed wrap rows into native row virtualization because portable item-level variable wrap is not exposed by `CollectionView`. The DataGrid gallery uses native row containers while core exposes the two-axis row/column cell-slot model.
 
-Uno and WinUI use `RealizationRect` and `VisibleRect` behavior from `ItemsRepeater`. Renderer-specific validation is required before claiming identical runtime behavior on every platform.
+Uno and WinUI use `RealizationRect` and `VisibleRect` behavior from `ItemsRepeater`; their DataGrid row adapters virtualize row containers and leave full two-axis cell container recycling to a future host. Renderer-specific validation is required before claiming identical runtime behavior on every platform.

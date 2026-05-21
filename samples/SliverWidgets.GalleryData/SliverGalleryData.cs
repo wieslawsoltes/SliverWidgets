@@ -75,6 +75,14 @@ public static class SliverGalleryData
 
     public const double DataGridMaxRowExtent = 96d;
 
+    public const double DataGridColumnSpacing = 10d;
+
+    public const double DataGridHorizontalPadding = 20d;
+
+    public const double DataGridContentWidth = 1650d;
+
+    public const double DataGridTableWidth = DataGridContentWidth + DataGridHorizontalPadding;
+
     public static IReadOnlyList<GalleryItem> CreateItems(int count = 5000)
     {
         if (count < 0)
@@ -230,16 +238,16 @@ public static class SliverGalleryData
     {
         return
         [
-            new GalleryDataGridColumn("id", "ID", "Fixed", 84d, 64d, 110d, "Stable row identity."),
-            new GalleryDataGridColumn("account", "Account", "Auto", 180d, 140d, 280d, "Auto column using header and cell content."),
-            new GalleryDataGridColumn("region", "Region", "SizeToHeader", 118d, 96d, 160d, "Header-sized text column."),
-            new GalleryDataGridColumn("category", "Category", "SizeToCells", 168d, 128d, 240d, "Cell-sized category column."),
-            new GalleryDataGridColumn("status", "Status", "Fixed", 118d, 104d, 160d, "Filterable status column."),
-            new GalleryDataGridColumn("owner", "Owner", "Star", 150d, 120d, 260d, "Weighted star owner column."),
-            new GalleryDataGridColumn("amount", "Amount", "Fixed", 120d, 112d, 160d, "Sortable numeric column."),
-            new GalleryDataGridColumn("progress", "Progress", "Fill", 130d, 120d, 220d, "Fill column for progress."),
-            new GalleryDataGridColumn("updated", "Updated", "Fixed", 132d, 120d, 160d, "Sortable date column."),
-            new GalleryDataGridColumn("notes", "Notes", "LastColumnFill", 360d, 220d, 900d, "Dynamic text content column.")
+            new GalleryDataGridColumn("id", "ID", "Fixed", 84d, 64d, 110d, "Stable row identity.", ResolvedWidth: 84d, HeaderWidth: 38d, CellWidth: 84d),
+            new GalleryDataGridColumn("account", "Account", "Auto", 180d, 140d, 280d, "Auto column using header and cell content.", ResolvedWidth: 180d, HeaderWidth: 72d, CellWidth: 176d),
+            new GalleryDataGridColumn("region", "Region", "SizeToHeader", 118d, 96d, 160d, "Header-sized text column.", ResolvedWidth: 118d, HeaderWidth: 118d, CellWidth: 96d),
+            new GalleryDataGridColumn("category", "Category", "SizeToCells", 168d, 128d, 240d, "Cell-sized category column.", ResolvedWidth: 168d, HeaderWidth: 92d, CellWidth: 168d),
+            new GalleryDataGridColumn("status", "Status", "Fixed", 118d, 104d, 160d, "Filterable status column.", ResolvedWidth: 118d, HeaderWidth: 72d, CellWidth: 112d),
+            new GalleryDataGridColumn("owner", "Owner", "Star", 150d, 120d, 260d, "Weighted star owner column.", ResolvedWidth: 160d, HeaderWidth: 72d, CellWidth: 130d, StarWeight: 1d),
+            new GalleryDataGridColumn("amount", "Amount", "Fixed", 120d, 112d, 160d, "Sortable numeric column.", ResolvedWidth: 120d, HeaderWidth: 86d, CellWidth: 120d),
+            new GalleryDataGridColumn("progress", "Progress", "Fill", 130d, 120d, 220d, "Fill column for progress.", ResolvedWidth: 120d, HeaderWidth: 96d, CellWidth: 120d),
+            new GalleryDataGridColumn("updated", "Updated", "Fixed", 132d, 120d, 160d, "Sortable date column.", ResolvedWidth: 132d, HeaderWidth: 92d, CellWidth: 132d),
+            new GalleryDataGridColumn("notes", "Notes", "LastColumnFill", 360d, 220d, 900d, "Dynamic text content column.", ResolvedWidth: 360d, HeaderWidth: 72d, CellWidth: 360d)
         ];
     }
 

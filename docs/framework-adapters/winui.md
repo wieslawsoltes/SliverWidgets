@@ -73,6 +73,23 @@ The layout uses `VirtualizingLayoutContext.VisibleRect` as the paint window and 
 </ItemsRepeater>
 ```
 
+## DataGrid Row Layout
+
+```xml
+<ItemsRepeater ItemsSource="{x:Bind Rows}">
+  <ItemsRepeater.Layout>
+    <slivers:SliverDataGridRowsVirtualizingLayout
+        xmlns:slivers="using:SliverWidgets.WinUI"
+        TableWidth="1670"
+        DefaultRowExtent="64"
+        MinRowExtent="36"
+        MaxRowExtent="96" />
+  </ItemsRepeater.Layout>
+</ItemsRepeater>
+```
+
+Set `RowExtentSelector` from code when rows have per-item heights, and call `InvalidateItems()` after replacing the projected row source.
+
 ## Windows Validation
 
 WinUI code can be built on non-Windows hosts and should be run-tested on Windows:
@@ -90,4 +107,4 @@ The portable docs build uses human-written API pages. WinUI is documented manual
 
 ## Limitations
 
-The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, variable-size stacks, DataGrid rows, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline. DataGrid two-axis cell-slot math lives in core; the gallery uses native row virtualization until a framework-level two-axis host is added.
+The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, variable-size stacks, DataGrid rows, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline. DataGrid two-axis cell-slot math lives in core; the gallery uses `SliverDataGridRowsVirtualizingLayout` for native row-container virtualization until a framework-level two-axis host is added.

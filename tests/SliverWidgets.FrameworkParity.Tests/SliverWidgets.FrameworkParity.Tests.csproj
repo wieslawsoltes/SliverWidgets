@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\SliverWidgets.Core\SliverWidgets.Core.csproj" />
+    <ProjectReference Include="..\..\samples\SliverWidgets.GalleryData\SliverWidgets.GalleryData.csproj" />
   </ItemGroup>
 
 </Project>

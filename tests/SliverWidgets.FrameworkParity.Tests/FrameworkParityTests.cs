@@ -1,4 +1,5 @@
 using SliverWidgets.Core;
+using SliverWidgets.GalleryData;
 
 namespace SliverWidgets.FrameworkParity.Tests;
 
@@ -186,5 +187,25 @@ public sealed class FrameworkParityTests
         Assert.Contains(result.Columns, column => column.IsFrozen);
         Assert.Contains(result.Columns, column => column.IsCacheOnly);
         Assert.Contains(result.Cells, cell => cell.IsHeader);
+    }
+
+    [Fact]
+    public void SharedDataGridColumnMetadataMatchesGalleryTableWidth()
+    {
+        var columns = SliverGalleryData.CreateDataGridColumns();
+        var contentWidth = columns.Sum(column => column.EffectiveWidth) +
+            ((columns.Count - 1) * SliverGalleryData.DataGridColumnSpacing);
+
+        Assert.Equal(SliverGalleryData.DataGridContentWidth, contentWidth);
+        Assert.Equal(SliverGalleryData.DataGridContentWidth + SliverGalleryData.DataGridHorizontalPadding, SliverGalleryData.DataGridTableWidth);
+        Assert.Contains(columns, column => column.WidthMode == "Auto");
+        Assert.Contains(columns, column => column.WidthMode == "Star");
+        Assert.Contains(columns, column => column.WidthMode == "Fill");
+        Assert.Contains(columns, column => column.WidthMode == "LastColumnFill");
+        Assert.All(columns, column =>
+        {
+            Assert.True(column.EffectiveWidth >= column.MinWidth);
+            Assert.True(column.EffectiveWidth <= column.MaxWidth);
+        });
     }
 }
