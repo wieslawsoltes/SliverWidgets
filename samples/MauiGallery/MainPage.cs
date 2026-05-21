@@ -4,7 +4,6 @@ using Microsoft.Maui.Graphics;
 using SliverWidgets.Core;
 using SliverWidgets.GalleryData;
 using SliverWidgets.Maui;
-using MauiSliverStackLayout = SliverWidgets.Maui.SliverStackLayout;
 
 namespace SliverWidgets.MauiGallery;
 
@@ -17,25 +16,21 @@ public sealed class MainPage : ContentPage
     private const double AdaptiveTileMaxWidth = 190d;
 
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
-    private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(100_000);
-    private readonly IReadOnlyList<GalleryItem> _stackItems = SliverGalleryData.CreateStackItems(100_000);
-    private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
-    private readonly IReadOnlyList<GalleryDataGridRow> _dataGridRows = SliverGalleryData.CreateDataGridRows(100_000);
-    private readonly IReadOnlyList<GalleryItem> _stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
-    private readonly IReadOnlyList<MauiGallerySection> _sections = SliverGalleryData
-        .CreateSections(8, 60)
-        .Select(section => new MauiGallerySection(section))
-        .ToArray();
-    private readonly MauiSliverStackLayout _fixedList;
-    private readonly SliverCollectionView _largeList;
-    private readonly CollectionView _variableList;
-    private readonly CollectionView _stackList;
-    private readonly SliverCollectionView _adaptiveGrid;
-    private readonly CollectionView _dataGridRowsView;
-    private readonly View _dataGridViewport;
-    private readonly CollectionView _wrapList;
-    private readonly SliverCollectionView _sectionList;
-    private readonly SliverCollectionView _stressList;
+    private IReadOnlyList<GalleryItem>? _items;
+    private IReadOnlyList<GalleryItem>? _stackItems;
+    private IReadOnlyList<GalleryItem>? _wrapItems;
+    private IReadOnlyList<GalleryDataGridRow>? _dataGridRows;
+    private IReadOnlyList<GalleryItem>? _stressItems;
+    private IReadOnlyList<MauiGallerySection>? _sections;
+    private SliverCollectionView? _largeList;
+    private CollectionView? _variableList;
+    private CollectionView? _stackList;
+    private SliverCollectionView? _adaptiveGrid;
+    private CollectionView? _dataGridRowsView;
+    private View? _dataGridViewport;
+    private CollectionView? _wrapList;
+    private SliverCollectionView? _sectionList;
+    private SliverCollectionView? _stressList;
     private readonly ContentView _scenarioHost = new();
     private readonly List<Button> _tabButtons = [];
     private readonly Label _extentValue;
@@ -53,21 +48,44 @@ public sealed class MainPage : ContentPage
         _spacingValue = CreateValueLabel($"{InitialSpacing:0}px");
         _cacheValue = CreateValueLabel($"{InitialCacheExtent:0}px");
         _gridColumnsValue = CreateValueLabel("3");
-        _fixedList = CreateFixedStackPreview();
-        _largeList = CreateLargeList();
-        _variableList = CreateVariableList();
-        _stackList = CreateStackList();
-        _adaptiveGrid = CreateAdaptiveGrid();
-        _dataGridRowsView = CreateDataGridRowsView();
-        _dataGridViewport = CreateDataGridViewport(_dataGridRowsView);
-        _wrapList = CreateWrapList();
-        _sectionList = CreateSectionList();
-        _stressList = CreateStressList();
 
         var pages = CreateGalleryPages();
         Content = CreateShell(pages);
         ShowScenario(pages[0]);
     }
+
+    private IReadOnlyList<GalleryItem> Items => _items ??= SliverGalleryData.CreateItems(100_000);
+
+    private IReadOnlyList<GalleryItem> StackItems => _stackItems ??= SliverGalleryData.CreateStackItems(100_000);
+
+    private IReadOnlyList<GalleryItem> WrapItems => _wrapItems ??= SliverGalleryData.CreateWrapItems(100_000);
+
+    private IReadOnlyList<GalleryDataGridRow> DataGridRows => _dataGridRows ??= SliverGalleryData.CreateDataGridRows(100_000);
+
+    private IReadOnlyList<GalleryItem> StressItems => _stressItems ??= SliverGalleryData.CreateUniformItems(100_000, 52d);
+
+    private IReadOnlyList<MauiGallerySection> Sections => _sections ??= SliverGalleryData
+        .CreateSections(8, 60)
+        .Select(section => new MauiGallerySection(section))
+        .ToArray();
+
+    private SliverCollectionView LargeList => _largeList ??= CreateLargeList();
+
+    private CollectionView VariableList => _variableList ??= CreateVariableList();
+
+    private CollectionView StackList => _stackList ??= CreateStackList();
+
+    private SliverCollectionView AdaptiveGrid => _adaptiveGrid ??= CreateAdaptiveGrid();
+
+    private CollectionView DataGridRowsView => _dataGridRowsView ??= CreateDataGridRowsView();
+
+    private View DataGridViewport => _dataGridViewport ??= CreateDataGridViewport(DataGridRowsView);
+
+    private CollectionView WrapList => _wrapList ??= CreateWrapList();
+
+    private SliverCollectionView SectionList => _sectionList ??= CreateSectionList();
+
+    private SliverCollectionView StressList => _stressList ??= CreateStressList();
 
     private View CreateHeader()
     {
@@ -167,58 +185,71 @@ public sealed class MainPage : ContentPage
     {
         return
         [
-            CreatePage(GalleryScenarioKind.FixedExtentList, CreateFixedControls(), _largeList),
+            CreatePage(GalleryScenarioKind.FixedExtentList, scenario => CreateScenarioPage(scenario, CreateFixedControls(), LargeList)),
             CreatePage(
                 GalleryScenarioKind.VariableExtentList,
-                CreateNote("Native MAUI CollectionView measures each preview row for this non-uniform sample."),
-                _variableList),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("Native MAUI CollectionView measures each preview row for this non-uniform sample."),
+                    VariableList)),
             CreatePage(
                 GalleryScenarioKind.VariableStack,
-                CreateNote("MAUI uses native CollectionView virtualization for 100,000 variable-width/height stack cards from the shared deterministic stack feed."),
-                _stackList),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("MAUI uses native CollectionView virtualization for 100,000 variable-width/height stack cards from the shared deterministic stack feed."),
+                    StackList)),
             CreatePage(
                 GalleryScenarioKind.AdaptiveGrid,
-                CreateGridControls(),
-                _adaptiveGrid),
+                scenario => CreateScenarioPage(scenario, CreateGridControls(), AdaptiveGrid)),
             CreatePage(
                 GalleryScenarioKind.DataGrid,
-                CreateDataGridControls(),
-                _dataGridViewport),
+                scenario => CreateScenarioPage(scenario, CreateDataGridControls(), DataGridViewport)),
             CreatePage(
                 GalleryScenarioKind.VariableWrap,
-                CreateNote("MAUI projects the same 100,000-item wrap feed as virtualized native rows; each row contains variable-size chip controls produced from shared deterministic extents."),
-                _wrapList),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("MAUI projects the same 100,000-item wrap feed as virtualized native rows; each row contains variable-size chip controls produced from shared deterministic extents."),
+                    WrapList)),
             CreatePage(
                 GalleryScenarioKind.PinnedHeader,
-                CreateNote("A native overlay follows CollectionView.Scrolled offsets while the adapter surface stays thin."),
-                CreatePinnedHeaderDemo()),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("A native overlay follows CollectionView.Scrolled offsets while the adapter surface stays thin."),
+                    CreatePinnedHeaderDemo())),
             CreatePage(
                 GalleryScenarioKind.TabbedNestedScroll,
-                CreateNote("Flutter uses NestedScrollView with SliverOverlapAbsorber/Injector for this pattern. MAUI projects it with native segmented tab buttons and separate CollectionView scroll bodies."),
-                CreateTabbedNestedDemo()),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("Flutter uses NestedScrollView with SliverOverlapAbsorber/Injector for this pattern. MAUI projects it with native segmented tab buttons and separate CollectionView scroll bodies."),
+                    CreateTabbedNestedDemo())),
             CreatePage(
                 GalleryScenarioKind.MixedComposition,
-                CreateNote("Ordinary MAUI controls, fixed rows, grid tiles, and fill content are composed in one native ScrollView."),
-                CreateMixedComposition()),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("Ordinary MAUI controls, fixed rows, grid tiles, and fill content are composed in one native ScrollView."),
+                    CreateMixedComposition())),
             CreatePage(
                 GalleryScenarioKind.SectionedHeaders,
-                CreateNote("Grouped SliverCollectionView rows use native handler behavior for platform-specific header stickiness."),
-                _sectionList),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("Grouped SliverCollectionView rows use native handler behavior for platform-specific header stickiness."),
+                    SectionList)),
             CreatePage(
                 GalleryScenarioKind.FillPaddingVisibility,
-                CreateNote("MAUI layout primitives model utility sliver behavior for padding, replacement content, and fill remaining."),
-                CreateFillPaddingVisibilityDemo()),
+                scenario => CreateScenarioPage(
+                    scenario,
+                    CreateNote("MAUI layout primitives model utility sliver behavior for padding, replacement content, and fill remaining."),
+                    CreateFillPaddingVisibilityDemo())),
             CreatePage(
                 GalleryScenarioKind.CacheStress,
-                CreateCacheControls(),
-                CreateStressDemo())
+                scenario => CreateScenarioPage(scenario, CreateCacheControls(), CreateStressDemo()))
         ];
     }
 
-    private MauiGalleryPage CreatePage(GalleryScenarioKind kind, View controls, View viewport)
+    private MauiGalleryPage CreatePage(GalleryScenarioKind kind, Func<GalleryScenario, View> contentFactory)
     {
         var scenario = Scenario(kind);
-        return new MauiGalleryPage(scenario, CreateScenarioPage(scenario, controls, viewport));
+        return new MauiGalleryPage(scenario, () => contentFactory(scenario));
     }
 
     private View CreateScenarioPage(GalleryScenario scenario, View controls, View viewport)
@@ -312,9 +343,12 @@ public sealed class MainPage : ContentPage
         extentSlider.ValueChanged += (_, args) =>
         {
             var value = Math.Round(args.NewValue);
-            _fixedList.ItemExtent = value;
-            _largeList.ItemExtent = value;
-            _stressList.ItemExtent = value;
+            LargeList.ItemExtent = value;
+            if (_stressList is not null)
+            {
+                _stressList.ItemExtent = value;
+            }
+
             _extentValue.Text = $"{value:0}px";
         };
 
@@ -322,13 +356,28 @@ public sealed class MainPage : ContentPage
         spacingSlider.ValueChanged += (_, args) =>
         {
             var value = Math.Round(args.NewValue);
-            _fixedList.Spacing = value;
-            _largeList.Spacing = value;
-            ((LinearItemsLayout)_variableList.ItemsLayout).ItemSpacing = value;
-            _adaptiveGrid.MainAxisSpacing = value;
-            _adaptiveGrid.CrossAxisSpacing = value;
-            _sectionList.Spacing = value;
-            _stressList.Spacing = value;
+            LargeList.Spacing = value;
+            if (_variableList?.ItemsLayout is LinearItemsLayout variableLayout)
+            {
+                variableLayout.ItemSpacing = value;
+            }
+
+            if (_adaptiveGrid is not null)
+            {
+                _adaptiveGrid.MainAxisSpacing = value;
+                _adaptiveGrid.CrossAxisSpacing = value;
+            }
+
+            if (_sectionList is not null)
+            {
+                _sectionList.Spacing = value;
+            }
+
+            if (_stressList is not null)
+            {
+                _stressList.Spacing = value;
+            }
+
             _spacingValue.Text = $"{value:0}px";
         };
 
@@ -336,10 +385,22 @@ public sealed class MainPage : ContentPage
         cacheSlider.ValueChanged += (_, args) =>
         {
             var value = Math.Round(args.NewValue);
-            _largeList.CacheExtent = value;
-            _adaptiveGrid.CacheExtent = value;
-            _sectionList.CacheExtent = value;
-            _stressList.CacheExtent = value;
+            LargeList.CacheExtent = value;
+            if (_adaptiveGrid is not null)
+            {
+                _adaptiveGrid.CacheExtent = value;
+            }
+
+            if (_sectionList is not null)
+            {
+                _sectionList.CacheExtent = value;
+            }
+
+            if (_stressList is not null)
+            {
+                _stressList.CacheExtent = value;
+            }
+
             _cacheValue.Text = $"{value:0}px";
         };
 
@@ -400,29 +461,28 @@ public sealed class MainPage : ContentPage
         var sort = new Picker
         {
             ItemsSource = new List<string> { "amount", "updated", "account", "status", "region", "progress" },
-            SelectedItem = "amount"
+            SelectedItem = "account"
         };
         var descending = new CheckBox
         {
-            IsChecked = true
+            IsChecked = false
         };
-        var visible = CreateValueLabel("0");
+        var visible = CreateValueLabel(DataGridRows.Count.ToString("N0", CultureInfo.InvariantCulture));
 
         void Refresh()
         {
             var projected = ApplyDataGridQuery(
-                _dataGridRows,
+                DataGridRows,
                 filter.Text ?? string.Empty,
                 Convert.ToString(sort.SelectedItem, CultureInfo.InvariantCulture) ?? "amount",
                 descending.IsChecked);
-            _dataGridRowsView.ItemsSource = projected;
+            DataGridRowsView.ItemsSource = projected;
             visible.Text = projected.Count.ToString("N0", CultureInfo.InvariantCulture);
         }
 
         filter.TextChanged += (_, _) => Refresh();
         sort.SelectedIndexChanged += (_, _) => Refresh();
         descending.CheckedChanged += (_, _) => Refresh();
-        Refresh();
 
         return new VerticalStackLayout
         {
@@ -455,7 +515,7 @@ public sealed class MainPage : ContentPage
         cacheSlider.ValueChanged += (_, args) =>
         {
             var value = Math.Round(args.NewValue);
-            _stressList.CacheExtent = value;
+            StressList.CacheExtent = value;
             cacheValue.Text = $"{value:0}px";
         };
 
@@ -512,24 +572,6 @@ public sealed class MainPage : ContentPage
         return CreatePanel("Unified scenario catalog", "MAUI exposes the same scenario vocabulary as the other galleries while documenting where native platform behavior owns the details.", layout);
     }
 
-    private MauiSliverStackLayout CreateFixedStackPreview()
-    {
-        var layout = new MauiSliverStackLayout
-        {
-            Axis = SliverAxis.Vertical,
-            ItemExtent = InitialExtent,
-            Spacing = InitialSpacing,
-            HeightRequest = 430
-        };
-
-        foreach (var item in _items.Take(9))
-        {
-            layout.Children.Add(CreateFixedRow(item));
-        }
-
-        return layout;
-    }
-
     private SliverCollectionView CreateLargeList()
     {
         return new SliverCollectionView
@@ -540,7 +582,7 @@ public sealed class MainPage : ContentPage
             Spacing = InitialSpacing,
             CacheExtent = InitialCacheExtent,
             HeightRequest = 480,
-            ItemsSource = _items,
+            ItemsSource = Items,
             ItemTemplate = new DataTemplate(CreateListCell)
         };
     }
@@ -555,7 +597,7 @@ public sealed class MainPage : ContentPage
             {
                 ItemSpacing = InitialSpacing
             },
-            ItemsSource = _items.Take(220).ToArray(),
+            ItemsSource = Items.Take(220).ToArray(),
             ItemTemplate = new DataTemplate(CreateVariableListCell)
         };
     }
@@ -570,7 +612,7 @@ public sealed class MainPage : ContentPage
             {
                 ItemSpacing = InitialSpacing
             },
-            ItemsSource = _stackItems,
+            ItemsSource = StackItems,
             ItemTemplate = new DataTemplate(CreateStackCell)
         };
     }
@@ -586,7 +628,7 @@ public sealed class MainPage : ContentPage
             CrossAxisSpacing = InitialSpacing,
             CacheExtent = InitialCacheExtent,
             HeightRequest = 430,
-            ItemsSource = _items.Take(1200).ToArray(),
+            ItemsSource = Items.Take(1200).ToArray(),
             ItemTemplate = new DataTemplate(CreateGridCell)
         };
 
@@ -617,7 +659,7 @@ public sealed class MainPage : ContentPage
             HeightRequest = 520,
             ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
             ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical),
-            ItemsSource = ApplyDataGridQuery(_dataGridRows, string.Empty, "amount", descending: true),
+            ItemsSource = DataGridRows,
             ItemTemplate = new DataTemplate(CreateDataGridRowCell)
         };
     }
@@ -692,7 +734,7 @@ public sealed class MainPage : ContentPage
             {
                 ItemSpacing = 10
             },
-            ItemsSource = CreateWrapRows(_wrapItems, 760d),
+            ItemsSource = CreateWrapRows(WrapItems, 760d),
             ItemTemplate = new DataTemplate(() => new WrapRowView())
         };
     }
@@ -708,7 +750,7 @@ public sealed class MainPage : ContentPage
             CacheExtent = InitialCacheExtent,
             IsGrouped = true,
             HeightRequest = 520,
-            ItemsSource = _sections,
+            ItemsSource = Sections,
             GroupHeaderTemplate = new DataTemplate(CreateSectionHeader),
             ItemTemplate = new DataTemplate(CreateListCell)
         };
@@ -724,7 +766,7 @@ public sealed class MainPage : ContentPage
             Spacing = 2d,
             CacheExtent = InitialCacheExtent,
             HeightRequest = 520,
-            ItemsSource = _stressItems,
+            ItemsSource = StressItems,
             ItemTemplate = new DataTemplate(CreateDenseListCell)
         };
     }
@@ -742,7 +784,7 @@ public sealed class MainPage : ContentPage
             {
                 ItemSpacing = 6
             },
-            ItemsSource = _items.Take(260).ToArray(),
+            ItemsSource = Items.Take(260).ToArray(),
             ItemTemplate = new DataTemplate(CreateDenseListCell)
         };
 
@@ -820,8 +862,8 @@ public sealed class MainPage : ContentPage
 
     private View CreateTabbedNestedDemo()
     {
-        var results = CreateTabbedCollection(_items.Skip(40).Take(180).ToArray());
-        var saved = CreateTabbedCollection(_items.Skip(420).Take(180).ToArray());
+        var results = CreateTabbedCollection(Items.Skip(40).Take(180).ToArray());
+        var saved = CreateTabbedCollection(Items.Skip(420).Take(180).ToArray());
         var contentHost = new ContentView();
         var resultsButton = CreateSegmentButton("Results");
         var savedButton = CreateSegmentButton("Saved");
@@ -931,7 +973,7 @@ public sealed class MainPage : ContentPage
     private View CreateStressDemo()
     {
         var status = CreateLabel(
-            $"Source: {_stressItems.Count:N0} rows | native recycling | cache metadata {_stressList.CacheExtent:0}px",
+            $"Source: {StressItems.Count:N0} rows | native recycling | cache metadata {StressList.CacheExtent:0}px",
             13,
             FontAttributes.Bold,
             "#374151");
@@ -942,7 +984,7 @@ public sealed class MainPage : ContentPage
             TextColor = Colors.White,
             Padding = new Thickness(12, 8)
         };
-        jump.Clicked += (_, _) => _stressList.ScrollTo(50_000, position: ScrollToPosition.Center, animate: true);
+        jump.Clicked += (_, _) => StressList.ScrollTo(50_000, position: ScrollToPosition.Center, animate: true);
 
         return new VerticalStackLayout
         {
@@ -963,7 +1005,7 @@ public sealed class MainPage : ContentPage
                         WithColumn(jump, 1)
                     }
                 },
-                _stressList
+                StressList
             }
         };
     }
@@ -1279,7 +1321,7 @@ public sealed class MainPage : ContentPage
 
     private View CreateMiniFixedRows()
     {
-        var rows = new MauiSliverStackLayout
+        var rows = new SliverWidgets.Maui.SliverStackLayout
         {
             Axis = SliverAxis.Vertical,
             ItemExtent = 54d,
@@ -1287,7 +1329,7 @@ public sealed class MainPage : ContentPage
             HeightRequest = 234
         };
 
-        foreach (var item in _items.Take(4))
+        foreach (var item in Items.Take(4))
         {
             rows.Children.Add(CreateFixedRow(item));
         }
@@ -1309,7 +1351,7 @@ public sealed class MainPage : ContentPage
             }
         };
 
-        var tiles = _items.Skip(12).Take(9).ToArray();
+        var tiles = Items.Skip(12).Take(9).ToArray();
         for (var index = 0; index < tiles.Length; index++)
         {
             var row = index / 3;
@@ -1613,7 +1655,21 @@ public sealed class MainPage : ContentPage
         return _scenarios.First(scenario => scenario.Kind == kind);
     }
 
-    private sealed record MauiGalleryPage(GalleryScenario Scenario, View Content);
+    private sealed class MauiGalleryPage
+    {
+        private readonly Func<View> _contentFactory;
+        private View? _content;
+
+        public MauiGalleryPage(GalleryScenario scenario, Func<View> contentFactory)
+        {
+            Scenario = scenario;
+            _contentFactory = contentFactory;
+        }
+
+        public GalleryScenario Scenario { get; }
+
+        public View Content => _content ??= _contentFactory();
+    }
 
     private sealed record MauiWrapRow(IReadOnlyList<GalleryItem> Items, double Height);
 
