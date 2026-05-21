@@ -69,6 +69,7 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - `SW-FR-022`: Core shall provide a variable-size wrap sliver layout that packs non-uniform main-axis and cross-axis item extents into lines, reports deterministic scroll geometry, and realizes only paint plus cache lines for 100,000-item sources.
 - `SW-FR-023`: Core shall provide a variable-size stack sliver layout that stacks non-uniform main-axis and cross-axis item extents linearly, supports cross-axis alignment, reports deterministic scroll geometry, and realizes only paint plus cache slots for 100,000-item sources.
 - `SW-FR-024`: Core shall provide a DataGrid sliver layout and query model that supports 100,000-row data sources, variable row heights, horizontal column windowing, fixed/auto/header/cell/star/fill/last-fill column sizing, sorting, filtering, and dynamic source projection without putting data predicates in the layout hot path.
+- `SW-FR-025`: DataGrid framework samples shall use native row container controls with real column definitions sourced from shared gallery column metadata. Avalonia shall keep XAML-defined row/header columns under `SliverVirtualizingDataGridRowsPanel`; Uno and WinUI shall expose package-level `ItemsRepeater` DataGrid row virtualizing layouts; MAUI shall use a package-level native `CollectionView` row virtualization adapter and document the lack of a portable arbitrary sliver item realization API.
 
 ## Non-Functional Requirements
 
@@ -105,3 +106,4 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - Uno fixed-extent, stack, grid, and wrap virtualizing layouts: implemented using `RealizationRect` with an inferred visible range because Uno reports `VirtualizingLayoutContext.VisibleRect` as unsupported; renderer-specific validation remains required.
 - WinUI fixed-extent, stack, grid, and wrap virtualizing layouts: implemented using `VisibleRect` for paint and `RealizationRect` for cache; build works on non-Windows hosts with PRI generation disabled, and full runtime validation remains a Windows lane.
 - Shared gallery scenario data and framework gallery apps: implemented. Avalonia, MAUI, Uno, and WinUI expose the same twelve scenario catalog entries through the same top metrics header, short scenario tabs, and left-controls/right-viewport shell. Avalonia, MAUI, Uno, and WinUI compile on macOS; WinUI runtime validation remains a Windows lane.
+- DataGrid row-container refinement with shared column metadata and package-level Uno/WinUI/MAUI row virtualization adapters: implemented.

@@ -135,6 +135,7 @@ flowchart TD
    - core DataGrid row/column cell-slot layout with horizontal and vertical cache windows.
    - core query projection for sorting/filtering outside the layout hot path.
    - shared `DataGrid` gallery scenario with 100,000 deterministic rows across Avalonia, MAUI, Uno, and WinUI.
+   - refine framework samples to use native row containers with shared column metadata, Avalonia XAML column definitions, package-level Uno/WinUI `SliverDataGridRowsVirtualizingLayout`, and MAUI native `SliverDataGridCollectionView`.
 
 ## Validation Matrix
 
@@ -154,5 +155,5 @@ flowchart TD
 - Uno renderer/platform behavior must be validated before claiming full parity.
 - MAUI `ScrollView` and custom layout APIs do not provide item realization; large-data virtualization uses `CollectionView`.
 - MAUI does not expose a portable variable-size wrap `CollectionView` layout; the gallery projects wrap lines as virtualized native rows containing variable-size chip controls.
-- Portable two-axis DataGrid cell virtualization is implemented in core layout results; MAUI, Uno, and WinUI gallery pages use native row-virtualized projections until framework-specific two-axis host controls are added.
+- Portable two-axis DataGrid cell virtualization is implemented in core layout results; framework galleries use native row-virtualized row-container projections, with horizontal cell windowing still exposed by core until framework-specific two-axis host controls are added.
 - Flutter pinned/floating/snap semantics are represented by a deterministic core service; framework animation clocks still need deeper sample coverage.
