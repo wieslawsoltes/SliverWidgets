@@ -28,6 +28,7 @@ public sealed class MainWindow : Window
         [
             CreatePage(GalleryScenarioKind.FixedExtentList, CreateFixedLargeListPage),
             CreatePage(GalleryScenarioKind.VariableExtentList, CreateVariableListPage),
+            CreatePage(GalleryScenarioKind.VariableStack, CreateStackPage),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, CreateAdaptiveGridPage),
             CreatePage(GalleryScenarioKind.VariableWrap, CreateWrapPage),
             CreatePage(GalleryScenarioKind.PinnedHeader, CreatePinnedHeaderPage),
@@ -221,6 +222,39 @@ public sealed class MainWindow : Window
             $"{scenario.Summary} This uses native StackLayout virtualization until the WinUI adapter exposes SliverVariableExtentListLayout.");
         AddSlider(controls, "Spacing", 0, 20, layout.Spacing, value => layout.Spacing = value);
         AddSlider(controls, "Vertical cache", 0, 5, repeater.VerticalCacheLength, value => repeater.VerticalCacheLength = value);
+
+        return CreateSampleLayout(controls, scrollViewer);
+    }
+
+    private static FrameworkElement CreateStackPage()
+    {
+        var scenario = Scenario(GalleryScenarioKind.VariableStack);
+        var items = SliverGalleryData.CreateStackItems(100_000);
+        var layout = new SliverStackVirtualizingLayout
+        {
+            MinItemMainAxisExtent = SliverGalleryData.StackMinMainAxisExtent,
+            MaxItemMainAxisExtent = SliverGalleryData.StackMaxMainAxisExtent,
+            MinItemCrossAxisExtent = SliverGalleryData.StackMinCrossAxisExtent,
+            MaxItemCrossAxisExtent = SliverGalleryData.StackMaxCrossAxisExtent,
+            Spacing = 8,
+            CrossAxisAlignment = SliverCrossAxisAlignment.Center
+        };
+        var factory = new GalleryItemElementFactory(GalleryItemVisualMode.StackCard);
+        var repeater = CreateRepeater(items, layout, factory);
+        var scrollViewer = CreateScrollViewer(repeater);
+
+        var controls = CreateControlPanel(
+            scenario.Title,
+            scenario.Summary);
+        var realized = Text("Realized elements: 0", 13, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55));
+        factory.ActiveCountChanged += count => realized.Text = $"Realized elements: {count}";
+        controls.Children.Add(realized);
+        AddSlider(controls, "Min height", 36, 96, layout.MinItemMainAxisExtent, value => layout.MinItemMainAxisExtent = value);
+        AddSlider(controls, "Max height", 96, 180, layout.MaxItemMainAxisExtent, value => layout.MaxItemMainAxisExtent = value);
+        AddSlider(controls, "Min width", 120, 300, layout.MinItemCrossAxisExtent, value => layout.MinItemCrossAxisExtent = value);
+        AddSlider(controls, "Max width", 360, 760, layout.MaxItemCrossAxisExtent, value => layout.MaxItemCrossAxisExtent = value);
+        AddSlider(controls, "Spacing", 0, 24, layout.Spacing, value => layout.Spacing = value);
+        AddSlider(controls, "Vertical cache", 0, 8, repeater.VerticalCacheLength, value => repeater.VerticalCacheLength = value);
 
         return CreateSampleLayout(controls, scrollViewer);
     }
@@ -879,6 +913,7 @@ internal enum GalleryItemVisualMode
     DenseRow,
     Tile,
     VariableRow,
+    StackCard,
     WrapChip
 }
 
@@ -902,6 +937,7 @@ internal sealed class GalleryItemElementFactory : IElementFactory
             GalleryItemVisualMode.Tile => CreateTile(item),
             GalleryItemVisualMode.VariableRow => CreateVariableRow(item),
             GalleryItemVisualMode.DenseRow => CreateDenseRow(item),
+            GalleryItemVisualMode.StackCard => CreateStackCard(item),
             GalleryItemVisualMode.WrapChip => CreateWrapChip(item),
             _ => CreateRow(item)
         };
@@ -1038,6 +1074,48 @@ internal sealed class GalleryItemElementFactory : IElementFactory
                     Text(item.Title, 16, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)),
                     Text(item.Subtitle, 12, FontWeights.Normal, Color.FromArgb(255, 107, 114, 128)),
                     Text(item.Category, 12, FontWeights.SemiBold, Accent(item))
+                }
+            }
+        };
+    }
+
+    private static UIElement CreateStackCard(GalleryItem item)
+    {
+        var accent = Accent(item);
+        return new Border
+        {
+            Padding = new Thickness(10),
+            Background = Brush(Colors.White),
+            BorderBrush = Brush(Color.FromArgb(255, 226, 232, 240)),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(8),
+            Child = new Grid
+            {
+                ColumnSpacing = 10,
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition { Width = new GridLength(4) },
+                    new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },
+                    new ColumnDefinition { Width = GridLength.Auto }
+                },
+                Children =
+                {
+                    new Border
+                    {
+                        Background = Brush(accent),
+                        CornerRadius = new CornerRadius(2)
+                    },
+                    WithColumn(new StackPanel
+                    {
+                        Spacing = 2,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        Children =
+                        {
+                            Text(item.Title, 14, FontWeights.SemiBold, Color.FromArgb(255, 31, 41, 55)),
+                            Text(item.Subtitle, 11, FontWeights.Normal, Color.FromArgb(255, 107, 114, 128))
+                        }
+                    }, 1),
+                    WithColumn(Text(item.Rank.ToString(), 12, FontWeights.SemiBold, accent), 2)
                 }
             }
         };

@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using SliverWidgets.Core;
 using SliverWidgets.GalleryData;
 using SliverWidgets.Maui;
+using MauiSliverStackLayout = SliverWidgets.Maui.SliverStackLayout;
 
 namespace SliverWidgets.MauiGallery;
 
@@ -17,15 +18,17 @@ public sealed class MainPage : ContentPage
 
     private readonly IReadOnlyList<GalleryScenario> _scenarios = SliverGalleryData.CreateScenarios();
     private readonly IReadOnlyList<GalleryItem> _items = SliverGalleryData.CreateItems(100_000);
+    private readonly IReadOnlyList<GalleryItem> _stackItems = SliverGalleryData.CreateStackItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _wrapItems = SliverGalleryData.CreateWrapItems(100_000);
     private readonly IReadOnlyList<GalleryItem> _stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
     private readonly IReadOnlyList<MauiGallerySection> _sections = SliverGalleryData
         .CreateSections(8, 60)
         .Select(section => new MauiGallerySection(section))
         .ToArray();
-    private readonly SliverStackLayout _fixedList;
+    private readonly MauiSliverStackLayout _fixedList;
     private readonly SliverCollectionView _largeList;
     private readonly CollectionView _variableList;
+    private readonly CollectionView _stackList;
     private readonly SliverCollectionView _adaptiveGrid;
     private readonly CollectionView _wrapList;
     private readonly SliverCollectionView _sectionList;
@@ -50,6 +53,7 @@ public sealed class MainPage : ContentPage
         _fixedList = CreateFixedStackPreview();
         _largeList = CreateLargeList();
         _variableList = CreateVariableList();
+        _stackList = CreateStackList();
         _adaptiveGrid = CreateAdaptiveGrid();
         _wrapList = CreateWrapList();
         _sectionList = CreateSectionList();
@@ -163,6 +167,10 @@ public sealed class MainPage : ContentPage
                 GalleryScenarioKind.VariableExtentList,
                 CreateNote("Native MAUI CollectionView measures each preview row for this non-uniform sample."),
                 _variableList),
+            CreatePage(
+                GalleryScenarioKind.VariableStack,
+                CreateNote("MAUI uses native CollectionView virtualization for 100,000 variable-width/height stack cards from the shared deterministic stack feed."),
+                _stackList),
             CreatePage(
                 GalleryScenarioKind.AdaptiveGrid,
                 CreateGridControls(),
@@ -438,9 +446,9 @@ public sealed class MainPage : ContentPage
         return CreatePanel("Unified scenario catalog", "MAUI exposes the same scenario vocabulary as the other galleries while documenting where native platform behavior owns the details.", layout);
     }
 
-    private SliverStackLayout CreateFixedStackPreview()
+    private MauiSliverStackLayout CreateFixedStackPreview()
     {
-        var layout = new SliverStackLayout
+        var layout = new MauiSliverStackLayout
         {
             Axis = SliverAxis.Vertical,
             ItemExtent = InitialExtent,
@@ -483,6 +491,21 @@ public sealed class MainPage : ContentPage
             },
             ItemsSource = _items.Take(220).ToArray(),
             ItemTemplate = new DataTemplate(CreateVariableListCell)
+        };
+    }
+
+    private CollectionView CreateStackList()
+    {
+        return new CollectionView
+        {
+            HeightRequest = 520,
+            ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
+            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+            {
+                ItemSpacing = InitialSpacing
+            },
+            ItemsSource = _stackItems,
+            ItemTemplate = new DataTemplate(CreateStackCell)
         };
     }
 
@@ -966,6 +989,45 @@ public sealed class MainPage : ContentPage
         return grid;
     }
 
+    private View CreateStackCell()
+    {
+        var frame = new Border
+        {
+            Padding = new Thickness(10),
+            BackgroundColor = Colors.White,
+            Stroke = Color.FromArgb("#D8E0EC"),
+            StrokeThickness = 1,
+            HorizontalOptions = LayoutOptions.Center
+        };
+        frame.SetBinding(VisualElement.WidthRequestProperty, new Binding(".", converter: new StackWidthConverter()));
+        frame.SetBinding(VisualElement.HeightRequestProperty, new Binding(nameof(GalleryItem.Extent)));
+
+        var grid = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(4)),
+                new ColumnDefinition(new GridLength(10)),
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            }
+        };
+
+        var accent = new BoxView();
+        accent.SetBinding(BoxView.ColorProperty, new Binding(nameof(GalleryItem.AccentColor), converter: new ColorStringConverter()));
+        grid.Add(accent, 0, 0);
+
+        var text = CreateBoundListText();
+        grid.Add(text, 2, 0);
+
+        var rank = CreateLabel("", 12, FontAttributes.Bold, "#6B7280");
+        rank.SetBinding(Label.TextProperty, new Binding(nameof(GalleryItem.Rank), stringFormat: "#{0}"));
+        grid.Add(rank, 3, 0);
+
+        frame.Content = grid;
+        return frame;
+    }
+
     private View CreateGridCell()
     {
         var grid = new Grid
@@ -1036,7 +1098,7 @@ public sealed class MainPage : ContentPage
 
     private View CreateMiniFixedRows()
     {
-        var rows = new SliverStackLayout
+        var rows = new MauiSliverStackLayout
         {
             Axis = SliverAxis.Vertical,
             ItemExtent = 54d,
@@ -1465,6 +1527,21 @@ public sealed class MainPage : ContentPage
         public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             return value is string color ? Color.FromArgb(color) : Colors.Transparent;
+        }
+
+        public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            throw new NotSupportedException();
+        }
+    }
+
+    private sealed class StackWidthConverter : IValueConverter
+    {
+        public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        {
+            return value is GalleryItem item
+                ? SliverGalleryData.GetStackCrossAxisExtent(item.Id)
+                : SliverGalleryData.StackMinCrossAxisExtent;
         }
 
         public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

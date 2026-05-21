@@ -32,6 +32,14 @@ public static class SliverGalleryData
 
     public const double WrapMaxCrossAxisExtent = 280d;
 
+    public const double StackMinMainAxisExtent = 52d;
+
+    public const double StackMaxMainAxisExtent = 128d;
+
+    public const double StackMinCrossAxisExtent = 160d;
+
+    public const double StackMaxCrossAxisExtent = 640d;
+
     public static IReadOnlyList<GalleryItem> CreateItems(int count = 5000)
     {
         if (count < 0)
@@ -115,6 +123,35 @@ public static class SliverGalleryData
         return items;
     }
 
+    public static IReadOnlyList<GalleryItem> CreateStackItems(int count = 100_000)
+    {
+        if (count < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count));
+        }
+
+        var items = new GalleryItem[count];
+
+        for (var index = 0; index < count; index++)
+        {
+            var mainExtent = GetStackMainAxisExtent(index);
+            var crossExtent = GetStackCrossAxisExtent(index);
+            var category = Categories[index % Categories.Length];
+
+            items[index] = new GalleryItem(
+                index,
+                $"Stack item {index:0000}",
+                $"{category} variable stack card {crossExtent:0}x{mainExtent:0}px",
+                category,
+                Palette[index % Palette.Length],
+                mainExtent,
+                1 + (index % 100),
+                index % 37 == 0);
+        }
+
+        return items;
+    }
+
     public static double GetWrapMainAxisExtent(int index)
     {
         if (index < 0)
@@ -133,6 +170,26 @@ public static class SliverGalleryData
         }
 
         return Interpolate(WrapMinCrossAxisExtent, WrapMaxCrossAxisExtent, ((index * 53) + 29) % 101);
+    }
+
+    public static double GetStackMainAxisExtent(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return Interpolate(StackMinMainAxisExtent, StackMaxMainAxisExtent, ((index * 43) + 11) % 101);
+    }
+
+    public static double GetStackCrossAxisExtent(int index)
+    {
+        if (index < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        return Interpolate(StackMinCrossAxisExtent, StackMaxCrossAxisExtent, ((index * 61) + 23) % 101);
     }
 
     public static IReadOnlyList<GallerySection> CreateSections(int sectionCount = 8, int itemsPerSection = 80)
@@ -212,6 +269,16 @@ public static class SliverGalleryData
                 "Variable extent list layout and native measured rows",
                 GalleryScenarioKind.VariableExtentList,
                 5_000,
+                UsesVirtualization: true,
+                UsesVariableExtents: true),
+            new GalleryScenario(
+                "variable-stack",
+                "Variable stack layout",
+                "Non-uniform width and height cards stack linearly with cache-aware offsets over a 100,000-item source.",
+                "SliverList with custom variable-size child delegate",
+                "Variable-size sliver stack layout",
+                GalleryScenarioKind.VariableStack,
+                100_000,
                 UsesVirtualization: true,
                 UsesVariableExtents: true),
             new GalleryScenario(

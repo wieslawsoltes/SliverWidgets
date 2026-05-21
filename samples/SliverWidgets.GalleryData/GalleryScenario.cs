@@ -15,6 +15,7 @@ public sealed record GalleryScenario(
     {
         GalleryScenarioKind.FixedExtentList => "Fixed",
         GalleryScenarioKind.VariableExtentList => "Variable",
+        GalleryScenarioKind.VariableStack => "Stack",
         GalleryScenarioKind.AdaptiveGrid => "Grid",
         GalleryScenarioKind.VariableWrap => "Wrap",
         GalleryScenarioKind.PinnedHeader => "Header",
@@ -31,6 +32,7 @@ public enum GalleryScenarioKind
 {
     FixedExtentList,
     VariableExtentList,
+    VariableStack,
     AdaptiveGrid,
     VariableWrap,
     PinnedHeader,

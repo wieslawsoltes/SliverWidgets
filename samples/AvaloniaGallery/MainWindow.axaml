@@ -184,6 +184,56 @@
         </Grid>
       </TabItem>
 
+      <TabItem Header="Stack">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Variable stack layout" />
+              <TextBlock Classes="muted" Text="100,000 non-uniform cards keep linear stack offsets while each card gets its own width and height." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Height range" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="52-128 px" />
+              <TextBlock Classes="muted" Text="Width range" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="160-640 px" />
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+              <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding StackItems}">
+                <slivers:SliverItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <slivers:SliverVirtualizingStackLayoutPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        CrossAxisAlignment="Center"
+                        MaxItemCrossAxisExtent="640"
+                        MaxItemMainAxisExtent="128"
+                        MinItemCrossAxisExtent="160"
+                        MinItemMainAxisExtent="52"
+                        Spacing="8" />
+                  </ItemsPanelTemplate>
+                </slivers:SliverItemsControl.ItemsPanel>
+                <slivers:SliverItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Classes="row-card">
+                      <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                        <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                          <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" TextWrapping="NoWrap" />
+                          <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Rank}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </slivers:SliverItemsControl.ItemTemplate>
+              </slivers:SliverItemsControl>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Grid">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
