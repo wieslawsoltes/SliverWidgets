@@ -39,3 +39,4 @@
 - [x] `T037` Fix non-pinned persistent header shrink/paint geometry so scrolling headers resize at the leading edge before scrolling away without reserving empty space. Requirements: `SW-FR-008`, `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-003`, `AC-010`, `AC-012`.
 - [x] `T038` Address Avalonia PR review findings for unconstrained cross-axis measure and generator-safe realized-container clearing. Requirements: `SW-FR-014`; Acceptance: `AC-010`.
 - [x] `T039` Unify MAUI, Uno, and WinUI gallery shells with the Avalonia reference header, short scenario tabs, and left-controls/right-viewport workflow. Requirements: `SW-FR-017`, `SW-FR-018`; Acceptance: `AC-009`, `AC-010`, `AC-011`.
+- [x] `T040` Add Flutter tabbed nested-scroll usage research and project a `Tabs` scenario across Avalonia, MAUI, Uno, and WinUI galleries. Requirements: `SW-FR-017`, `SW-FR-018`; Acceptance: `AC-009`, `AC-010`, `AC-011`, `AC-012`.
