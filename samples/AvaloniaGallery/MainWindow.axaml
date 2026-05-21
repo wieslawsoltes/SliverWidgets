@@ -342,6 +342,11 @@
             <StackPanel Spacing="14">
               <TextBlock Classes="h2" Text="Sectioned list with sticky headers" />
               <TextBlock Classes="muted" Text="Avalonia-local projections flatten shared gallery sections into alternating pinned headers and row slivers." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Header mode" />
+              <ComboBox
+                  HorizontalAlignment="Stretch"
+                  ItemsSource="{Binding SectionHeaderModes}"
+                  SelectedItem="{Binding SectionHeaderMode, Mode=TwoWay}" />
               <TextBlock Classes="muted" Text="Cache extent" />
               <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
             </StackPanel>
@@ -352,7 +357,9 @@
               <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding SectionedBlocks}">
                 <slivers:SliverItemsControl.ItemsPanel>
                   <ItemsPanelTemplate>
-                    <local:SliverScenarioStackPanel CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}" />
+                    <local:SliverScenarioStackPanel
+                        CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                        SectionHeaderMode="{Binding $parent[Window].DataContext.SectionHeaderMode}" />
                   </ItemsPanelTemplate>
                 </slivers:SliverItemsControl.ItemsPanel>
                 <slivers:SliverItemsControl.ItemTemplate>

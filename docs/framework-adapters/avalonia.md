@@ -98,7 +98,7 @@ Use `SliverVirtualizingListPanel` when row heights vary:
 - `ScrollOffset` is an adapter property for surfaces that coordinate scrolling externally.
 - `SliverItemsControl` is required when an outer `ScrollViewer` wraps an items panel that implements `ILogicalScrollable`; a plain `ItemsControl` does not expose the panel to `ScrollViewer`.
 - Avalonia sliver panels use a 16px logical line scroll size so wheel input can drive smooth persistent-header collapse instead of jumping by an item extent.
-- The gallery's sectioned sample uses a sample-local push-style sticky header so only one section header reserves the leading edge at a time; this avoids cumulative empty gaps between sections.
+- The gallery's sectioned sample exposes stacked and push sticky-header modes through `SliverScenarioStackPanel.SectionHeaderMode`. Stacked mode is the default; push mode keeps one active section header at the leading edge.
 - `CacheExtent` is measured in main-axis units.
 - Non-virtual panels still use sliver math but do not recycle controls.
 - Virtualizing panels should be used for high-volume item sources.

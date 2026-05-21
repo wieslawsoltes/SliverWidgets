@@ -54,7 +54,7 @@ flowchart TD
   - `samples/SliverWidgets.GalleryData`
   - `samples/AvaloniaGallery`
     - `MixedSliverPreviewPanel` clips direct children to the active pinned-header obstruction when composing multiple slivers in one panel.
-    - `SliverScenarioStackPanel` provides one active push-style sticky section header to avoid cumulative header gaps.
+    - `SliverScenarioStackPanel` supports configurable stacked and push sticky section header modes. Stacked is the gallery default.
   - `samples/MauiGallery`
   - `samples/UnoGallery`
   - `samples/UnoGalleryApp`
@@ -64,7 +64,7 @@ flowchart TD
 
 | Framework | Implemented Track | Next Track |
 |---|---|---|
-| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, mixed sample clipping below pinned headers, section sticky-header push behavior, fixed-extent `VirtualizingPanel`, variable-extent `VirtualizingPanel` | deeper platform gesture/device validation |
+| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, mixed sample clipping below pinned headers, configurable section sticky-header modes, fixed-extent `VirtualizingPanel`, variable-extent `VirtualizingPanel` | deeper platform gesture/device validation |
 | WinUI | `VirtualizingLayout` for fixed rows and grids, non-Windows compile path with PRI disabled | Windows runtime/device validation |
 | Uno | WinUI-style row and grid `VirtualizingLayout` | renderer-specific validation |
 | MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView` | device validation |

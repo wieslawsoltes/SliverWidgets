@@ -20,6 +20,7 @@
 - Fixed Avalonia persistent-header collapse smoothness by using pixel-sized logical scroll increments instead of item-sized wheel jumps.
 - Fixed Avalonia mixed gallery composition so scrolled fixed rows, grid tiles, and fill regions are clipped below pinned header obstruction instead of visually rendering through the header.
 - Fixed Avalonia sectioned gallery scrolling so one sticky section header shrinks smoothly, pushes out for the next header, and does not leave cumulative empty header gaps.
+- Added configurable Avalonia section header modes and made stacked sticky headers the default gallery behavior.
 - Fixed core viewport composition to honor finite `ScrollOffsetCorrection` relayout requests and reject infinite non-negative geometry values.
 - Fixed MAUI `SliverStackLayout` measurement so unconstrained cross-axis layout uses child desired size instead of collapsing to zero.
 - Fixed non-Windows WinUI library and gallery builds by disabling PRI generation for code-only validation.

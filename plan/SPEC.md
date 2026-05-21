@@ -55,7 +55,7 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 - `SW-FR-011`: Visibility shall remove, replace, or maintain sliver size.
 - `SW-FR-012`: Framework adapters shall arrange existing controls using core layout slots.
 - `SW-FR-013`: WinUI and Uno shall provide `ItemsRepeater` `VirtualizingLayout` paths for fixed-extent rows and grids.
-- `SW-FR-014`: Avalonia shall provide non-virtual panels, fixed/variable extent `VirtualizingPanel` adapters, smooth pixel-sized logical scroll increments, direct-child mixed composition clipping below pinned header obstruction, section sticky headers that shrink and push without cumulative gaps, and an items host that exposes logical panel scrolling to native `ScrollViewer` hosts.
+- `SW-FR-014`: Avalonia shall provide non-virtual panels, fixed/variable extent `VirtualizingPanel` adapters, smooth pixel-sized logical scroll increments, direct-child mixed composition clipping below pinned header obstruction, configurable stacked or push section sticky headers, and an items host that exposes logical panel scrolling to native `ScrollViewer` hosts.
 - `SW-FR-015`: MAUI shall provide a layout manager path that preserves unconstrained cross-axis desired size and a native-backed `CollectionView` virtualization integration.
 - `SW-FR-016`: Core shall provide a sliver-to-box adapter for single fixed box content.
 - `SW-FR-017`: Each supported framework shall provide a gallery-style sample app or sample surface that demonstrates fixed lists, adaptive grids, persistent headers, mixed sliver composition without visual overlap through pinned headers, and large-data virtualization.
@@ -87,7 +87,7 @@ SliverWidgets provides a framework-neutral core protocol and thin framework adap
 ## Current Implementation Status
 
 - Core protocol, foundational layouts, scroll-offset correction relayouts, finite geometry validation, variable extent cache/dead reckoning, sliver-to-box adapter, and floating/snap header service: implemented.
-- Avalonia panels, decorator, fixed-extent `VirtualizingPanel`, variable-extent `VirtualizingPanel`, smooth logical scroll increments, mixed composition pinned-obstruction clipping, section sticky-header push behavior, and logical `SliverItemsControl` scroll host: implemented.
+- Avalonia panels, decorator, fixed-extent `VirtualizingPanel`, variable-extent `VirtualizingPanel`, smooth logical scroll increments, mixed composition pinned-obstruction clipping, configurable section sticky-header modes with stacked as the gallery default, and logical `SliverItemsControl` scroll host: implemented.
 - MAUI stack layout manager with unconstrained cross-axis measurement and native-backed `SliverCollectionView`: implemented.
 - Uno fixed-extent and grid virtualizing layouts: implemented using `RealizationRect`; renderer-specific validation remains required.
 - WinUI fixed-extent and grid virtualizing layouts: implemented; build works on non-Windows hosts with PRI generation disabled, and full runtime validation remains a Windows lane.

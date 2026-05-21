@@ -27,18 +27,25 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
     public static readonly StyledProperty<bool> MaintainVisibilitySliverSizeProperty =
         AvaloniaProperty.Register<SliverScenarioStackPanel, bool>(nameof(MaintainVisibilitySliverSize));
 
+    public static readonly StyledProperty<SliverSectionHeaderMode> SectionHeaderModeProperty =
+        AvaloniaProperty.Register<SliverScenarioStackPanel, SliverSectionHeaderMode>(
+            nameof(SectionHeaderMode),
+            SliverSectionHeaderMode.Stacked);
+
     static SliverScenarioStackPanel()
     {
         AffectsMeasure<SliverScenarioStackPanel>(
             ScrollOffsetProperty,
             CacheExtentProperty,
             ShowVisibilitySliverProperty,
-            MaintainVisibilitySliverSizeProperty);
+            MaintainVisibilitySliverSizeProperty,
+            SectionHeaderModeProperty);
         AffectsArrange<SliverScenarioStackPanel>(
             ScrollOffsetProperty,
             CacheExtentProperty,
             ShowVisibilitySliverProperty,
-            MaintainVisibilitySliverSizeProperty);
+            MaintainVisibilitySliverSizeProperty,
+            SectionHeaderModeProperty);
     }
 
     public SliverScenarioStackPanel()
@@ -70,6 +77,12 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
     {
         get => GetValue(MaintainVisibilitySliverSizeProperty);
         set => SetValue(MaintainVisibilitySliverSizeProperty, value);
+    }
+
+    public SliverSectionHeaderMode SectionHeaderMode
+    {
+        get => GetValue(SectionHeaderModeProperty);
+        set => SetValue(SectionHeaderModeProperty, value);
     }
 
     public bool CanHorizontallyScroll
@@ -126,7 +139,7 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
         var result = LayoutSlivers(viewport);
         var extent = new Size(viewport.CrossAxisExtent, result.ScrollExtent);
         var measuredViewport = new Size(viewport.CrossAxisExtent, viewport.MainAxisExtent);
-        var stickyHeader = GetActiveStickyHeader();
+        var stickyHeader = GetPushStickyHeader();
 
         if (!CanVerticallyScroll)
         {
@@ -170,7 +183,7 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
         var viewport = new SliverViewport(finalSize.Height, finalSize.Width);
         var result = LayoutSlivers(viewport);
         var arranged = new bool[Children.Count];
-        var stickyHeader = GetActiveStickyHeader();
+        var stickyHeader = GetPushStickyHeader();
         var pinnedObstructionExtent = stickyHeader.IsVisible
             ? Math.Max(0d, stickyHeader.MainAxisOffset + stickyHeader.MainAxisExtent)
             : GetPinnedObstructionExtent(result.Slots);
@@ -306,8 +319,7 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
         var extent = Math.Max(0d, block.Extent);
         return block.Kind switch
         {
-            AvaloniaSliverBlockKind.Header => new SliverToBoxAdapterLayout(
-                new SliverToBoxAdapterOptions(Math.Max(HeaderMinExtent, extent))),
+            AvaloniaSliverBlockKind.Header => CreateHeaderLayout(extent),
             AvaloniaSliverBlockKind.PaddedBox => new SliverPaddingLayout(
                 new SliverEdgeInsets(18d, 18d, 18d, 18d),
                 new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(extent))),
@@ -321,6 +333,15 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
         };
     }
 
+    private ISliverLayout CreateHeaderLayout(double extent)
+    {
+        var maxExtent = Math.Max(HeaderMinExtent, extent);
+        return SectionHeaderMode == SliverSectionHeaderMode.Push
+            ? new SliverToBoxAdapterLayout(new SliverToBoxAdapterOptions(maxExtent))
+            : new SliverAdvancedPersistentHeaderLayout(
+                new SliverAdvancedPersistentHeaderOptions(HeaderMinExtent, maxExtent, Pinned: true));
+    }
+
     private static SliverViewport CreateViewport(Size size)
     {
         return new SliverViewport(
@@ -328,8 +349,13 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
             double.IsFinite(size.Width) ? Math.Max(0d, size.Width) : 760d);
     }
 
-    private StickyHeaderState GetActiveStickyHeader()
+    private StickyHeaderState GetPushStickyHeader()
     {
+        if (SectionHeaderMode != SliverSectionHeaderMode.Push)
+        {
+            return default;
+        }
+
         var scrollOffset = Math.Max(0d, ScrollOffset);
         var cursor = 0d;
         var activeChildIndex = -1;
@@ -521,4 +547,10 @@ public sealed class SliverScenarioStackPanel : Panel, ILogicalScrollable
     {
         public bool IsVisible => ChildIndex >= 0 && MainAxisExtent > SliverMath.Epsilon;
     }
+}
+
+public enum SliverSectionHeaderMode
+{
+    Stacked,
+    Push
 }

@@ -12,6 +12,7 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     private double _cacheExtent = 280d;
     private bool _showOptionalSliver = true;
     private bool _maintainOptionalSliverSize;
+    private SliverSectionHeaderMode _sectionHeaderMode = SliverSectionHeaderMode.Stacked;
 
     public GalleryViewModel()
     {
@@ -29,6 +30,8 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
         Demos = new ObservableCollection<GalleryDemo>(SliverGalleryData.CreateDemos());
         Sections = new ObservableCollection<GallerySection>(sections);
         ScenarioCatalog = new ObservableCollection<GalleryScenario>(SliverGalleryData.CreateScenarios());
+        SectionHeaderModes = new ObservableCollection<SliverSectionHeaderMode>(
+            new[] { SliverSectionHeaderMode.Stacked, SliverSectionHeaderMode.Push });
         SectionedBlocks = new ObservableCollection<AvaloniaSliverBlock>(CreateSectionedBlocks(sections));
         CompositionBlocks = new ObservableCollection<AvaloniaSliverBlock>(CreateCompositionBlocks());
     }
@@ -52,6 +55,8 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     public ObservableCollection<GallerySection> Sections { get; }
 
     public ObservableCollection<GalleryScenario> ScenarioCatalog { get; }
+
+    public ObservableCollection<SliverSectionHeaderMode> SectionHeaderModes { get; }
 
     public ObservableCollection<AvaloniaSliverBlock> SectionedBlocks { get; }
 
@@ -85,6 +90,12 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     {
         get => _maintainOptionalSliverSize;
         set => SetField(ref _maintainOptionalSliverSize, value);
+    }
+
+    public SliverSectionHeaderMode SectionHeaderMode
+    {
+        get => _sectionHeaderMode;
+        set => SetField(ref _sectionHeaderMode, value);
     }
 
     private static IEnumerable<AvaloniaSliverBlock> CreateSectionedBlocks(IEnumerable<GallerySection> sections)

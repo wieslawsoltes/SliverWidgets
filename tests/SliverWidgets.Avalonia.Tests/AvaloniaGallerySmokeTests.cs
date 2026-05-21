@@ -205,9 +205,30 @@ public sealed class AvaloniaGallerySmokeTests
     }
 
     [AvaloniaFact]
-    public void Section_panel_uses_single_sticky_header_without_cumulative_gap()
+    public void Section_panel_defaults_to_stacked_headers()
     {
         var panel = CreateSectionPanel(sectionCount: 2, itemCount: 10);
+        panel.ScrollOffset = 760d;
+
+        ArrangePanel(panel);
+
+        var firstHeader = Assert.IsAssignableFrom<Control>(panel.Children[0]);
+        var secondHeader = Assert.IsAssignableFrom<Control>(panel.Children[11]);
+
+        Assert.Equal(SliverSectionHeaderMode.Stacked, panel.SectionHeaderMode);
+        Assert.Equal(1d, firstHeader.Opacity);
+        Assert.Equal(1d, secondHeader.Opacity);
+        Assert.Equal(0d, firstHeader.Bounds.Y);
+        Assert.Equal(42d, firstHeader.Bounds.Height);
+        Assert.Equal(firstHeader.Bounds.Bottom, secondHeader.Bounds.Y);
+        Assert.Equal(42d, secondHeader.Bounds.Height);
+    }
+
+    [AvaloniaFact]
+    public void Section_panel_push_mode_uses_single_sticky_header_without_cumulative_gap()
+    {
+        var panel = CreateSectionPanel(sectionCount: 2, itemCount: 10);
+        panel.SectionHeaderMode = SliverSectionHeaderMode.Push;
         panel.ScrollOffset = 760d;
 
         ArrangePanel(panel);
