@@ -90,3 +90,4 @@ Uno renderer behavior should be validated on the target platforms you support. T
 
 - Exact `VisibleRect` paint-window mapping is not enabled until Uno implements that API.
 - Variable-extent lists and mixed `CustomScrollView` composition are represented by sample-level native layouts rather than a full Uno sliver viewport adapter.
+- The DataGrid gallery page uses native row virtualization with core sort/filter projection. Core exposes two-axis DataGrid cell slots, but the Uno adapter does not yet provide a dedicated two-axis cell host.

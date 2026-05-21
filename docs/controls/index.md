@@ -21,6 +21,7 @@ The core layer is the source of behavior. Framework packages map that behavior t
 | `SliverVariableExtentListLayout` | Item extents are discovered as children are measured. |
 | `SliverStackLayout` | Non-uniform width/height items are stacked in one linear scroll sequence. |
 | `SliverGridLayout` | Items are arranged in rows or columns with a fixed count or max cross-axis extent. |
+| `SliverDataGridLayout` | DataGrid rows and columns need vertical sliver geometry plus horizontal cell-slot windowing. |
 | `SliverWrapLayout` | Non-uniform width/height items flow into wrap lines. |
 | `SliverPersistentHeaderLayout` | A header should collapse and optionally pin. |
 | `SliverAdvancedPersistentHeaderLayout` | A header needs pinned, floating, and snap behavior. |
@@ -33,7 +34,7 @@ The core layer is the source of behavior. Framework packages map that behavior t
 
 | Framework | Controls |
 |---|---|
-| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
+| Avalonia | `SliverStackPanel`, `SliverGridPanel`, `SliverPersistentHeader`, `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingDataGridRowsPanel`, `SliverVirtualizingListPanel`, `SliverVirtualizingWrapPanel` |
 | MAUI | `SliverStackLayout`, `SliverCollectionView`, `SliverItemsLayoutFactory` |
 | Uno | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
 | WinUI | `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, `SliverGridVirtualizingLayout`, `SliverWrapVirtualizingLayout` |
@@ -48,6 +49,7 @@ Use this decision table for the first implementation:
 | cards with measured text height | variable extent list |
 | cards with variable width and height in one column | stack layout |
 | responsive image/content tiles | grid with max cross-axis extent |
+| tabular data with sort/filter and variable rows | DataGrid layout plus native row virtualization |
 | chip clouds with different widths and heights | wrap layout |
 | section header that remains visible | persistent header with `Pinned = true` |
 | dashboard page that ends with an empty-state region | fill remaining |

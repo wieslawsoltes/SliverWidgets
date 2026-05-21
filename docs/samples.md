@@ -5,9 +5,9 @@ description: Framework sample galleries and validation commands.
 
 # Sample Galleries
 
-The repository includes gallery-style samples for each supported framework. They mirror Flutter's sliver teaching examples with native .NET controls: expanded or persistent headers, adaptive grids, fixed-extent lists, variable-size stack/wrap content, and mixed scroll compositions.
+The repository includes gallery-style samples for each supported framework. They mirror Flutter's sliver teaching examples with native .NET controls: expanded or persistent headers, adaptive grids, DataGrid rows, fixed-extent lists, variable-size stack/wrap content, and mixed scroll compositions.
 
-The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, variable-size stack cards, tiles, wrap chips, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI. The galleries also share the Avalonia reference shell: a top metrics header, short scenario tabs (`Fixed`, `Variable`, `Stack`, `Grid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right framework-native viewport.
+The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates deterministic rows, variable-size stack cards, tiles, DataGrid rows, wrap chips, sections, metrics, and demo descriptions. Keeping the data shared makes virtualization behavior comparable across Avalonia, MAUI, Uno, and WinUI. The galleries also share the Avalonia reference shell: a top metrics header, short scenario tabs (`Fixed`, `Variable`, `Stack`, `Grid`, `DataGrid`, `Wrap`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`), a left controls/notes panel, and a right framework-native viewport.
 
 ## Coverage Matrix
 
@@ -18,6 +18,7 @@ The shared sample data lives in `samples/SliverWidgets.GalleryData` and creates 
 | `NestedScrollView` with tabs and overlap | Avalonia native `TabControl` with sliver-backed tab bodies, MAUI segmented tab buttons with native `CollectionView` bodies, Uno/WinUI segmented tab buttons with `ItemsRepeater` bodies |
 | Variable-size stack sliver | Avalonia `SliverVirtualizingStackLayoutPanel`, Uno/WinUI `SliverStackVirtualizingLayout`, MAUI native `CollectionView` stack projection over the same 100,000-card source |
 | `SliverGrid` | Avalonia `SliverVirtualizingGridPanel` for large grids and `SliverGridPanel` for bounded direct children, MAUI `SliverCollectionView` grid mode, Uno/WinUI `ItemsRepeater` grid layouts |
+| `TableView` / DataGrid usage | Core `SliverDataGridLayout` and query projection, Avalonia `SliverVirtualizingDataGridRowsPanel`, MAUI/Uno/WinUI native row-virtualized DataGrid pages over the same 100,000-row source |
 | Variable-size wrap / flow sliver | Avalonia `SliverVirtualizingWrapPanel`, Uno/WinUI `SliverWrapVirtualizingLayout`, MAUI native row-virtualized wrap projection over the same 100,000-chip source |
 | `SliverFixedExtentList` | Core fixed extent layout plus Avalonia, MAUI, Uno, and WinUI fixed list samples |
 | Lazy child lifecycle and cache windows | Avalonia virtualizing panel, MAUI native `CollectionView`, Uno/WinUI `ItemsRepeater` realization windows |
@@ -94,6 +95,7 @@ The WinUI sample targets Windows App SDK. It can compile on non-Windows hosts wi
 - Avalonia provides the most complete single-viewport sample coverage through the mixed and sectioned panels. The standalone `SliverPersistentHeader` decorator is externally coordinated by a scroll offset.
 - Uno currently lacks an implemented `VirtualizingLayoutContext.VisibleRect`, so its adapter infers the visible paint range from `RealizationRect` and available size.
 - MAUI delegates large-data realization to native `CollectionView`; its cache distance is platform-owned.
+- DataGrid samples use native row virtualization across frameworks. Core exposes two-axis cell slots, but MAUI, Uno, and WinUI gallery pages do not yet claim portable framework-level two-axis cell recycling.
 - WinUI, Uno, and MAUI mixed and tabbed pages demonstrate the concepts with native surfaces, but they are not yet one shared `CustomScrollView`/`NestedScrollView`-style viewport pipeline.
 
 ## What to Look For

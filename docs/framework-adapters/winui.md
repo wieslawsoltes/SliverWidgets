@@ -90,4 +90,4 @@ The portable docs build uses human-written API pages. WinUI is documented manual
 
 ## Limitations
 
-The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, variable-size stacks, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline.
+The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows, variable-size stacks, DataGrid rows, grids, and wrap layouts. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline. DataGrid two-axis cell-slot math lives in core; the gallery uses native row virtualization until a framework-level two-axis host is added.

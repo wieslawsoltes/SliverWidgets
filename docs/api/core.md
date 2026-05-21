@@ -43,6 +43,20 @@ description: Public API guide for SliverWidgets.Core.
 
 Use `SliverGridLayoutOptions.FixedCrossAxisCount` for fixed column/row counts and `SliverGridLayoutOptions.WithMaxCrossAxisExtent` for responsive tile sizes. Max-extent mode uses a ceiling count so generated tiles do not exceed the configured maximum cross-axis extent.
 
+## DataGrid APIs
+
+| API | Purpose |
+|---|---|
+| `SliverDataGridColumnWidthMode` | Fixed, auto, size-to-header, size-to-cells, star, fill, and last-column-fill sizing. |
+| `SliverDataGridColumnDefinition` | Column metadata and sizing inputs. |
+| `SliverDataGridLayoutOptions` | Row extents, columns, horizontal cache state, frozen columns, spacing, and source-row projection. |
+| `SliverDataGridLayout` | Two-axis DataGrid cell-slot layout with vertical sliver geometry. |
+| `SliverDataGridLayoutResult` | DataGrid geometry plus row, column, and cell slots. |
+| `SliverDeterministicDataGridRowExtentList` | Allocation-light deterministic variable row heights for large grids. |
+| `SliverDataGridQueryEngine` | Sort/filter projection that returns source-row indexes before layout. |
+
+`SliverDataGridLayout` keeps layout hot paths separate from data predicates. Use `SliverDataGridQueryEngine.ProjectRows` to produce `SourceRowIndexes`, then pass that map into `SliverDataGridLayoutOptions`.
+
 ## Stack APIs
 
 | API | Purpose |

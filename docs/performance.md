@@ -69,6 +69,7 @@ Avalonia:
 
 - `SliverVirtualizingStackPanel` is the fixed-row high-volume path.
 - `SliverVirtualizingStackLayoutPanel` handles variable-width/height linear card stacks.
+- `SliverVirtualizingDataGridRowsPanel` handles DataGrid row virtualization while core computes row/column windows.
 - `SliverVirtualizingListPanel` handles variable row heights through observed measurements.
 - `SliverVirtualizingWrapPanel` handles large variable-size chip/card flows with deterministic extents.
 - Non-virtual `SliverStackPanel` and `SliverGridPanel` are useful for bounded child counts and custom composition.
@@ -80,7 +81,7 @@ MAUI:
 
 Uno and WinUI:
 
-- Use `ItemsRepeater` with `SliverFixedExtentVirtualizingLayout` or `SliverGridVirtualizingLayout`.
+- Use `ItemsRepeater` with `SliverFixedExtentVirtualizingLayout`, `SliverStackVirtualizingLayout`, or `SliverGridVirtualizingLayout`.
 - Keep item templates light because the platform owns element realization and recycling.
 
 ## Validation Targets

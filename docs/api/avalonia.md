@@ -9,7 +9,7 @@ description: Public API guide for SliverWidgets.Avalonia.
 
 ## SliverItemsControl
 
-`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingGridPanel`, `SliverVirtualizingWrapPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
+`SliverItemsControl` derives from `ItemsControl` and exposes the logical scrolling surface of its generated sliver items panel to an outer Avalonia `ScrollViewer`. Use it when a `ScrollViewer` wraps an `ItemsControl` whose `ItemsPanel` is `SliverVirtualizingStackPanel`, `SliverVirtualizingStackLayoutPanel`, `SliverVirtualizingDataGridRowsPanel`, `SliverVirtualizingGridPanel`, `SliverVirtualizingWrapPanel`, `SliverVirtualizingListPanel`, `SliverStackPanel`, `SliverGridPanel`, or another `ILogicalScrollable` sliver panel.
 
 ## SliverStackPanel
 
@@ -99,6 +99,18 @@ Variable-width/height stack `VirtualizingPanel` for large `ItemsControl` sources
 ## SliverVirtualizingListPanel
 
 Variable-height `VirtualizingPanel` for `ItemsControl`.
+
+| Property | Type | Default |
+|---|---|---|
+| `Axis` | `SliverAxis` | `Vertical` |
+| `EstimatedItemExtent` | `double` | `48` |
+| `Spacing` | `double` | `0` |
+| `ScrollOffset` | `double` | `0` |
+| `CacheExtent` | `double` | `250` |
+
+## SliverVirtualizingDataGridRowsPanel
+
+DataGrid row `VirtualizingPanel` for large native row controls. It reuses the measured variable-row virtualization path and is intended to be paired with `SliverDataGridLayout`/`SliverDataGridQueryEngine` from core for column sizing, horizontal cell-windowing decisions, sorting, and filtering.
 
 | Property | Type | Default |
 |---|---|---|

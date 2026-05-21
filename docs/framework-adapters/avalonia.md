@@ -18,6 +18,7 @@ description: Avalonia panels, decorators, and virtualizing panels.
 | `SliverVirtualizingStackPanel` | Fixed-extent virtualizing items panel. |
 | `SliverVirtualizingStackLayoutPanel` | Variable-width/height stack virtualizing items panel. |
 | `SliverVirtualizingGridPanel` | Fixed-count or max-cross-axis-extent virtualizing grid items panel. |
+| `SliverVirtualizingDataGridRowsPanel` | DataGrid row virtualizing items panel for native row controls. |
 | `SliverVirtualizingListPanel` | Variable-height virtualizing items panel with observed extent cache. |
 | `SliverVirtualizingWrapPanel` | Variable-width/height wrap virtualizing items panel. |
 
@@ -89,6 +90,22 @@ Use `SliverVirtualizingStackLayoutPanel` when both row height and row width vary
           MaxItemCrossAxisExtent="640"
           CrossAxisAlignment="Center"
           Spacing="8"
+          CacheExtent="600" />
+    </ItemsPanelTemplate>
+  </slivers:SliverItemsControl.ItemsPanel>
+</slivers:SliverItemsControl>
+```
+
+Use `SliverVirtualizingDataGridRowsPanel` for DataGrid row controls after core query projection:
+
+```xml
+<slivers:SliverItemsControl
+    xmlns:slivers="using:SliverWidgets.Avalonia"
+    ItemsSource="{Binding ProjectedRows}">
+  <slivers:SliverItemsControl.ItemsPanel>
+    <ItemsPanelTemplate>
+      <slivers:SliverVirtualizingDataGridRowsPanel
+          EstimatedItemExtent="64"
           CacheExtent="600" />
     </ItemsPanelTemplate>
   </slivers:SliverItemsControl.ItemsPanel>
@@ -172,3 +189,4 @@ Use `SliverVirtualizingWrapPanel` for large non-uniform chip or card sources:
 - Non-virtual panels still use sliver math but do not recycle controls.
 - Virtualizing panels should be used for high-volume item sources.
 - `SliverPersistentHeader` is a single-child decorator coordinated by an external scroll offset. Use the mixed or sectioned sample panels when you need one `CustomScrollView`-style viewport that composes headers with following slivers.
+- DataGrid column sizing, horizontal cache windows, and source-row sorting/filtering live in `SliverWidgets.Core`; the Avalonia row panel keeps row realization native.

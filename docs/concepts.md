@@ -17,6 +17,7 @@ A sliver owns one piece of a scrollable composition. Examples include:
 - a variable-height list
 - a variable-width/height stack
 - a grid
+- a DataGrid row/column surface
 - a variable-size wrap surface
 - a pinned header
 - a single box
@@ -96,6 +97,7 @@ SliverWidgets intentionally mirrors Flutter names where the concept is portable:
 | `SliverList` | `SliverListLayout` and `SliverVariableExtentListLayout` |
 | Variable-size linear stack | `SliverStackLayout` |
 | `SliverGrid` | `SliverGridLayout` |
+| `TableView` / DataGrid usage | `SliverDataGridLayout` and `SliverDataGridQueryEngine` |
 | Custom wrap/flow sliver | `SliverWrapLayout` |
 | `SliverPersistentHeader` | `SliverPersistentHeaderLayout` and `SliverAdvancedPersistentHeaderLayout` |
 | `SliverToBoxAdapter` | `SliverToBoxAdapterLayout` |
