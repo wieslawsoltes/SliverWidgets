@@ -402,14 +402,27 @@
                 </slivers:SliverItemsControl.ItemsPanel>
                 <slivers:SliverItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <Border Classes="tile-card">
-                      <Grid RowDefinitions="Auto,*,Auto">
+                    <Border Classes="tile-card" Padding="8" ClipToBounds="True">
+                      <Grid RowDefinitions="Auto,Auto,*" RowSpacing="4" ClipToBounds="True">
                         <Border Width="28" Height="4" HorizontalAlignment="Left" Background="{Binding AccentColor}" CornerRadius="2" />
-                        <StackPanel Grid.Row="1" VerticalAlignment="Center" Spacing="2">
-                          <TextBlock FontSize="14" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" TextWrapping="Wrap" />
-                          <TextBlock Classes="muted" Text="{Binding Category}" TextWrapping="NoWrap" />
-                        </StackPanel>
-                        <TextBlock Grid.Row="2" Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+                        <TextBlock
+                            Grid.Row="1"
+                            FontSize="13"
+                            FontWeight="SemiBold"
+                            Foreground="#0F172A"
+                            LineHeight="15"
+                            MaxLines="1"
+                            Text="{Binding Title}"
+                            TextTrimming="CharacterEllipsis"
+                            TextWrapping="NoWrap" />
+                        <TextBlock
+                            Grid.Row="2"
+                            Classes="muted"
+                            LineHeight="14"
+                            MaxLines="2"
+                            Text="{Binding Subtitle}"
+                            TextTrimming="WordEllipsis"
+                            TextWrapping="Wrap" />
                       </Grid>
                     </Border>
                   </DataTemplate>
