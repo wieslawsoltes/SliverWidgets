@@ -77,9 +77,15 @@ public class SliverFixedExtentVirtualizingLayout : VirtualizingLayout
     private static SliverViewportInfo GetViewport(VirtualizingLayoutContext context, Size availableSize, SliverAxis axis)
     {
         var realization = context.RealizationRect;
-        var scrollOffset = axis == SliverAxis.Vertical ? realization.Y : realization.X;
-        var remainingPaintExtent = axis == SliverAxis.Vertical ? realization.Height : realization.Width;
+        var realizationStart = axis == SliverAxis.Vertical ? realization.Y : realization.X;
         var remainingCacheExtent = axis == SliverAxis.Vertical ? realization.Height : realization.Width;
+        var availableMainAxisExtent = axis == SliverAxis.Vertical ? availableSize.Height : availableSize.Width;
+        var remainingPaintExtent = ResolveVisibleMainAxisExtent(availableMainAxisExtent, remainingCacheExtent);
+        var leadingCacheExtent = realizationStart <= SliverMath.Epsilon
+            ? 0d
+            : Math.Max(0d, (remainingCacheExtent - remainingPaintExtent) / 2d);
+        var scrollOffset = realizationStart + leadingCacheExtent;
+        var cacheOrigin = realizationStart - scrollOffset;
         var crossAxisExtent = axis == SliverAxis.Vertical ? availableSize.Width : availableSize.Height;
 
         if (double.IsInfinity(crossAxisExtent) || double.IsNaN(crossAxisExtent))
@@ -89,6 +95,7 @@ public class SliverFixedExtentVirtualizingLayout : VirtualizingLayout
 
         return new SliverViewportInfo(
             Math.Max(0d, scrollOffset),
+            Math.Min(0d, cacheOrigin),
             Math.Max(0d, remainingPaintExtent),
             Math.Max(0d, remainingCacheExtent),
             Math.Max(0d, crossAxisExtent));
@@ -104,8 +111,18 @@ public class SliverFixedExtentVirtualizingLayout : VirtualizingLayout
             viewport.RemainingPaintExtent,
             viewport.CrossAxisExtent,
             viewport.RemainingPaintExtent,
-            0d,
+            viewport.CacheOrigin,
             viewport.RemainingCacheExtent);
+    }
+
+    private static double ResolveVisibleMainAxisExtent(double availableMainAxisExtent, double realizationMainAxisExtent)
+    {
+        if (double.IsFinite(availableMainAxisExtent) && availableMainAxisExtent > SliverMath.Epsilon)
+        {
+            return Math.Min(Math.Max(0d, availableMainAxisExtent), Math.Max(0d, realizationMainAxisExtent));
+        }
+
+        return Math.Max(0d, realizationMainAxisExtent);
     }
 
     private static Size ToSize(SliverAxis axis, double mainAxisExtent, double crossAxisExtent)
@@ -125,6 +142,7 @@ public class SliverFixedExtentVirtualizingLayout : VirtualizingLayout
 
     private readonly record struct SliverViewportInfo(
         double ScrollOffset,
+        double CacheOrigin,
         double RemainingPaintExtent,
         double RemainingCacheExtent,
         double CrossAxisExtent);

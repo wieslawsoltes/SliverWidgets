@@ -21,7 +21,7 @@ description: Windows App SDK ItemsRepeater virtualizing layouts.
 </ItemsRepeater>
 ```
 
-The layout uses `VirtualizingLayoutContext.VisibleRect` and `RealizationRect` to translate platform realization data into `SliverConstraints`.
+The layout uses `VirtualizingLayoutContext.VisibleRect` as the paint window and `RealizationRect` as the paint-plus-cache window. The adapter passes the difference as `SliverConstraints.CacheOrigin` so core layouts can distinguish visible slots from cache-only slots.
 
 ## Grid Layout
 
@@ -53,3 +53,7 @@ The package sets `EnableWindowsTargeting` for project compatibility and disables
 ## Generated API Note
 
 The portable docs build uses human-written API pages. WinUI is documented manually here and in the [API Guide](../api/winui.html) so non-Windows docs builds stay reliable.
+
+## Limitations
+
+The current WinUI gallery uses native `ItemsRepeater` sections to demonstrate fixed rows and grids. Variable-extent lists and mixed `CustomScrollView` composition are not yet one shared WinUI sliver viewport pipeline.

@@ -21,7 +21,7 @@ description: Uno ItemsRepeater virtualizing layouts.
 </ItemsRepeater>
 ```
 
-The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.RealizationRect` to request only the visible/cache range.
+The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.RealizationRect` to request only the visible/cache range. Uno currently reports `VirtualizingLayoutContext.VisibleRect` as unsupported, so the adapter infers the visible paint range from the realization rectangle and available size instead of using the exact WinUI paint/cache split.
 
 ## Grid Layout
 
@@ -49,3 +49,8 @@ The layout uses `SliverFixedExtentListLayout` and `VirtualizingLayoutContext.Rea
 ## Validation
 
 Uno renderer behavior should be validated on the target platforms you support. The reusable `samples/UnoGallery` project and the `samples/UnoGalleryApp` host provide a starting point.
+
+## Limitations
+
+- Exact `VisibleRect` paint-window mapping is not enabled until Uno implements that API.
+- Variable-extent lists and mixed `CustomScrollView` composition are represented by sample-level native layouts rather than a full Uno sliver viewport adapter.

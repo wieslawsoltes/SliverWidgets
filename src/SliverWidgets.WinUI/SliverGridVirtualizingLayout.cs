@@ -150,7 +150,10 @@ public class SliverGridVirtualizingLayout : VirtualizingLayout
     {
         var visible = context.VisibleRect;
         var realization = context.RealizationRect;
-        var scrollOffset = axis == SliverAxis.Vertical ? realization.Y : realization.X;
+        var visibleStart = axis == SliverAxis.Vertical ? visible.Y : visible.X;
+        var realizationStart = axis == SliverAxis.Vertical ? realization.Y : realization.X;
+        var scrollOffset = visibleStart;
+        var cacheOrigin = realizationStart - visibleStart;
         var remainingPaintExtent = axis == SliverAxis.Vertical ? visible.Height : visible.Width;
         var remainingCacheExtent = axis == SliverAxis.Vertical ? realization.Height : realization.Width;
         var crossAxisExtent = axis == SliverAxis.Vertical ? availableSize.Width : availableSize.Height;
@@ -162,6 +165,7 @@ public class SliverGridVirtualizingLayout : VirtualizingLayout
 
         return new SliverViewportInfo(
             Math.Max(0d, scrollOffset),
+            Math.Min(0d, cacheOrigin),
             Math.Max(0d, remainingPaintExtent),
             Math.Max(0d, remainingCacheExtent),
             Math.Max(0d, crossAxisExtent));
@@ -177,7 +181,7 @@ public class SliverGridVirtualizingLayout : VirtualizingLayout
             viewport.RemainingPaintExtent,
             viewport.CrossAxisExtent,
             viewport.RemainingPaintExtent,
-            0d,
+            viewport.CacheOrigin,
             viewport.RemainingCacheExtent);
     }
 
@@ -198,6 +202,7 @@ public class SliverGridVirtualizingLayout : VirtualizingLayout
 
     private readonly record struct SliverViewportInfo(
         double ScrollOffset,
+        double CacheOrigin,
         double RemainingPaintExtent,
         double RemainingCacheExtent,
         double CrossAxisExtent);

@@ -73,3 +73,7 @@ var grid = SliverItemsLayoutFactory.CreateFixedExtentGrid(
 ## Limitations
 
 MAUI custom layouts do not provide a general item container virtualization protocol. `SliverStackLayout` is not the large-data path. Use `SliverCollectionView` when the data source can grow beyond a small bounded set.
+
+`SliverCollectionView.CacheExtent` is a cross-platform hint for API symmetry with other adapters. MAUI does not expose a portable per-view cache extent equivalent to Flutter's viewport cache, so platform prefetch behavior remains owned by the native `CollectionView` implementation.
+
+Mixed `CustomScrollView` composition and variable-extent dead-reckoning are represented conceptually in the MAUI gallery rather than by a single MAUI sliver viewport adapter.
