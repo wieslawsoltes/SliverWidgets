@@ -12,7 +12,7 @@ The gallery demonstrates:
 - Fixed large list virtualization through `SliverFixedExtentVirtualizingLayout`.
 - Variable/non-uniform rows using native Uno `StackLayout` virtualization until a sliver variable-extent adapter is available.
 - Adaptive max-cross-axis grid virtualization through `SliverGridVirtualizingLayout`.
-- Pinned/collapsible header, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.
+- Pinned/collapsible header, tabbed nested-scroll projection, mixed composition, sectioned sticky-header, fill/padding/visibility, and cache stress scenarios.
 - Runtime controls for extent, spacing, aspect ratio, adaptive tile width, and `ItemsRepeater.VerticalCacheLength`.
 
 The sample targets `net10.0` as a buildable gallery surface on macOS and references `src/SliverWidgets.Uno`, `src/SliverWidgets.Core`, and `samples/SliverWidgets.GalleryData` directly.

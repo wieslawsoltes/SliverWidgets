@@ -169,6 +169,10 @@ public sealed class MainPage : ContentPage
                 CreateNote("A native overlay follows CollectionView.Scrolled offsets while the adapter surface stays thin."),
                 CreatePinnedHeaderDemo()),
             CreatePage(
+                GalleryScenarioKind.TabbedNestedScroll,
+                CreateNote("Flutter uses NestedScrollView with SliverOverlapAbsorber/Injector for this pattern. MAUI projects it with native segmented tab buttons and separate CollectionView scroll bodies."),
+                CreateTabbedNestedDemo()),
+            CreatePage(
                 GalleryScenarioKind.MixedComposition,
                 CreateNote("Ordinary MAUI controls, fixed rows, grid tiles, and fill content are composed in one native ScrollView."),
                 CreateMixedComposition()),
@@ -628,6 +632,93 @@ public sealed class MainPage : ContentPage
         {
             HeightRequest = 620,
             Content = content
+        };
+    }
+
+    private View CreateTabbedNestedDemo()
+    {
+        var results = CreateTabbedCollection(_items.Skip(40).Take(180).ToArray());
+        var saved = CreateTabbedCollection(_items.Skip(420).Take(180).ToArray());
+        var contentHost = new ContentView();
+        var resultsButton = CreateSegmentButton("Results");
+        var savedButton = CreateSegmentButton("Saved");
+
+        void Select(Button selected, Button other, View content)
+        {
+            selected.BackgroundColor = Color.FromArgb("#2563EB");
+            selected.TextColor = Colors.White;
+            other.BackgroundColor = Colors.White;
+            other.TextColor = Color.FromArgb("#334155");
+            contentHost.Content = content;
+        }
+
+        resultsButton.Clicked += (_, _) => Select(resultsButton, savedButton, results);
+        savedButton.Clicked += (_, _) => Select(savedButton, resultsButton, saved);
+        Select(resultsButton, savedButton, results);
+
+        return new Grid
+        {
+            HeightRequest = 560,
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Star)
+            },
+            Children =
+            {
+                new Border
+                {
+                    Padding = new Thickness(18, 14),
+                    BackgroundColor = Color.FromArgb("#1E3A8A"),
+                    Content = new VerticalStackLayout
+                    {
+                        Spacing = 4,
+                        Children =
+                        {
+                            CreateLabel("NestedScrollView-style catalog", 20, FontAttributes.Bold, "#FFFFFF"),
+                            CreateLabel("Pinned header plus tabbed inner scroll bodies.", 12, FontAttributes.None, "#DBEAFE")
+                        }
+                    }
+                },
+                WithRow(new HorizontalStackLayout
+                {
+                    Spacing = 8,
+                    Padding = new Thickness(12, 10),
+                    BackgroundColor = Colors.White,
+                    Children =
+                    {
+                        resultsButton,
+                        savedButton
+                    }
+                }, 1),
+                WithRow(contentHost, 2)
+            }
+        };
+    }
+
+    private CollectionView CreateTabbedCollection(IReadOnlyList<GalleryItem> items)
+    {
+        return new CollectionView
+        {
+            ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem,
+            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+            {
+                ItemSpacing = 6
+            },
+            ItemsSource = items,
+            ItemTemplate = new DataTemplate(CreateDenseListCell)
+        };
+    }
+
+    private static Button CreateSegmentButton(string text)
+    {
+        return new Button
+        {
+            Text = text,
+            Padding = new Thickness(14, 8),
+            BorderColor = Color.FromArgb("#CBD5E1"),
+            BorderWidth = 1
         };
     }
 
@@ -1178,6 +1269,13 @@ public sealed class MainPage : ContentPage
         where T : View
     {
         Grid.SetColumn(view, column);
+        return view;
+    }
+
+    private static T WithRow<T>(T view, int row)
+        where T : View
+    {
+        Grid.SetRow(view, row);
         return view;
     }
 

@@ -30,6 +30,7 @@ public sealed class MainWindow : Window
             CreatePage(GalleryScenarioKind.VariableExtentList, CreateVariableListPage),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, CreateAdaptiveGridPage),
             CreatePage(GalleryScenarioKind.PinnedHeader, CreatePinnedHeaderPage),
+            CreatePage(GalleryScenarioKind.TabbedNestedScroll, CreateTabbedNestedPage),
             CreatePage(GalleryScenarioKind.MixedComposition, CreateMixedCompositionPage),
             CreatePage(GalleryScenarioKind.SectionedHeaders, CreateSectionedHeaderPage),
             CreatePage(GalleryScenarioKind.FillPaddingVisibility, CreateFillVisibilityPage),
@@ -328,6 +329,77 @@ public sealed class MainWindow : Window
             $"{scenario.Summary} Nested preview repeaters are height-bounded so ItemsRepeater receives a finite viewport and cache window.");
 
         return CreateSampleLayout(controls, CreateScrollViewer(root));
+    }
+
+    private static FrameworkElement CreateTabbedNestedPage()
+    {
+        var scenario = Scenario(GalleryScenarioKind.TabbedNestedScroll);
+        var results = CreateTabbedInnerScroll(SliverGalleryData.CreateItems(180));
+        var saved = CreateTabbedInnerScroll(SliverGalleryData.CreateItems(180).Reverse().ToArray());
+        var contentHost = new ContentControl();
+        var resultsButton = SegmentButton("Results");
+        var savedButton = SegmentButton("Saved");
+
+        void Select(Button selected, Button other, UIElement content)
+        {
+            selected.Background = Brush(Color.FromArgb(255, 37, 99, 235));
+            selected.Foreground = Brush(Colors.White);
+            other.Background = Brush(Colors.White);
+            other.Foreground = Brush(Color.FromArgb(255, 51, 65, 85));
+            contentHost.Content = content;
+        }
+
+        resultsButton.Click += (_, _) => Select(resultsButton, savedButton, results);
+        savedButton.Click += (_, _) => Select(savedButton, resultsButton, saved);
+        Select(resultsButton, savedButton, results);
+
+        var viewport = new Grid();
+        viewport.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        viewport.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        viewport.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        viewport.Children.Add(new Border
+        {
+            Padding = new Thickness(18, 14, 18, 14),
+            Background = Brush(Color.FromArgb(255, 30, 58, 138)),
+            Child = new StackPanel
+            {
+                Spacing = 4,
+                Children =
+                {
+                    Text("NestedScrollView-style catalog", 20, FontWeights.SemiBold, Colors.White),
+                    Text("Pinned header plus tabbed inner scroll bodies.", 12, FontWeights.Normal, Color.FromArgb(255, 219, 234, 254))
+                }
+            }
+        });
+
+        var tabs = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 8,
+            Padding = new Thickness(12, 10, 12, 10),
+            Background = Brush(Colors.White),
+            Children = { resultsButton, savedButton }
+        };
+        Grid.SetRow(tabs, 1);
+        viewport.Children.Add(tabs);
+
+        Grid.SetRow(contentHost, 2);
+        viewport.Children.Add(contentHost);
+
+        var controls = CreateControlPanel(
+            scenario.Title,
+            $"{scenario.Summary} Flutter uses NestedScrollView plus overlap absorber/injector for this pattern; the WinUI sample keeps separate native scroll bodies until a nested-scroll adapter exists.");
+
+        return CreateSampleLayout(controls, viewport);
+    }
+
+    private static FrameworkElement CreateTabbedInnerScroll(IReadOnlyList<GalleryItem> items)
+    {
+        return CreateScrollViewer(CreateRepeater(
+            items,
+            new SliverFixedExtentVirtualizingLayout { ItemExtent = 52, Spacing = 4 },
+            new GalleryItemElementFactory(GalleryItemVisualMode.DenseRow)));
     }
 
     private static FrameworkElement CreateSectionedHeaderPage()
@@ -730,6 +802,17 @@ public sealed class MainWindow : Window
     {
         Grid.SetColumn(element, column);
         return element;
+    }
+
+    private static Button SegmentButton(string label)
+    {
+        return new Button
+        {
+            Content = label,
+            Padding = new Thickness(12, 7, 12, 7),
+            BorderBrush = Brush(Color.FromArgb(255, 203, 213, 225)),
+            BorderThickness = new Thickness(1)
+        };
     }
 
     private static SolidColorBrush Brush(Color color) => new(color);

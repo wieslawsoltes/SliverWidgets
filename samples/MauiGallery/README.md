@@ -5,7 +5,7 @@ Flutter-inspired scenario catalog onto MAUI-native controls without duplicating 
 shared gallery data.
 
 The shell matches the Avalonia gallery: top metric cards, short scenario tabs
-(`Fixed`, `Variable`, `Grid`, `Header`, `Mixed`, `Sections`, `Fill`, `Cache`),
+(`Fixed`, `Variable`, `Grid`, `Header`, `Tabs`, `Mixed`, `Sections`, `Fill`, `Cache`),
 left-side controls/notes, and a right-side MAUI-native viewport.
 
 ## Build
@@ -20,6 +20,7 @@ dotnet build samples/MauiGallery/MauiGallery.csproj
 - Variable/non-uniform list through native MAUI `CollectionView` measured row templates.
 - Adaptive grid through `SliverCollectionView` grid mode with width-derived column count.
 - Pinned/collapsible header concept driven by native `CollectionView.Scrolled` offsets.
+- Tabbed nested-scroll concept through segmented native tabs and separate `CollectionView` scroll bodies.
 - Mixed `CustomScrollView`-style composition with MAUI `ScrollView`, fixed rows, grid tiles, and fill content.
 - Sectioned/sticky-header concept through grouped `SliverCollectionView` rows.
 - Fill remaining, padding, and visibility composition through native MAUI layout primitives.

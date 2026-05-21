@@ -2,7 +2,7 @@
 
 ## Gallery app
 
-The buildable code-only gallery lives in `../MauiGallery`. It references `SliverWidgets.Maui`, `SliverWidgets.Core`, and `SliverWidgets.GalleryData`, and demonstrates the unified sliver scenario catalog: fixed large list, variable/non-uniform list, adaptive grid, pinned/collapsible header concept, mixed composition, sectioned/sticky-header concept, fill/padding/visibility composition, and cache/performance stress.
+The buildable code-only gallery lives in `../MauiGallery`. It references `SliverWidgets.Maui`, `SliverWidgets.Core`, and `SliverWidgets.GalleryData`, and demonstrates the unified sliver scenario catalog: fixed large list, variable/non-uniform list, adaptive grid, pinned/collapsible header concept, tabbed nested-scroll concept, mixed composition, sectioned/sticky-header concept, fill/padding/visibility composition, and cache/performance stress.
 
 ```bash
 dotnet build samples/MauiGallery/MauiGallery.csproj

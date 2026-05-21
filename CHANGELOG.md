@@ -10,3 +10,4 @@
 - Fixed Avalonia unconstrained cross-axis measure handling and realized-container clearing order for virtualizing panels.
 - Updated WinUI paint/cache mapping and documented Uno, MAUI, and gallery composition limitations.
 - Unified MAUI, Uno, and WinUI gallery shells with the Avalonia reference header, metric cards, scenario tabs, and left-controls/right-viewport layout.
+- Added a shared `Tabs` gallery scenario based on Flutter `NestedScrollView`/`SliverOverlapAbsorber`/`SliverAppBar` tabbed usage and projected it across Avalonia, MAUI, Uno, and WinUI samples.

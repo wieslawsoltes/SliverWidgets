@@ -280,6 +280,91 @@
         </Grid>
       </TabItem>
 
+      <TabItem Header="Tabs">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="Tabbed nested scroll" />
+              <TextBlock Classes="muted" Text="Flutter projects commonly pair NestedScrollView, SliverAppBar, TabBar, and SliverOverlapAbsorber/Injector so each tab has its own scroll body without sliding under the header." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Avalonia projection" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="Native TabControl" />
+              <TextBlock Classes="muted" Text="Each tab hosts a sliver-backed ScrollViewer. The header and tabs stay outside the inner scroll body, mirroring the overlap coordination concept." TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <Grid RowDefinitions="Auto,*">
+              <Border Padding="18,12" Background="#1E3A8A" CornerRadius="8,8,0,0">
+                <StackPanel Spacing="3">
+                  <TextBlock FontSize="20" FontWeight="SemiBold" Foreground="#FFFFFF" Text="NestedScrollView-style catalog" />
+                  <TextBlock FontSize="12" Foreground="#DBEAFE" Text="Pinned app header plus tabbed inner scroll bodies." TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+
+              <TabControl Grid.Row="1" Margin="8">
+                <TabItem Header="Results">
+                  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                    <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding PreviewRows}">
+                      <slivers:SliverItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <slivers:SliverStackPanel
+                              CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                              ItemExtent="58"
+                              Spacing="6" />
+                        </ItemsPanelTemplate>
+                      </slivers:SliverItemsControl.ItemsPanel>
+                      <slivers:SliverItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Classes="row-card">
+                            <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                              <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                              <StackPanel Grid.Column="1">
+                                <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                                <TextBlock Classes="muted" Text="{Binding Subtitle}" />
+                              </StackPanel>
+                              <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="muted" Text="{Binding Category}" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </slivers:SliverItemsControl.ItemTemplate>
+                    </slivers:SliverItemsControl>
+                  </ScrollViewer>
+                </TabItem>
+
+                <TabItem Header="Saved">
+                  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                    <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding VariableRows}">
+                      <slivers:SliverItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <slivers:SliverVirtualizingListPanel
+                              CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                              EstimatedItemExtent="76"
+                              Spacing="8" />
+                        </ItemsPanelTemplate>
+                      </slivers:SliverItemsControl.ItemsPanel>
+                      <slivers:SliverItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Height="{Binding Extent}" Classes="row-card">
+                            <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                              <Border Background="{Binding AccentColor}" CornerRadius="3" />
+                              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                <TextBlock FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Title}" />
+                                <TextBlock Classes="muted" Text="{Binding Subtitle}" TextWrapping="Wrap" />
+                              </StackPanel>
+                              <TextBlock Grid.Column="2" VerticalAlignment="Center" Classes="muted" Text="{Binding Rank}" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </slivers:SliverItemsControl.ItemTemplate>
+                    </slivers:SliverItemsControl>
+                  </ScrollViewer>
+                </TabItem>
+              </TabControl>
+            </Grid>
+          </Border>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Mixed">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">

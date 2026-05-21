@@ -28,6 +28,7 @@ public sealed class UnoGalleryPage : Page
             CreatePage(GalleryScenarioKind.VariableExtentList, BuildVariableListScenario),
             CreatePage(GalleryScenarioKind.AdaptiveGrid, BuildAdaptiveGridScenario),
             CreatePage(GalleryScenarioKind.PinnedHeader, BuildPinnedHeaderScenario),
+            CreatePage(GalleryScenarioKind.TabbedNestedScroll, BuildTabbedNestedScenario),
             CreatePage(GalleryScenarioKind.MixedComposition, BuildMixedCompositionScenario),
             CreatePage(GalleryScenarioKind.SectionedHeaders, BuildSectionedHeaderScenario),
             CreatePage(GalleryScenarioKind.FillPaddingVisibility, BuildFillVisibilityScenario),
@@ -403,6 +404,77 @@ public sealed class UnoGalleryPage : Page
             });
     }
 
+    private UIElement BuildTabbedNestedScenario()
+    {
+        var scenario = Scenario(GalleryScenarioKind.TabbedNestedScroll);
+        var results = CreateTabbedInnerScroll(_items.Skip(40).Take(180).ToArray());
+        var saved = CreateTabbedInnerScroll(_items.Skip(320).Take(180).ToArray());
+        var contentHost = new ContentControl();
+        var resultsButton = SegmentButton("Results");
+        var savedButton = SegmentButton("Saved");
+
+        void Select(Button selected, Button other, UIElement content)
+        {
+            selected.Background = Brush(0xFF2563EB);
+            selected.Foreground = Brush(0xFFFFFFFF);
+            other.Background = Brush(0xFFFFFFFF);
+            other.Foreground = Brush(0xFF334155);
+            contentHost.Content = content;
+        }
+
+        resultsButton.Click += (_, _) => Select(resultsButton, savedButton, results);
+        savedButton.Click += (_, _) => Select(savedButton, resultsButton, saved);
+        Select(resultsButton, savedButton, results);
+
+        var viewport = new Grid();
+        viewport.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        viewport.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        viewport.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        viewport.Children.Add(new Border
+        {
+            Padding = new Thickness(18, 14, 18, 14),
+            Background = Brush(0xFF1E3A8A),
+            Child = new StackPanel
+            {
+                Spacing = 4,
+                Children =
+                {
+                    new TextBlock { Text = "NestedScrollView-style catalog", Foreground = Brush(0xFFFFFFFF), FontSize = 20, FontWeight = FontWeights.SemiBold },
+                    new TextBlock { Text = "Pinned header plus tabbed inner scroll bodies.", Foreground = Brush(0xFFDBEAFE), FontSize = 12, TextWrapping = TextWrapping.Wrap }
+                }
+            }
+        });
+
+        var tabs = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 8,
+            Padding = new Thickness(12, 10, 12, 10),
+            Background = Brush(0xFFFFFFFF),
+            Children = { resultsButton, savedButton }
+        };
+        Grid.SetRow(tabs, 1);
+        viewport.Children.Add(tabs);
+
+        Grid.SetRow(contentHost, 2);
+        viewport.Children.Add(contentHost);
+
+        return Scenario(
+            scenario.Title,
+            scenario.Summary,
+            ScenarioNote("Flutter uses NestedScrollView with SliverOverlapAbsorber/Injector for this pattern. Uno keeps this as native segmented tabs plus separate ItemsRepeater scroll bodies until a nested-scroll adapter exists."),
+            viewport);
+    }
+
+    private static UIElement CreateTabbedInnerScroll(IReadOnlyList<GalleryItem> items)
+    {
+        return Viewport(CreateRepeater(
+            items,
+            new SliverFixedExtentVirtualizingLayout { ItemExtent = 52, Spacing = 4 },
+            GalleryItemFactoryKind.Compact));
+    }
+
     private UIElement BuildSectionedHeaderScenario()
     {
         var scenario = Scenario(GalleryScenarioKind.SectionedHeaders);
@@ -773,6 +845,17 @@ public sealed class UnoGalleryPage : Page
 
         button.Click += (_, _) => scroller.ChangeView(null, offset, null, disableAnimation: true);
         return button;
+    }
+
+    private static Button SegmentButton(string label)
+    {
+        return new Button
+        {
+            Content = label,
+            Padding = new Thickness(12, 7, 12, 7),
+            BorderBrush = Brush(0xFFCBD5E1),
+            BorderThickness = new Thickness(1)
+        };
     }
 
     private static UIElement HeroPanel()
