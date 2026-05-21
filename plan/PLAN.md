@@ -31,6 +31,7 @@ flowchart TD
 - Core:
   - `src/SliverWidgets.Core/SliverPrimitives.cs`
   - `src/SliverWidgets.Core/SliverLayouts.cs`
+    - Includes `SliverWrapLayout` for variable-width/height line packing and `SliverDeterministicWrapExtentList` for deterministic large wrap feeds.
   - `src/SliverWidgets.Core/SliverViewportLayoutEngine.cs`
     - Honors finite `ScrollOffsetCorrection` values by restarting the viewport pass from the corrected offset.
     - Honors Flutter-style `PaintOrigin`, `LayoutExtent`, `Overlap`, cache-origin correction, and per-sliver cache consumption.
@@ -42,13 +43,16 @@ flowchart TD
   - `src/SliverWidgets.Avalonia/SliverVirtualizingStackPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingGridPanel.cs`
   - `src/SliverWidgets.Avalonia/SliverVirtualizingListPanel.cs`
+  - `src/SliverWidgets.Avalonia/SliverVirtualizingWrapPanel.cs`
   - `src/SliverWidgets.Maui/SliverStackLayout.cs`
     - Preserves measured cross-axis size when MAUI gives an unconstrained cross-axis.
   - `src/SliverWidgets.Maui/SliverCollectionView.cs`
   - `src/SliverWidgets.Uno/SliverFixedExtentVirtualizingLayout.cs`
   - `src/SliverWidgets.Uno/SliverGridVirtualizingLayout.cs`
+  - `src/SliverWidgets.Uno/SliverWrapVirtualizingLayout.cs`
   - `src/SliverWidgets.WinUI/SliverFixedExtentVirtualizingLayout.cs`
   - `src/SliverWidgets.WinUI/SliverGridVirtualizingLayout.cs`
+  - `src/SliverWidgets.WinUI/SliverWrapVirtualizingLayout.cs`
 - Tests:
   - `tests/SliverWidgets.Core.Tests/SliverLayoutTests.cs`
   - `tests/SliverWidgets.FrameworkParity.Tests/FrameworkParityTests.cs`
@@ -70,10 +74,10 @@ flowchart TD
 
 | Framework | Implemented Track | Next Track |
 |---|---|---|
-| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent `VirtualizingPanel` | deeper platform gesture/device validation |
-| WinUI | `VirtualizingLayout` for fixed rows and grids, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
-| Uno | WinUI-style row and grid `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
-| MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView` | device validation |
+| Avalonia | `Panel`, `Decorator`, logical `SliverItemsControl` host, smooth 16px logical scroll steps, non-pinned header visible extent mapping, mixed sample clipping below pinned headers, configurable section sticky-header modes without incoming-header blank bands, fixed-extent/grid/variable-extent/wrap `VirtualizingPanel` | deeper platform gesture/device validation |
+| WinUI | `VirtualizingLayout` for fixed rows, grids, and wrap, `VisibleRect` paint plus `RealizationRect` cache mapping, non-Windows compile path with PRI disabled | Windows runtime/device validation |
+| Uno | WinUI-style row, grid, and wrap `VirtualizingLayout` with `RealizationRect` visible-range inference because Uno reports `VisibleRect` as unsupported | renderer-specific validation |
+| MAUI | `Layout` + `ILayoutManager` with unconstrained cross-axis measurement, native-backed `SliverCollectionView`, and native row-virtualized wrap projection | device validation |
 
 ## Milestones
 
@@ -109,6 +113,11 @@ flowchart TD
    - pinned header, padding, fill remaining, and max-cross-axis grid parity fixes.
    - Avalonia virtualizing grid sample path.
    - adapter matrix limitations documented.
+8. Variable Wrap Sliver
+   - core variable-size line packing.
+   - Avalonia/Uno/WinUI virtualizing adapters.
+   - shared `Wrap` gallery scenario with 100,000 deterministic items.
+   - MAUI native row-virtualized wrap projection with limitations documented.
 
 ## Validation Matrix
 
@@ -127,4 +136,5 @@ flowchart TD
 - WinUI Windows App SDK runtime behavior still requires Windows validation even though code-only builds disable PRI generation on non-Windows hosts.
 - Uno renderer/platform behavior must be validated before claiming full parity.
 - MAUI `ScrollView` and custom layout APIs do not provide item realization; large-data virtualization uses `CollectionView`.
+- MAUI does not expose a portable variable-size wrap `CollectionView` layout; the gallery projects wrap lines as virtualized native rows containing variable-size chip controls.
 - Flutter pinned/floating/snap semantics are represented by a deterministic core service; framework animation clocks still need deeper sample coverage.
