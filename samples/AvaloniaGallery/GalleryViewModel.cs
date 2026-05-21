@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using SliverWidgets.Core;
 using SliverWidgets.GalleryData;
 
 namespace AvaloniaGallery;
@@ -13,6 +14,12 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     private bool _showOptionalSliver = true;
     private bool _maintainOptionalSliverSize;
     private SliverSectionHeaderMode _sectionHeaderMode = SliverSectionHeaderMode.Stacked;
+    private string _dataGridFilterText = string.Empty;
+    private string _dataGridSortKey = "amount";
+    private bool _dataGridSortDescending = true;
+    private int _dataGridVisibleCount;
+    private IReadOnlyList<GalleryDataGridRow> _dataGridRows = Array.Empty<GalleryDataGridRow>();
+    private readonly IReadOnlyList<GalleryDataGridRow> _allDataGridRows;
 
     public GalleryViewModel()
     {
@@ -22,12 +29,15 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
         var wrapItems = SliverGalleryData.CreateWrapItems(100_000);
         var stressItems = SliverGalleryData.CreateUniformItems(100_000, 52d);
         var sections = SliverGalleryData.CreateSections(8, 24);
+        _allDataGridRows = SliverGalleryData.CreateDataGridRows(100_000);
 
         FixedRows = new ObservableCollection<GalleryItem>(fixedItems);
         PreviewRows = new ObservableCollection<GalleryItem>(variableItems.Take(36));
         VariableRows = new ObservableCollection<GalleryItem>(variableItems.Skip(360).Take(1200));
         StackItems = new ObservableCollection<GalleryItem>(stackItems);
         GridItems = new ObservableCollection<GalleryItem>(SliverGalleryData.CreateItems(1200));
+        DataGridColumns = new ObservableCollection<GalleryDataGridColumn>(SliverGalleryData.CreateDataGridColumns());
+        DataGridSortKeys = new ObservableCollection<string>(new[] { "amount", "updated", "account", "status", "region", "progress" });
         WrapItems = new ObservableCollection<GalleryItem>(wrapItems);
         StressRows = new ObservableCollection<GalleryItem>(stressItems);
         Metrics = new ObservableCollection<GalleryMetric>(SliverGalleryData.CreateMetrics());
@@ -38,6 +48,7 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
             new[] { SliverSectionHeaderMode.Stacked, SliverSectionHeaderMode.Push });
         SectionedBlocks = new ObservableCollection<AvaloniaSliverBlock>(CreateSectionedBlocks(sections));
         CompositionBlocks = new ObservableCollection<AvaloniaSliverBlock>(CreateCompositionBlocks());
+        RefreshDataGridRows();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -51,6 +62,16 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
     public ObservableCollection<GalleryItem> StackItems { get; }
 
     public ObservableCollection<GalleryItem> GridItems { get; }
+
+    public IReadOnlyList<GalleryDataGridRow> DataGridRows
+    {
+        get => _dataGridRows;
+        private set => SetField(ref _dataGridRows, value);
+    }
+
+    public ObservableCollection<GalleryDataGridColumn> DataGridColumns { get; }
+
+    public ObservableCollection<string> DataGridSortKeys { get; }
 
     public ObservableCollection<GalleryItem> WrapItems { get; }
 
@@ -105,6 +126,81 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
         get => _sectionHeaderMode;
         set => SetField(ref _sectionHeaderMode, value);
     }
+
+    public string DataGridFilterText
+    {
+        get => _dataGridFilterText;
+        set
+        {
+            if (SetField(ref _dataGridFilterText, value))
+            {
+                RefreshDataGridRows();
+            }
+        }
+    }
+
+    public string DataGridSortKey
+    {
+        get => _dataGridSortKey;
+        set
+        {
+            if (SetField(ref _dataGridSortKey, value))
+            {
+                RefreshDataGridRows();
+            }
+        }
+    }
+
+    public bool DataGridSortDescending
+    {
+        get => _dataGridSortDescending;
+        set
+        {
+            if (SetField(ref _dataGridSortDescending, value))
+            {
+                RefreshDataGridRows();
+            }
+        }
+    }
+
+    public int DataGridVisibleCount
+    {
+        get => _dataGridVisibleCount;
+        private set => SetField(ref _dataGridVisibleCount, value);
+    }
+
+    private void RefreshDataGridRows()
+    {
+        var filters = string.IsNullOrWhiteSpace(DataGridFilterText)
+            ? Array.Empty<SliverDataGridFilterDescriptor>()
+            : new[]
+            {
+                new SliverDataGridFilterDescriptor("search", SliverDataGridFilterOperator.Contains, DataGridFilterText)
+            };
+        var sortKey = string.IsNullOrWhiteSpace(DataGridSortKey) ? "amount" : DataGridSortKey;
+        var projected = SliverDataGridQueryEngine.ProjectRows(
+            _allDataGridRows,
+            DataGridBindings,
+            new SliverDataGridQuery(
+                new[] { new SliverDataGridSortDescriptor(sortKey, DataGridSortDescending ? SliverDataGridSortDirection.Descending : SliverDataGridSortDirection.Ascending) },
+                filters));
+
+        DataGridRows = projected.Select(index => _allDataGridRows[index]).ToArray();
+        DataGridVisibleCount = projected.Count;
+    }
+
+    private static readonly IReadOnlyList<SliverDataGridColumnBinding<GalleryDataGridRow>> DataGridBindings =
+    [
+        new("account", row => row.Account),
+        new("region", row => row.Region),
+        new("category", row => row.Category),
+        new("status", row => row.Status),
+        new("owner", row => row.Owner),
+        new("amount", row => row.Amount),
+        new("progress", row => row.Progress),
+        new("updated", row => row.Updated),
+        new("search", row => $"{row.Account} {row.Region} {row.Category} {row.Status} {row.Owner} {row.Notes}")
+    ];
 
     private static IEnumerable<AvaloniaSliverBlock> CreateSectionedBlocks(IEnumerable<GallerySection> sections)
     {
@@ -171,15 +267,16 @@ public sealed class GalleryViewModel : INotifyPropertyChanged
             4);
     }
 
-    private void SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+    private bool SetField<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
     {
         if (EqualityComparer<T>.Default.Equals(field, value))
         {
-            return;
+            return false;
         }
 
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        return true;
     }
 }
 

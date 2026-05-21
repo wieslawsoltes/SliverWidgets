@@ -279,6 +279,89 @@
         </Grid>
       </TabItem>
 
+      <TabItem Header="DataGrid">
+        <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
+          <Border Classes="panel">
+            <StackPanel Spacing="14">
+              <TextBlock Classes="h2" Text="DataGrid sliver" />
+              <TextBlock Classes="muted" Text="100,000 rows use shared query projection for filtering and sorting while the viewport realizes variable-height native row controls." TextWrapping="Wrap" />
+              <TextBlock Classes="muted" Text="Filter" />
+              <TextBox Watermark="account, status, owner..." Text="{Binding DataGridFilterText, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Sort column" />
+              <ComboBox ItemsSource="{Binding DataGridSortKeys}" SelectedItem="{Binding DataGridSortKey, Mode=TwoWay}" />
+              <CheckBox Content="Descending" IsChecked="{Binding DataGridSortDescending, Mode=TwoWay}" />
+              <TextBlock Classes="muted" Text="Visible rows" />
+              <TextBlock FontSize="18" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding DataGridVisibleCount}" />
+              <TextBlock Classes="muted" Text="Column sizing" />
+              <ItemsControl ItemsSource="{Binding DataGridColumns}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Classes="muted" Text="{Binding Header}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Classes="muted" Text="Cache extent" />
+              <Slider Minimum="0" Maximum="1200" Value="{Binding CacheExtent, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="viewport">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+              <Grid RowDefinitions="Auto,*" MinWidth="1580">
+                <Border Background="#E2E8F0" BorderBrush="#CBD5E1" BorderThickness="0,0,0,1" Padding="10,8">
+                  <Grid ColumnDefinitions="84,180,118,168,118,150,120,130,132,360" ColumnSpacing="10">
+                    <TextBlock FontWeight="SemiBold" Foreground="#334155" Text="ID" />
+                    <TextBlock Grid.Column="1" FontWeight="SemiBold" Foreground="#334155" Text="Account" />
+                    <TextBlock Grid.Column="2" FontWeight="SemiBold" Foreground="#334155" Text="Region" />
+                    <TextBlock Grid.Column="3" FontWeight="SemiBold" Foreground="#334155" Text="Category" />
+                    <TextBlock Grid.Column="4" FontWeight="SemiBold" Foreground="#334155" Text="Status" />
+                    <TextBlock Grid.Column="5" FontWeight="SemiBold" Foreground="#334155" Text="Owner" />
+                    <TextBlock Grid.Column="6" FontWeight="SemiBold" Foreground="#334155" Text="Amount" />
+                    <TextBlock Grid.Column="7" FontWeight="SemiBold" Foreground="#334155" Text="Progress" />
+                    <TextBlock Grid.Column="8" FontWeight="SemiBold" Foreground="#334155" Text="Updated" />
+                    <TextBlock Grid.Column="9" FontWeight="SemiBold" Foreground="#334155" Text="Notes" />
+                  </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+                  <slivers:SliverItemsControl ClipToBounds="True" ItemsSource="{Binding DataGridRows}">
+                    <slivers:SliverItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate>
+                        <slivers:SliverVirtualizingDataGridRowsPanel
+                            CacheExtent="{Binding $parent[Window].DataContext.CacheExtent}"
+                            EstimatedItemExtent="64"
+                            Spacing="0" />
+                      </ItemsPanelTemplate>
+                    </slivers:SliverItemsControl.ItemsPanel>
+                    <slivers:SliverItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Height="{Binding Extent}" Background="#FFFFFF" BorderBrush="#D8E0EC" BorderThickness="0,0,0,1" Padding="10,6">
+                          <Grid ColumnDefinitions="84,180,118,168,118,150,120,130,132,360" ColumnSpacing="10">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <Border Width="4" Background="{Binding AccentColor}" CornerRadius="2" />
+                              <TextBlock VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Id}" />
+                            </StackPanel>
+                            <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0F172A" Text="{Binding Account}" />
+                            <TextBlock Grid.Column="2" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Region}" />
+                            <TextBlock Grid.Column="3" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Category}" />
+                            <TextBlock Grid.Column="4" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Status}" />
+                            <TextBlock Grid.Column="5" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Owner}" />
+                            <TextBlock Grid.Column="6" VerticalAlignment="Center" Foreground="#0F172A" Text="{Binding Amount, StringFormat='{}{0:C0}'}" />
+                            <TextBlock Grid.Column="7" VerticalAlignment="Center" Foreground="#0F172A" Text="{Binding Progress, StringFormat='{}{0}%'}" />
+                            <TextBlock Grid.Column="8" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Updated, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                            <TextBlock Grid.Column="9" VerticalAlignment="Center" Foreground="#475569" Text="{Binding Notes}" TextWrapping="Wrap" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </slivers:SliverItemsControl.ItemTemplate>
+                  </slivers:SliverItemsControl>
+                </ScrollViewer>
+              </Grid>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Wrap">
         <Grid ColumnDefinitions="300,*" ColumnSpacing="16" Margin="0,16,0,0">
           <Border Classes="panel">
