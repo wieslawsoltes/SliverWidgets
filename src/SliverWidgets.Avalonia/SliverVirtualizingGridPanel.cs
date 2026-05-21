@@ -11,6 +11,7 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
 {
     private readonly Dictionary<int, Control> _containersByIndex = [];
     private readonly Dictionary<Control, int> _indexesByContainer = [];
+    private readonly HashSet<Control> _selfContainers = [];
     private bool _canHorizontallyScroll;
     private bool _canVerticallyScroll;
     private Size _extent;
@@ -415,9 +416,22 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
             throw new InvalidOperationException($"Item at index {index} did not produce a control container.");
         }
 
-        generator.PrepareItemContainer(container, item, index);
+        if (needsContainer)
+        {
+            _selfContainers.Remove(container);
+            generator.PrepareItemContainer(container, item, index);
+        }
+        else
+        {
+            _selfContainers.Add(container);
+        }
+
         AddInternalChild(container);
-        generator.ItemContainerPrepared(container, item, index);
+        if (needsContainer)
+        {
+            generator.ItemContainerPrepared(container, item, index);
+        }
+
         _containersByIndex[index] = container;
         _indexesByContainer[container] = index;
 
@@ -435,7 +449,7 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
             {
                 _containersByIndex.Remove(index);
                 _indexesByContainer.Remove(container);
-                generator.ClearItemContainer(container);
+                ClearContainer(container);
                 RemoveInternalChild(container);
             }
         }
@@ -447,6 +461,7 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
         {
             _containersByIndex.Clear();
             _indexesByContainer.Clear();
+            _selfContainers.Clear();
             return;
         }
 
@@ -459,8 +474,16 @@ public class SliverVirtualizingGridPanel : VirtualizingPanel, ILogicalScrollable
             }
 
             _indexesByContainer.Remove(container);
-            generator.ClearItemContainer(container);
+            ClearContainer(container);
             RemoveInternalChild(container);
+        }
+    }
+
+    private void ClearContainer(Control container)
+    {
+        if (!_selfContainers.Remove(container))
+        {
+            ItemContainerGenerator?.ClearItemContainer(container);
         }
     }
 
