@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SliverWidgets.GalleryData\SliverWidgets.GalleryData.csproj" />
+    <ProjectReference Include="..\..\src\SliverWidgets.Core\SliverWidgets.Core.csproj" />
+    <ProjectReference Include="..\..\src\SliverWidgets.Uno\SliverWidgets.Uno.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Uno.WinUI" Version="6.5.237" />
+  </ItemGroup>
+
+</Project>

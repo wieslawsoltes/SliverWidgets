@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SliverWidgets.Avalonia/SliverWidgets.Avalonia.csproj" />
+    <Project Path="src/SliverWidgets.Core/SliverWidgets.Core.csproj" />
+    <Project Path="src/SliverWidgets.Maui/SliverWidgets.Maui.csproj" />
+    <Project Path="src/SliverWidgets.Uno/SliverWidgets.Uno.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/SliverWidgets.GalleryData/SliverWidgets.GalleryData.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SliverWidgets.Avalonia.Tests/SliverWidgets.Avalonia.Tests.csproj" />
+    <Project Path="tests/SliverWidgets.Core.Tests/SliverWidgets.Core.Tests.csproj" />
+    <Project Path="tests/SliverWidgets.FrameworkParity.Tests/SliverWidgets.FrameworkParity.Tests.csproj" />
+  </Folder>
+</Solution>

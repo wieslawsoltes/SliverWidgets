@@ -1,0 +1,46 @@
+# 000 SliverWidgets Foundation Tasks
+
+- [x] `T001` Define core sliver constraints and geometry. Requirements: `SW-FR-001`, `SW-FR-002`, `SW-FR-003`.
+- [x] `T002` Implement fixed-extent list layout. Requirements: `SW-FR-005`.
+- [x] `T003` Implement variable list, grid, persistent header, fill remaining, padding, and visibility. Requirements: `SW-FR-006` through `SW-FR-011`.
+- [x] `T004` Implement viewport composition. Requirements: `SW-FR-004`.
+- [x] `T005` Implement Avalonia adapters. Requirements: `SW-FR-012`, `SW-FR-014`.
+- [x] `T006` Implement MAUI layout adapter. Requirements: `SW-FR-012`, `SW-FR-015`.
+- [x] `T007` Implement Uno fixed-extent virtualizing layout. Requirements: `SW-FR-012`, `SW-FR-013`.
+- [x] `T008` Implement WinUI fixed-extent virtualizing layout. Requirements: `SW-FR-012`, `SW-FR-013`.
+- [x] `T009` Add core unit tests. Acceptance: `AC-003`.
+- [x] `T010` Add framework parity tests. Acceptance: `AC-004`.
+- [x] `T011` Add package metadata and default solution. Acceptance: `AC-001`, `AC-002`, `AC-007`.
+- [x] `T012` Add Lunet docs shell, samples, README, workflows, and agent instructions. Acceptance: `AC-008`.
+- [x] `T013` Implement Avalonia `VirtualizingPanel` + `ItemContainerGenerator`. Requirements: `SW-FR-014`.
+- [x] `T014` Implement WinUI/Uno grid virtualizing layouts. Requirements: `SW-FR-007`, `SW-FR-013`.
+- [x] `T015` Implement MAUI native-backed virtualization. Requirements: `SW-FR-015`.
+- [x] `T016` Implement floating/snap header animation service. Requirements: `SW-FR-008`.
+- [x] `T017` Implement core variable-extent cache/dead-reckoning and box adapter. Requirements: `SW-FR-006`, `SW-FR-016`.
+- [x] `T018` Implement Avalonia variable-extent virtualizing panel. Requirements: `SW-FR-014`.
+- [x] `T019` Add shared gallery data project for deterministic large sample feeds. Requirements: `SW-FR-018`.
+- [x] `T020` Implement Avalonia gallery app. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T021` Implement MAUI gallery app. Requirements: `SW-FR-015`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T022` Implement Uno gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T023` Implement WinUI gallery app. Requirements: `SW-FR-013`, `SW-FR-017`, `SW-FR-018`.
+- [x] `T024` Add gallery docs and sample validation notes. Acceptance: `AC-009`, `AC-010`.
+- [x] `T025` Fix Avalonia gallery logical scrolling so `ScrollViewer` offsets drive sliver panels instead of physically scrolling realized item windows. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T026` Fix Avalonia persistent-header scroll smoothness by using pixel-sized logical line increments instead of item-sized wheel jumps. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T027` Fix Avalonia mixed gallery composition so direct child slots are clipped below pinned header obstruction instead of rendering through the header. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T028` Fix Avalonia sectioned gallery sticky headers so one active section header shrinks smoothly and clips rows without cumulative empty header gaps. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T029` Address PR review findings for viewport scroll-offset correction relayouts, finite core validation, and MAUI unconstrained cross-axis measurement. Requirements: `SW-FR-004`, `SW-FR-015`; Non-functional: `SW-NFR-002`.
+- [x] `T030` Add configurable Avalonia section header modes and use stacked sticky headers by default in the gallery. Requirements: `SW-FR-014`, `SW-FR-017`.
+- [x] `T031` Compare against Flutter sliver rendering source and document parity gaps. Acceptance: `AC-012`.
+- [x] `T032` Fix viewport `PaintOrigin`, `LayoutExtent`, overlap, and cache composition semantics. Requirements: `SW-FR-004`, `SW-FR-019`; Acceptance: `AC-003`.
+- [x] `T033` Fix pinned header, padding correction, fill remaining, max-cross-axis grid, and geometry validation parity gaps. Requirements: `SW-FR-003`, `SW-FR-008`, `SW-FR-009`, `SW-FR-010`, `SW-FR-020`; Acceptance: `AC-003`.
+- [x] `T034` Fix WinUI paint/cache mapping and gate Uno realization behavior around unsupported `VisibleRect`. Requirements: `SW-FR-013`; Acceptance: `AC-005`, `AC-012`.
+- [x] `T035` Add Avalonia virtualizing grid panel and use it in the adaptive grid gallery sample. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-021`.
+- [x] `T036` Fix Avalonia sectioned gallery clipping so incoming stacked headers do not create blank bands before they reach the leading pinned-header run. Requirements: `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-010`.
+- [x] `T037` Fix non-pinned persistent header shrink/paint geometry so scrolling headers resize at the leading edge before scrolling away without reserving empty space. Requirements: `SW-FR-008`, `SW-FR-014`, `SW-FR-017`; Acceptance: `AC-003`, `AC-010`, `AC-012`.
+- [x] `T038` Address Avalonia PR review findings for unconstrained cross-axis measure and generator-safe realized-container clearing. Requirements: `SW-FR-014`; Acceptance: `AC-010`.
+- [x] `T039` Unify MAUI, Uno, and WinUI gallery shells with the Avalonia reference header, short scenario tabs, and left-controls/right-viewport workflow. Requirements: `SW-FR-017`, `SW-FR-018`; Acceptance: `AC-009`, `AC-010`, `AC-011`.
+- [x] `T040` Add Flutter tabbed nested-scroll usage research and project a `Tabs` scenario across Avalonia, MAUI, Uno, and WinUI galleries. Requirements: `SW-FR-017`, `SW-FR-018`; Acceptance: `AC-009`, `AC-010`, `AC-011`, `AC-012`.
+- [x] `T041` Implement variable-size wrap sliver layout with 100,000-item gallery samples across Avalonia, MAUI, Uno, and WinUI. Requirements: `SW-FR-013`, `SW-FR-014`, `SW-FR-017`, `SW-FR-018`, `SW-FR-022`; Acceptance: `AC-003`, `AC-004`, `AC-009`, `AC-010`, `AC-011`.
+- [x] `T042` Implement variable-size stack sliver layout with 100,000-item gallery samples across Avalonia, MAUI, Uno, and WinUI. Requirements: `SW-FR-013`, `SW-FR-014`, `SW-FR-017`, `SW-FR-018`, `SW-FR-023`; Acceptance: `AC-003`, `AC-004`, `AC-009`, `AC-010`, `AC-011`.
+- [x] `T043` Implement DataGrid sliver layout/query behavior with 100,000-row sorting/filtering samples across Avalonia, MAUI, Uno, and WinUI. Requirements: `SW-FR-014`, `SW-FR-017`, `SW-FR-018`, `SW-FR-024`; Acceptance: `AC-003`, `AC-009`, `AC-010`, `AC-011`, `AC-012`.
+- [x] `T044` Refine DataGrid framework samples to use shared real column metadata and package-level native row virtualization adapters across Avalonia, MAUI, Uno, and WinUI. Requirements: `SW-FR-013`, `SW-FR-014`, `SW-FR-015`, `SW-FR-017`, `SW-FR-018`, `SW-FR-024`, `SW-FR-025`; Acceptance: `AC-001`, `AC-002`, `AC-005`, `AC-009`, `AC-010`, `AC-011`, `AC-012`.

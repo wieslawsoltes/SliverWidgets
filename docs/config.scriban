@@ -1,0 +1,27 @@
+extend "lunet-io/templates"
+
+site_project_name = "SliverWidgets"
+site_project_description = "Flutter-inspired sliver layouts for Avalonia, Uno, MAUI, and WinUI."
+site_project_github_user = "wieslawsoltes"
+site_project_github_repo = "SliverWidgets"
+site_project_basepath = "/SliverWidgets"
+readme_as_index = false
+
+if generate_dotnet_api == true
+  with api.dotnet
+    title = "SliverWidgets Generated API Reference"
+    path = "/generated-api"
+    menu_name = "generatedapi"
+    menu_title = "Generated API"
+    config = "Release"
+    properties = { TargetFramework: "net10.0" }
+    projects = [
+      { name: "SliverWidgets.Core", path: "../src/SliverWidgets.Core/SliverWidgets.Core.csproj" },
+      { name: "SliverWidgets.Avalonia", path: "../src/SliverWidgets.Avalonia/SliverWidgets.Avalonia.csproj" },
+      { name: "SliverWidgets.Maui", path: "../src/SliverWidgets.Maui/SliverWidgets.Maui.csproj" },
+      { name: "SliverWidgets.Uno", path: "../src/SliverWidgets.Uno/SliverWidgets.Uno.csproj" }
+    ]
+  end
+end
+
+site_project_init

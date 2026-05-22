@@ -1,0 +1,38 @@
+home:
+  - title: Docs
+    url: /
+  - title: Concepts
+    url: /concepts.html
+  - title: Articles
+    url: /articles/
+  - title: Architecture
+    url: /architecture.html
+  - title: Technical Specification
+    url: /technical-specification.html
+  - title: Getting Started
+    url: /getting-started.html
+  - title: Controls
+    url: /controls/
+  - title: Frameworks
+    url: /framework-adapters/
+  - title: Performance
+    url: /performance.html
+  - title: Virtualization
+    url: /guides/virtualization.html
+  - title: Sample Galleries
+    url: /samples.html
+  - title: API Guide
+    url: /api/
+  - title: Testing
+    url: /testing.html
+  - title: Packaging
+    url: /packaging.html
+  - title: Flutter Mapping
+    url: /migration/flutter.html
+  - title: Troubleshooting
+    url: /troubleshooting.html
+  - title: Roadmap
+    url: /roadmap.html
+home2:
+  - title: GitHub
+    url: https://github.com/wieslawsoltes/SliverWidgets
