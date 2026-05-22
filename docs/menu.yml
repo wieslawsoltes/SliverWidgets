@@ -7,6 +7,8 @@ home:
     url: /articles/
   - title: Architecture
     url: /architecture.html
+  - title: Technical Specification
+    url: /technical-specification.html
   - title: Getting Started
     url: /getting-started.html
   - title: Controls
